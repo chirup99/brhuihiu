@@ -48,8 +48,6 @@ import { useLogin, useRegister, useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import clsx from "clsx";
 import { SiInstagram, SiWhatsapp, SiX } from "react-icons/si";
-import avatarWoman from "@assets/female.png";
-import avatarMan from "@assets/male.png";
 import avatarKcr from "@assets/kcr.png";
 import avatarKtr from "@assets/ktr.png";
 import pinkCarSrc from "@assets/pink-car.png";
@@ -1725,7 +1723,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   };
   const [qrColor, setQrColor] = useState("#000000");
   const [qrBgColor, setQrBgColor] = useState("#ffffff");
-  const professionalAvatars = [avatarWoman, avatarMan, avatarKcr, avatarKtr];
+  const professionalAvatars = [avatarKcr, avatarKtr];
 
   const [avatarUrl, setAvatarUrl] = useState(professionalAvatars[0]);
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
@@ -4425,7 +4423,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-pink-300/60 text-center mb-4">
                   Choose Avatar
                 </p>
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 gap-4 max-w-[200px] mx-auto">
                   {professionalAvatars.map((src, i) => (
                     <button
                       key={i}
