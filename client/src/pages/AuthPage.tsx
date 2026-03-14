@@ -4009,7 +4009,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 }}
                 className="w-full bg-pink-500 text-white hover:bg-pink-600 rounded-lg py-3 font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg mt-2"
               >
-                create your persona
+                Rise Your Voice
               </button>
             )}
           </div>
