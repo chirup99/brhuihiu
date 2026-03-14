@@ -638,7 +638,7 @@ const SwipeCardContent = forwardRef(
               <span className="text-white/90 text-[9px] font-bold tracking-[0.2em] uppercase">
                 {card.title}
               </span>
-              {card.type !== "product" && (
+              {card.type !== "product" && card.type !== "post" && (
                 <Mic className="w-3.5 h-3.5 text-white/90" />
               )}
             </div>
@@ -700,14 +700,13 @@ const SwipeCardContent = forwardRef(
                   </div>
                 )
               ) : card.type === "post" ? (
-                <div className="text-center space-y-2 px-2">
-                  <h3 className="text-white text-lg font-bold leading-tight">
-                    {card.name}
-                  </h3>
-                  {(card as any).content && (
-                    <p className="text-white/80 text-xs leading-relaxed line-clamp-5">
+                <div className="text-center px-2">
+                  {(card as any).content ? (
+                    <p className="text-white/90 text-xs leading-relaxed">
                       {(card as any).content}
                     </p>
+                  ) : (
+                    <p className="text-white/30 text-[10px] uppercase tracking-widest">No content</p>
                   )}
                 </div>
               ) : card.type === "xpost" ? (
@@ -794,7 +793,8 @@ const SwipeCardContent = forwardRef(
 
             {card.type !== "product" &&
               card.type !== "image" &&
-              card.type !== "xpost" && (
+              card.type !== "xpost" &&
+              card.type !== "post" && (
                 <div className="w-full">
                   <button
                     type="button"
