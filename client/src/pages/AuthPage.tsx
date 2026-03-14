@@ -1,8 +1,6 @@
 import { QRCodeSVG } from "qrcode.react";
 import * as htmlToImage from "html-to-image";
 import { BrowserMultiFormatReader } from "@zxing/library";
-import logoImg from "@assets/logo.png";
-
 // ... existing imports
 import { useState, useMemo, useEffect, useRef, forwardRef } from "react";
 import { useLocation } from "wouter";
@@ -2794,9 +2792,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   </div>
                 </motion.div>
                 <img
-                  src="/perala.png"
-                  alt="Traders Community"
-                  className="w-5 h-5 group-hover:scale-110 transition-transform"
+                  src="/telangana-logo.png"
+                  alt="Telangana BRS"
+                  className="w-5 h-5 group-hover:scale-110 transition-transform object-contain"
                 />
               </motion.button>
             </motion.div>
@@ -2945,8 +2943,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       className="group cursor-pointer hover:bg-[#adb5bd] border border-white/5 rounded-2xl p-4 flex items-center justify-center transition-all duration-300 shadow-xl w-32 h-15 pt-[10px] pb-[10px] pl-[10px] pr-[10px] text-[#000000] bg-[#000000]"
                     >
                       <img
-                        src={logoImg}
-                        alt="Perala"
+                        src="/telangana-logo.png"
+                        alt="BRS Telangana"
                         className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
                       />
                     </a>
