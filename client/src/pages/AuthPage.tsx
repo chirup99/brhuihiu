@@ -3867,52 +3867,70 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
               />
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                initial={{ opacity: 0, scale: 0.95, y: 24 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[61] bg-white border border-pink-100 rounded-2xl p-5 shadow-2xl max-w-sm mx-auto"
+                exit={{ opacity: 0, scale: 0.95, y: 24 }}
+                className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[61] w-[calc(100vw-32px)] max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden"
                 style={{ touchAction: "auto" }}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-gray-900 font-bold text-sm">{editingEvent ? "Edit Event" : "Create Event"}</h3>
-                    <p className="text-gray-400 text-[10px] mt-0.5">Fill in the event details below</p>
+                <div className="h-1.5 w-full bg-gradient-to-r from-pink-400 via-pink-500 to-pink-600" />
+                <div className="p-5">
+                  <div className="flex items-center justify-between mb-5">
+                    <div>
+                      <h3 className="text-gray-900 font-bold text-base leading-tight">
+                        {editingEvent ? "Edit Event" : "New Event"}
+                      </h3>
+                      <p className="text-gray-400 text-[10px] mt-0.5 uppercase tracking-widest">
+                        {editingEvent ? "Update details" : "Schedule for all members"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={closeEventDialog}
+                      className="p-1.5 rounded-full bg-gray-100 hover:bg-pink-50 hover:text-pink-500 transition-colors text-gray-400"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
-                  <button onClick={closeEventDialog} className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Event Title *</label>
-                    <input
-                      type="text"
-                      value={eventForm.title}
-                      onChange={(e) => setEventForm((f) => ({ ...f, title: e.target.value }))}
-                      placeholder="e.g. BRS Rally Hyderabad"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Date *</label>
-                    <input
-                      type="date"
-                      value={eventForm.date}
-                      min={new Date().toISOString().split("T")[0]}
-                      onChange={(e) => setEventForm((f) => ({ ...f, date: e.target.value }))}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
+
+                  <div className="space-y-3">
                     <div className="space-y-1">
-                      <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Time</label>
+                      <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold flex items-center gap-1">
+                        Event Title <span className="text-pink-500">*</span>
+                      </label>
                       <input
-                        type="time"
-                        value={eventForm.time}
-                        onChange={(e) => setEventForm((f) => ({ ...f, time: e.target.value }))}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400"
+                        autoFocus
+                        type="text"
+                        value={eventForm.title}
+                        onChange={(e) => setEventForm((f) => ({ ...f, title: e.target.value }))}
+                        placeholder="e.g. BRS Rally Hyderabad"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-pink-400 focus:bg-white transition-colors placeholder:text-gray-300"
                       />
                     </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold flex items-center gap-1">
+                          Date <span className="text-pink-500">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          value={eventForm.date}
+                          min={new Date().toISOString().split("T")[0]}
+                          onChange={(e) => setEventForm((f) => ({ ...f, date: e.target.value }))}
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-pink-400 focus:bg-white transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Time</label>
+                        <input
+                          type="time"
+                          value={eventForm.time}
+                          onChange={(e) => setEventForm((f) => ({ ...f, time: e.target.value }))}
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-pink-400 focus:bg-white transition-colors"
+                        />
+                      </div>
+                    </div>
+
                     <div className="space-y-1">
                       <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Location</label>
                       <input
@@ -3920,32 +3938,42 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         value={eventForm.location}
                         onChange={(e) => setEventForm((f) => ({ ...f, location: e.target.value }))}
                         placeholder="Venue / City"
-                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-pink-400 focus:bg-white transition-colors placeholder:text-gray-300"
                       />
                     </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Description</label>
+                      <textarea
+                        value={eventForm.description}
+                        onChange={(e) => setEventForm((f) => ({ ...f, description: e.target.value }))}
+                        placeholder="Brief details about this event..."
+                        rows={3}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-pink-400 focus:bg-white transition-colors resize-none placeholder:text-gray-300"
+                      />
+                    </div>
+
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={closeEventDialog}
+                        className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl py-2.5 font-semibold text-sm transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={submitEventForm}
+                        disabled={!eventForm.title.trim() || !eventForm.date || createEventMutation.isPending || updateEventMutation.isPending}
+                        className="flex-1 bg-pink-500 hover:bg-pink-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl py-2.5 font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                      >
+                        {(createEventMutation.isPending || updateEventMutation.isPending)
+                          ? <Loader2 className="w-4 h-4 animate-spin" />
+                          : <>{editingEvent ? "Save Changes" : "Create Event"}</>
+                        }
+                      </button>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Description</label>
-                    <textarea
-                      value={eventForm.description}
-                      onChange={(e) => setEventForm((f) => ({ ...f, description: e.target.value }))}
-                      placeholder="Brief details about this event..."
-                      rows={3}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400 resize-none"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={submitEventForm}
-                    disabled={!eventForm.title.trim() || !eventForm.date || createEventMutation.isPending || updateEventMutation.isPending}
-                    className="w-full bg-pink-500 hover:bg-pink-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg py-2.5 font-semibold text-sm transition-colors flex items-center justify-center gap-2"
-                  >
-                    {(createEventMutation.isPending || updateEventMutation.isPending) ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>{editingEvent ? "Save Changes" : "Create Event"}</>
-                    )}
-                  </button>
                 </div>
               </motion.div>
             </>
