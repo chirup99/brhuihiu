@@ -2237,68 +2237,58 @@ export default function AuthPage({ slug }: { slug?: string }) {
     queryClient.setQueryData(["/api/me"], null);
     setLocation("/");
   };
-  const downloadQR = async () => {
-    const element = document.getElementById("iphone-screen-preview");
+  const shareQR = async () => {
+    const element = document.getElementById("qr-card-share");
     if (!element) {
-      toast({
-        title: "Error",
-        description: "Preview element not found",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "QR element not found", variant: "destructive" });
       return;
     }
 
     try {
-      // Hide elements that shouldn't be in the download
-      const statusBar = element.querySelector(
-        ".status-bar-container",
-      ) as HTMLElement;
-      const homeIndicator = element.querySelector(
-        ".home-indicator",
-      ) as HTMLElement;
-      const bottomControls = element.querySelector(
-        ".bottom-controls",
-      ) as HTMLElement;
-      const editButton = element.querySelector(
-        ".edit-avatar-button",
-      ) as HTMLElement;
-
-      if (statusBar) statusBar.style.display = "none";
-      if (homeIndicator) homeIndicator.style.display = "none";
-      if (bottomControls) bottomControls.style.display = "none";
-      if (editButton) editButton.style.display = "none";
-
-      // Give a tiny moment for layout shift if any
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
       const dataUrl = await htmlToImage.toPng(element, {
         quality: 1,
         pixelRatio: 3,
-        backgroundColor: "#050505",
+        backgroundColor: "#1a0510",
         cacheBust: true,
       });
 
-      // Restore elements
-      if (statusBar) statusBar.style.display = "flex";
-      if (homeIndicator) homeIndicator.style.display = "block";
-      if (bottomControls) bottomControls.style.display = "flex";
-      if (editButton) editButton.style.display = "flex";
+      const profileUrl =
+        window.location.origin +
+        "/" +
+        (displaySlug || user?.uniqueSlug || "");
 
-      const link = document.createElement("a");
-      link.download = `persona-${user?.uniqueSlug || "code"}.png`;
-      link.href = dataUrl;
-      link.click();
-      toast({
-        title: "Success",
-        description: "Persona Image downloaded successfully",
-      });
-    } catch (err) {
-      console.error("Download error:", err);
-      toast({
-        title: "Download failed",
-        description: "Could not generate the Persona image. Please try again.",
-        variant: "destructive",
-      });
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], `brs-${user?.uniqueSlug || "connect"}.png`, { type: "image/png" });
+
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: `BRS Connect — ${user?.name || "Profile"}`,
+          text: `Connect with ${user?.name || "me"} on BRS Connect`,
+          url: profileUrl,
+          files: [file],
+        });
+      } else if (navigator.share) {
+        await navigator.share({
+          title: `BRS Connect — ${user?.name || "Profile"}`,
+          text: `Connect with ${user?.name || "me"} on BRS Connect`,
+          url: profileUrl,
+        });
+      } else {
+        const link = document.createElement("a");
+        link.download = `brs-${user?.uniqueSlug || "connect"}.png`;
+        link.href = dataUrl;
+        link.click();
+        toast({ title: "Saved", description: "QR card saved to downloads." });
+      }
+    } catch (err: any) {
+      if (err?.name !== "AbortError") {
+        console.error("Share error:", err);
+        toast({
+          title: "Share failed",
+          description: "Could not share. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -4300,223 +4290,103 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
+                onClick={() => setShowQRDialog(false)}
                 className="absolute inset-0 bg-black/90 backdrop-blur-md"
               />
               <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                initial={{ opacity: 0, scale: 0.92, y: 24 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="relative w-full max-w-[240px] mx-auto"
+                exit={{ opacity: 0, scale: 0.92, y: 24 }}
+                className="relative w-full max-w-[300px] mx-auto z-10"
               >
-                {/* Close Button on Top Right */}
+                {/* Close */}
                 <button
                   onClick={() => setShowQRDialog(false)}
-                  className="absolute -top-12 right-0 p-2.5 bg-white/10 hover:bg-white/20 rounded-full text-white/70 hover:text-white transition-all backdrop-blur-md border border-white/20 shadow-2xl z-[150] active:scale-90"
+                  className="absolute -top-11 right-0 p-2.5 bg-white/10 hover:bg-white/20 rounded-full text-white/70 hover:text-white transition-all border border-white/20 z-[150] active:scale-90"
                 >
                   <X className="w-4 h-4" />
                 </button>
 
-                {/* iPhone Frame - Pink Theme */}
-                <div className="relative aspect-[9/19.5] rounded-[42px] p-1.5 overflow-hidden border border-pink-500/30 shadow-[0_0_0_1px_rgba(236,72,153,0.2),0_0_0_4px_rgba(190,24,93,0.15),0_20px_50px_rgba(236,72,153,0.25)]" style={{ background: "linear-gradient(145deg, #2d0a1a, #1a0510)" }}>
-                  {/* Tiny Dynamic Island */}
-                  <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-14 h-4 bg-black rounded-full z-50 flex items-center justify-end px-2.5">
-                    <div className="w-0.5 h-0.5 rounded-full bg-pink-500/40 shadow-[0_0_3px_#ec4899]" />
-                  </div>
+                {/* QR Card — shareable */}
+                <div
+                  id="qr-card-share"
+                  className="rounded-[28px] overflow-hidden shadow-2xl border border-pink-500/20"
+                  style={{ background: "linear-gradient(160deg, #1a0510 0%, #2d0a1e 50%, #1a0510 100%)" }}
+                >
+                  {/* Pink glow */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(236,72,153,0.35) 0%, transparent 70%)" }} />
 
-                  {/* iPhone Screen Content */}
-                  <div
-                    id="iphone-screen-preview"
-                    className="w-full h-full rounded-[36px] relative overflow-hidden flex flex-col items-center"
-                    style={{
-                      background: "linear-gradient(160deg, #1a0510 0%, #2d0a1e 40%, #1a0510 100%)",
-                    }}
-                  >
-                    {/* Pink glow at top */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 rounded-full blur-2xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(236,72,153,0.4) 0%, transparent 70%)" }} />
+                  <div className="relative flex flex-col items-center px-6 pt-8 pb-6 gap-5">
+                    {/* BRS logo + name */}
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center overflow-hidden border border-pink-500/20">
+                        <img src="/brs-logo.png" alt="BRS" className="w-5 h-5 object-contain" />
+                      </div>
+                      <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-pink-300/70">BRS Connect</span>
+                    </div>
 
-                    {/* Status Bar */}
-                    <div className="status-bar-container w-full flex justify-between items-center px-5 pt-3 pb-1 z-50">
-                      <span className="text-pink-200/70 text-[9px] font-semibold">
-                        {currentTime}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <div className="w-2.5 h-2.5 rounded-full border border-pink-400/30" />
-                        <div className="w-3.5 h-1.5 rounded-sm border border-pink-400/30" />
+                    {/* Avatar + name */}
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-16 h-16 rounded-full p-[2px]" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}>
+                        <div className="w-full h-full rounded-full overflow-hidden">
+                          <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                        </div>
+                      </div>
+                      <div className="text-center space-y-1">
+                        <h5 className="text-white text-base font-bold tracking-tight">
+                          {user?.name || form.watch("name") || "Your Name"}
+                        </h5>
+                        {(user?.role || form.watch("role")) && (
+                          <span className="inline-block text-[8px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full" style={{ background: "rgba(236,72,153,0.2)", color: "#f472b6", border: "1px solid rgba(236,72,153,0.3)" }}>
+                            {(user?.role || form.watch("role") || "").replace(/_/g, " ")}
+                          </span>
+                        )}
                       </div>
                     </div>
 
-                    <div className="flex flex-col items-center w-full px-4 pt-3 pb-4 flex-1">
-                      {/* Profile Section */}
-                      <div className="flex flex-col items-center gap-2 w-full">
-                        <div className="relative">
-                          <div className="w-16 h-16 rounded-full p-[2px]" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}>
-                            <div className="w-full h-full rounded-full overflow-hidden border-2 border-black/20">
-                              <img
-                                src={avatarUrl}
-                                alt="Avatar"
-                                className="w-full h-full rounded-full object-cover"
-                              />
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => setShowAvatarDialog(true)}
-                            className="edit-avatar-button absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center shadow-lg border border-pink-900/30 hover:scale-110 transition-transform"
-                            style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}
-                          >
-                            <Pencil className="w-2.5 h-2.5 text-white" />
-                          </button>
-                        </div>
-
-                        <div className="text-center space-y-1.5">
-                          <h5 className="text-white text-sm font-bold tracking-tight leading-none">
-                            {user?.name || form.watch("name") || "Your Name"}
-                          </h5>
-                          {(user?.role || form.watch("role")) && (
-                            <span className="inline-block text-[7px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full" style={{ background: "rgba(236,72,153,0.2)", color: "#f472b6", border: "1px solid rgba(236,72,153,0.3)" }}>
-                              {(user?.role || form.watch("role") || "").replace(/_/g, " ")}
-                            </span>
-                          )}
-                          {(user?.bio || form.watch("bio")) && (
-                            <p className="text-pink-200/40 text-[7px] line-clamp-1 px-3 italic">
-                              {user?.bio || form.watch("bio")}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Divider */}
-                      <div className="w-full h-px my-3" style={{ background: "linear-gradient(90deg, transparent, rgba(236,72,153,0.3), transparent)" }} />
-
-                      {/* QR Code Section */}
-                      <div
-                        id="qr-download-area"
-                        className="rounded-[20px] p-3 flex flex-col items-center shadow-xl"
-                        style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.97) 0%, rgba(255,240,248,0.97) 100%)" }}
-                      >
-                        <QRCodeSVG
-                          value={
-                            window.location.origin +
-                            "/" +
-                            (displaySlug ||
-                              user?.uniqueSlug ||
-                              window.location.pathname.split("/")[1] ||
-                              "")
-                          }
-                          size={118}
-                          level="H"
-                          includeMargin={false}
-                          fgColor={qrColor}
-                          bgColor="transparent"
-                        />
-                      </div>
-
-                      <div className="text-center mt-2.5 space-y-1">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <div className="h-px w-6" style={{ background: "linear-gradient(90deg, transparent, rgba(236,72,153,0.5))" }} />
-                          <p className="text-[7px] font-bold uppercase tracking-[0.25em]" style={{ color: "rgba(244,114,182,0.6)" }}>
-                            Scan to Connect
-                          </p>
-                          <div className="h-px w-6" style={{ background: "linear-gradient(90deg, rgba(236,72,153,0.5), transparent)" }} />
-                        </div>
-                        <p className="text-[9px] font-mono font-bold tracking-[0.15em] uppercase" style={{ color: "rgba(244,114,182,0.85)" }}>
-                          {displaySlug || user?.uniqueSlug || "—"}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Home Indicator */}
-                    <div className="home-indicator absolute bottom-2 left-1/2 -translate-x-1/2 w-16 h-1 rounded-full" style={{ background: "rgba(236,72,153,0.25)" }} />
-
-                    {/* Avatar Selection Dialog */}
-                    <AnimatePresence>
-                      {showAvatarDialog && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.9 }}
-                          className="absolute inset-0 z-[60] flex items-center justify-center p-4"
-                        >
-                          <div className="border border-pink-500/20 rounded-3xl p-4 w-full max-w-[240px] backdrop-blur-xl" style={{ background: "rgba(26,5,16,0.92)" }}>
-                            <div className="flex justify-between items-center mb-3">
-                              <span className="text-pink-300 text-[10px] font-bold uppercase tracking-widest">
-                                Select Avatar
-                              </span>
-                              <button
-                                onClick={() => setShowAvatarDialog(false)}
-                              >
-                                <X className="w-3 h-3 text-pink-400/50" />
-                              </button>
-                            </div>
-                            <div className="grid grid-cols-3 gap-3">
-                              <AnimatePresence>
-                                {professionalAvatars.map((url, i) => (
-                                  <motion.button
-                                    key={i}
-                                    initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                                    animate={{
-                                      opacity: 1,
-                                      scale: 1,
-                                      y: 0,
-                                      transition: { delay: i * 0.05 },
-                                    }}
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => {
-                                      setAvatarUrl(url);
-                                      setShowAvatarDialog(false);
-                                    }}
-                                    className="aspect-square rounded-full border-2 border-pink-500/20 overflow-hidden hover:border-pink-400/60 transition-all"
-                                  >
-                                    <img
-                                      src={url}
-                                      className="w-full h-full object-cover"
-                                      alt={`Avatar ${i + 1}`}
-                                    />
-                                  </motion.button>
-                                ))}
-                              </AnimatePresence>
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-
-                {/* Action Buttons Below iPhone - Compact */}
-                <div className="mt-5 space-y-2 px-1">
-                  {/* QR Theme Color Swatches */}
-                  <div className="flex items-center justify-center gap-2 pb-1">
-                    {[
-                      { color: "#000000", label: "Black" },
-                      { color: "#be185d", label: "Pink" },
-                      { color: "#7c3aed", label: "Purple" },
-                      { color: "#1d4ed8", label: "Blue" },
-                      { color: "#059669", label: "Green" },
-                      { color: "#d97706", label: "Amber" },
-                      { color: "#dc2626", label: "Red" },
-                    ].map(({ color, label }) => (
-                      <button
-                        key={color}
-                        onClick={() => setQrColor(color)}
-                        title={label}
-                        className="w-6 h-6 rounded-full border-2 transition-all active:scale-90 hover:scale-110"
-                        style={{
-                          backgroundColor: color,
-                          borderColor: qrColor === color ? "white" : "transparent",
-                          boxShadow: qrColor === color ? `0 0 0 1px ${color}` : "none",
-                        }}
+                    {/* QR Code */}
+                    <div className="rounded-[20px] p-4 shadow-xl" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.97) 0%, rgba(255,240,248,0.97) 100%)" }}>
+                      <QRCodeSVG
+                        value={
+                          window.location.origin +
+                          "/" +
+                          (displaySlug || user?.uniqueSlug || window.location.pathname.split("/")[1] || "")
+                        }
+                        size={140}
+                        level="H"
+                        includeMargin={false}
+                        fgColor="#be185d"
+                        bgColor="transparent"
                       />
-                    ))}
+                    </div>
+
+                    {/* Scan label + slug */}
+                    <div className="text-center space-y-1">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="h-px w-8" style={{ background: "linear-gradient(90deg, transparent, rgba(236,72,153,0.5))" }} />
+                        <p className="text-[8px] font-bold uppercase tracking-[0.25em]" style={{ color: "rgba(244,114,182,0.6)" }}>
+                          Scan to Connect
+                        </p>
+                        <div className="h-px w-8" style={{ background: "linear-gradient(90deg, rgba(236,72,153,0.5), transparent)" }} />
+                      </div>
+                      <p className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase" style={{ color: "rgba(244,114,182,0.9)" }}>
+                        {displaySlug || user?.uniqueSlug || "—"}
+                      </p>
+                    </div>
                   </div>
-                  <button
-                    onClick={downloadQR}
-                    className="w-full bg-white text-black rounded-xl py-3 font-bold text-[11px] flex items-center justify-center gap-2 hover:bg-white/90 transition-all shadow-lg active:scale-95"
-                  >
-                    <Save className="w-3.5 h-3.5" />
-                    Download
-                  </button>
                 </div>
+
+                {/* Share button */}
+                <button
+                  onClick={shareQR}
+                  className="mt-4 w-full bg-pink-500 hover:bg-pink-600 text-white rounded-2xl py-3.5 font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                  </svg>
+                  Share
+                </button>
               </motion.div>
             </div>
           )}
