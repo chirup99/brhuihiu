@@ -4395,8 +4395,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
                       {/* Avatar */}
                       {isCapturing ? (
-                        <div className="rounded-full overflow-hidden shadow-md" style={{ width: 72, height: 72 }}>
-                          <img src={avatarDataUrl || avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                        <div style={{ width: 72, height: 72, borderRadius: "50%", padding: 3, background: "linear-gradient(135deg, #ec4899, #be185d)", flexShrink: 0 }}>
+                          <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#ffffff" }}>
+                            <img src={avatarDataUrl || avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                          </div>
                         </div>
                       ) : (
                         <button
