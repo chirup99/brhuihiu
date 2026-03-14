@@ -3830,7 +3830,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     <input
                       {...form.register("bio")}
                       className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900"
-                      placeholder="Startup / Business"
+                      placeholder="Your voice / bio description"
                       onFocus={() => { setRoleOpen(false); setConstituencyOpen(false); }}
                     />
                   </div>
