@@ -2940,37 +2940,37 @@ export default function AuthPage({ slug }: { slug?: string }) {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md text-center mb-6 z-10"
         >
-          {/* BRS Logo in circular avatar */}
-          <div className="flex flex-col items-center gap-3 mb-4">
-            <div className="w-20 h-20 rounded-full bg-white shadow-lg ring-4 ring-pink-500/30 flex items-center justify-center overflow-hidden">
+          {/* BRS Logo + Name — compact horizontal row */}
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <div className="w-12 h-12 shrink-0 rounded-full bg-white shadow-md ring-2 ring-pink-500/30 flex items-center justify-center overflow-hidden">
               <img
                 src="/brs-logo.png"
                 alt="BRS Logo"
-                className="w-16 h-16 object-contain"
+                className="w-10 h-10 object-contain"
               />
             </div>
-            <div>
-              <h1 className="text-2xl font-display font-black tracking-widest uppercase text-white leading-none">
+            <div className="text-left">
+              <h1 className="text-xl font-display font-black tracking-widest uppercase text-white leading-none">
                 BRS
               </h1>
-              <p className="text-[10px] tracking-[0.2em] text-pink-300/70 font-medium mt-0.5">
+              <p className="text-[9px] tracking-[0.18em] text-pink-300/70 font-medium mt-0.5 whitespace-nowrap">
                 Bharat Rashtra Samithi
               </p>
             </div>
           </div>
 
-          <h2 className="text-2xl md:text-3xl font-display font-bold text-white mb-1.5">
+          <h2 className="text-xl md:text-2xl font-display font-bold text-white mb-1">
             People Party
           </h2>
-          <p className="text-white/50 text-sm mb-5 max-w-xs mx-auto leading-relaxed">
+          <p className="text-white/50 text-xs mb-3 max-w-xs mx-auto leading-relaxed">
             Where people meet, vibe & understand each other.
           </p>
 
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <span className="text-[10px] font-semibold text-pink-400 bg-pink-500/10 border border-pink-500/20 px-3 py-1 rounded-full">
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <span className="text-[9px] font-semibold text-pink-400 bg-pink-500/10 border border-pink-500/20 px-2.5 py-0.5 rounded-full">
               Real Connections
             </span>
-            <span className="text-[10px] font-semibold text-pink-400 bg-pink-500/10 border border-pink-500/20 px-3 py-1 rounded-full">
+            <span className="text-[9px] font-semibold text-pink-400 bg-pink-500/10 border border-pink-500/20 px-2.5 py-0.5 rounded-full">
               People First
             </span>
           </div>
