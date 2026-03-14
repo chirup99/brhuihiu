@@ -2279,6 +2279,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [isTradersExpanded, setIsTradersExpanded] = useState(false);
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
   const [showTradersModal, setShowTradersModal] = useState(false);
+  const [voiceCardSearch, setVoiceCardSearch] = useState("");
   const [adminFeaturedSlugs, setAdminFeaturedSlugs] = useState<string[]>([]);
   const [featuredProfiles, setFeaturedProfiles] = useState<any[]>([]);
   const [showAddProfileDialog, setShowAddProfileDialog] = useState(false);
@@ -3611,7 +3612,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={() => setShowTradersModal(false)}
+                onClick={() => { setShowTradersModal(false); setVoiceCardSearch(""); }}
                 className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
               />
               <motion.div
@@ -3631,27 +3632,44 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     </p>
                   </div>
                   <button
-                    onClick={() => setShowTradersModal(false)}
+                    onClick={() => { setShowTradersModal(false); setVoiceCardSearch(""); }}
                     className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white/60 hover:text-white"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
-                {loggedInUser?.uniqueSlug === ADMIN_SLUG && (
-                  <div className="px-6 pb-4 flex justify-end">
+                <div className="px-6 pb-3 flex items-center gap-2">
+                  <div className="flex-1 bg-white/8 border border-white/15 rounded-xl px-3 py-2 flex items-center gap-2">
+                    <Search className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
+                    <input
+                      value={voiceCardSearch}
+                      onChange={(e) => setVoiceCardSearch(e.target.value)}
+                      placeholder="Search voice cards..."
+                      className="flex-1 bg-transparent text-white text-sm placeholder:text-white/25 outline-none"
+                    />
+                    {voiceCardSearch && (
+                      <button onClick={() => setVoiceCardSearch("")} className="text-white/30 hover:text-white/60 transition-colors">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                  {loggedInUser?.uniqueSlug === ADMIN_SLUG && (
                     <button
                       onClick={() => setShowAddProfileDialog(true)}
-                      className="w-9 h-9 bg-pink-500 hover:bg-pink-600 rounded-xl flex items-center justify-center transition-colors shadow-lg"
+                      className="w-9 h-9 bg-pink-500 hover:bg-pink-600 rounded-xl flex items-center justify-center transition-colors shadow-lg flex-shrink-0"
                     >
                       <Plus className="w-4 h-4 text-white" />
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 <div className="overflow-x-auto scrollbar-hide px-6 pb-6">
                   <div className="flex gap-4">
-                    {featuredProfiles.map((profile, idx) => (
+                    {featuredProfiles.filter((p) => {
+                      const q = voiceCardSearch.toLowerCase();
+                      return !q || (p.name || "").toLowerCase().includes(q) || (p.uniqueSlug || "").toLowerCase().includes(q) || (p.role || "").toLowerCase().includes(q);
+                    }).map((profile, idx) => (
                       <motion.div
                         key={profile.uniqueSlug || idx}
                         initial={{ opacity: 0, y: 20 }}
