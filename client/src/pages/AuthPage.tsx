@@ -4319,8 +4319,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   <div className="relative flex flex-col items-center px-6 pt-8 pb-6 gap-5">
                     {/* BRS logo + name */}
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center overflow-hidden border border-pink-500/20">
-                        <img src="/brs-logo.png" alt="BRS" className="w-5 h-5 object-contain" />
+                      <div className="w-7 h-7 rounded-full bg-white overflow-hidden border border-pink-500/20">
+                        <img src="/brs-logo.png" alt="BRS" className="w-full h-full object-cover rounded-full" />
                       </div>
                       <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-pink-300/70">BRS Connect</span>
                     </div>
