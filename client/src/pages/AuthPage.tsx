@@ -2815,7 +2815,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         subtitle: "Daily Trade Tracking",
                         tag: "Performance Analysis",
                         image:
-                          "linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)",
+                          "linear-gradient(135deg, #ec4899 0%, #f472b6 100%)",
                         video: "/2.mp4",
                       },
                       {
@@ -2823,7 +2823,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         subtitle: "Connect with 7+ brokers",
                         tag: "Avoid Mistakes",
                         image:
-                          "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+                          "linear-gradient(135deg, #ec4899 0%, #f472b6 100%)",
                         video: "/3.mp4",
                       },
                       {
@@ -2831,7 +2831,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         subtitle: "Smart Trading Intelligence",
                         tag: "Top Tag for Trading Success",
                         image:
-                          "linear-gradient(135deg, #d97706 0%, #f59e0b 100%)",
+                          "linear-gradient(135deg, #ec4899 0%, #f472b6 100%)",
                         video: "/4.mp4",
                       },
                     ].map((card, idx) => (
@@ -2920,10 +2920,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         Analysis Hub.
                       </p>
                       <div className="flex items-center justify-center gap-2 flex-wrap pt-2">
-                        <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-400/10 px-3 py-1 rounded-full border border-emerald-400/20">
+                        <span className="text-[10px] text-pink-400 font-semibold bg-pink-400/10 px-3 py-1 rounded-full border border-pink-400/20">
                           Daily Trade Tracking
                         </span>
-                        <span className="text-[10px] text-blue-400 font-semibold bg-blue-400/10 px-3 py-1 rounded-full border border-blue-400/20">
+                        <span className="text-[10px] text-pink-400 font-semibold bg-pink-400/10 px-3 py-1 rounded-full border border-pink-400/20">
                           AI Performance Analysis
                         </span>
                       </div>
@@ -3032,7 +3032,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     >
                       <QrCode className="w-4 h-4" />
                     </button>
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-pink-600 to-rose-400 mx-auto flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                    <div className="w-16 h-16 rounded-full bg-pink-500 mx-auto flex items-center justify-center text-white text-2xl font-bold shadow-lg">
                       {form.watch("name")?.[0] || "P"}
                     </div>
                     <h3 className="text-xl font-bold text-white tracking-tight">
@@ -3070,7 +3070,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             className={clsx(
                               "p-2.5 rounded-lg transition-all",
                               hasLinkedin
-                                ? "bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300 shadow-[0_0_10px_rgba(59,130,246,0.2)]"
+                                ? "bg-pink-500/10 text-pink-400 hover:bg-pink-500/20 hover:text-pink-300 shadow-[0_0_10px_rgba(236,72,153,0.2)]"
                                 : "bg-white/5 text-white/20 cursor-not-allowed",
                             )}
                             title={
@@ -3144,7 +3144,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             className={clsx(
                               "p-2.5 rounded-lg transition-all",
                               hasWhatsapp
-                                ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+                                ? "bg-pink-500/10 text-pink-400 hover:bg-pink-500/20 hover:text-pink-300 shadow-[0_0_10px_rgba(236,72,153,0.2)]"
                                 : "bg-white/5 text-white/20 cursor-not-allowed",
                             )}
                             title={
@@ -3175,7 +3175,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             className={clsx(
                               "p-2.5 rounded-lg transition-all",
                               hasEmail
-                                ? "bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 hover:text-purple-300 shadow-[0_0_10px_rgba(168,85,247,0.2)]"
+                                ? "bg-pink-500/10 text-pink-400 hover:bg-pink-500/20 hover:text-pink-300 shadow-[0_0_10px_rgba(236,72,153,0.2)]"
                                 : "bg-white/5 text-white/20 cursor-not-allowed",
                             )}
                             title={hasEmail ? "Email" : "Email (Not Available)"}
@@ -3288,8 +3288,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                               : "text-white/40 hover:text-white/60",
                           )}
                         >
-                          <div className="w-3 h-3 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/40">
-                            <div className="w-1 h-1 rounded-full bg-blue-400 shadow-[0_0_4px_#60a5fa]" />
+                          <div className="w-3 h-3 rounded-full bg-pink-500/20 flex items-center justify-center border border-pink-500/40">
+                            <div className="w-1 h-1 rounded-full bg-pink-400 shadow-[0_0_4px_#f472b6]" />
                           </div>
                           Connect
                         </button>
@@ -3342,7 +3342,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                     className={clsx(
                                       "w-4 h-4 rounded-full border transition-all flex items-center justify-center",
                                       note.completed
-                                        ? "bg-purple-500 border-purple-500"
+                                        ? "bg-pink-500 border-pink-500"
                                         : "border-white/20 hover:border-white/40",
                                     )}
                                   >
@@ -3413,7 +3413,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                   className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all cursor-pointer group"
                                 >
                                   <div className="flex flex-col">
-                                    <span className="text-xs font-bold text-white group-hover:text-blue-400 transition-colors">
+                                    <span className="text-xs font-bold text-white group-hover:text-pink-400 transition-colors">
                                       {conn.name}
                                     </span>
                                     <span className="text-[8px] uppercase tracking-widest text-white/40">
@@ -3421,7 +3421,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-3">
-                                    <span className="text-[10px] font-bold text-blue-400/80 bg-blue-400/10 px-1.5 py-0.5 rounded border border-blue-400/20">
+                                    <span className="text-[10px] font-bold text-pink-400/80 bg-pink-400/10 px-1.5 py-0.5 rounded border border-pink-400/20">
                                       {getRemainingTime(conn.expiresAt)}
                                     </span>
                                     <ArrowRight className="w-3 h-3 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
@@ -3429,7 +3429,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                 </div>
                               ))}
                               {connections.length === 0 && (
-                                <div className="h-[100px] flex items-center justify-center border border-dashed border-white/10 rounded-2xl bg-gradient-to-tr from-blue-500/5 to-purple-500/5">
+                                <div className="h-[100px] flex items-center justify-center border border-dashed border-white/10 rounded-2xl bg-pink-500/5">
                                   <div className="text-center space-y-2">
                                     <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold">
                                       Exclusive Connect
@@ -3458,7 +3458,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     </label>
                     <input
                       {...form.register("name")}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500/50"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-pink-500/50"
                       placeholder="Your Name"
                     />
                   </div>
