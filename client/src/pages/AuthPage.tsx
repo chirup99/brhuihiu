@@ -2748,58 +2748,21 @@ export default function AuthPage({ slug }: { slug?: string }) {
           )}
         </AnimatePresence>
 
-        <AnimatePresence>
-          {(!isMobile || isScrolledToBottom) && (
-            <motion.div
-              ref={tradersRef}
-              initial={{ opacity: 0, scale: 0.5, x: -20 }}
-              animate={{ opacity: 1, scale: 1, x: 0 }}
-              exit={{ opacity: 0, scale: 0.5, x: -20 }}
-              transition={{ type: "spring", damping: 20, stiffness: 100 }}
-              className="fixed left-0 bottom-8 z-50"
-            >
-              <motion.button
-                onClick={() => {
-                  setIsTradersExpanded(!isTradersExpanded);
-                  setShowTradersModal(true);
-                }}
-                animate={{
-                  width: isTradersExpanded ? "auto" : "48px",
-                  height: isTradersExpanded ? "auto" : "48px",
-                  paddingLeft: "0px",
-                  paddingRight: isTradersExpanded ? "16px" : "0",
-                  paddingTop: isTradersExpanded ? "12px" : "0",
-                  paddingBottom: isTradersExpanded ? "12px" : "0",
-                }}
-                transition={{ type: "spring", damping: 20, stiffness: 100 }}
-                className="bg-slate-900/80 hover:bg-slate-800/80 border border-white/20 rounded-r-xl flex items-center justify-center shadow-lg transition-all py-2 group"
-              >
-                <motion.div
-                  animate={{
-                    opacity: isTradersExpanded ? 1 : 0,
-                    width: isTradersExpanded ? "auto" : 0,
-                  }}
-                  transition={{ type: "spring", damping: 20, stiffness: 100 }}
-                  className="overflow-hidden whitespace-nowrap"
-                >
-                  <div className="flex flex-col items-start">
-                    <span className="text-[10px] font-semibold text-white/60 uppercase tracking-wide">
-                      Connect with
-                    </span>
-                    <span className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">
-                      Traders
-                    </span>
-                  </div>
-                </motion.div>
-                <img
-                  src="/telangana-logo.png"
-                  alt="Telangana BRS"
-                  className="w-5 h-5 group-hover:scale-110 transition-transform object-contain"
-                />
-              </motion.button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div
+          ref={tradersRef}
+          className="fixed left-0 bottom-8 z-50"
+        >
+          <button
+            onClick={() => setShowTradersModal(true)}
+            className="w-12 h-12 bg-black/60 hover:bg-black/80 border border-white/15 rounded-r-xl flex items-center justify-center shadow-lg transition-all group"
+          >
+            <img
+              src="/brs-telangana.png"
+              alt="BRS Telangana"
+              className="w-8 h-8 object-contain group-hover:scale-110 transition-transform"
+            />
+          </button>
+        </div>
 
         {/* Traders Bottom Sheet Modal */}
         <AnimatePresence>
