@@ -3074,7 +3074,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       className="object-contain flex-shrink-0"
                       style={{ height: 30, width: 30 }}
                     />
-                    <CarImg small />
                     <div className="flex flex-col justify-center leading-none min-w-0 flex-1">
                       <span
                         key={msgIndex}
