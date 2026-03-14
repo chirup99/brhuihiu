@@ -3597,7 +3597,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           <option
                             key={r.value}
                             value={r.value}
-                            className="bg-[#1a1a1a]"
+                            
                           >
                             {r.label}
                           </option>
@@ -3615,7 +3615,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         {...form.register("industry")}
                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 appearance-none"
                       >
-                        <option value="" className="bg-[#1a1a1a]">
+                        <option value="" >
                           Select Industry
                         </option>
                         {[
@@ -3638,7 +3638,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           <option
                             key={industry}
                             value={industry}
-                            className="bg-[#1a1a1a]"
+                            
                           >
                             {industry}
                           </option>
