@@ -1990,7 +1990,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
       password: "",
       name: user?.name || "",
       role: user?.role || "founder",
-      bio: user?.bio || "Collaborate & Grow your Startup",
+      bio: user?.bio || "Meet People & Build Real Connections",
       instagram: user?.instagram || "",
       linkedin: user?.linkedin || "",
       whatsapp: user?.whatsapp || "",
@@ -2983,30 +2983,30 @@ export default function AuthPage({ slug }: { slug?: string }) {
             PERSONA
           </h1>
           <p className="text-[10px] tracking-[0.3em] text-white/50 font-medium mb-6 flex items-center justify-center gap-2">
-            CONNECT . COLLABORATE . EXPOSE{" "}
+            MEET . VIBE . CONNECT{" "}
             <InfinityIcon
-              className="w-3.5 h-3.5 text-purple-500/50"
+              className="w-3.5 h-3.5 text-pink-500/60"
               strokeWidth={2.5}
             />
           </p>
           <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
-            Networking & Exposure
+            People Party
           </h2>
           <p className="text-white/70 text-base mb-6 max-w-sm mx-auto">
-            Persona: Your Digital Identity & Collaboration Hub.
+            Persona: Where People Meet, Vibe & Understand Each Other.
           </p>
 
           <div className="flex items-center justify-center gap-6 mb-4">
             <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
-              <span className="text-[11px] font-medium text-emerald-500/90 uppercase tracking-wider">
-                Smart Networking
+              <div className="w-1.5 h-1.5 rounded-full bg-pink-500 shadow-[0_0_8px_#ec4899]" />
+              <span className="text-[11px] font-medium text-pink-400/90 uppercase tracking-wider">
+                Real Connections
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
-              <span className="text-[11px] font-medium text-emerald-500/90 uppercase tracking-wider">
-                Startup Exposure
+              <div className="w-1.5 h-1.5 rounded-full bg-pink-500 shadow-[0_0_8px_#ec4899]" />
+              <span className="text-[11px] font-medium text-pink-400/90 uppercase tracking-wider">
+                People First
               </span>
             </div>
           </div>
@@ -3068,7 +3068,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     >
                       <QrCode className="w-4 h-4" />
                     </button>
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-purple-600 to-blue-400 mx-auto flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-pink-600 to-rose-400 mx-auto flex items-center justify-center text-white text-2xl font-bold shadow-lg">
                       {form.watch("name")?.[0] || "P"}
                     </div>
                     <h3 className="text-xl font-bold text-white tracking-tight">

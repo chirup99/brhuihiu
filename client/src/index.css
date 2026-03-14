@@ -8,35 +8,35 @@
   --font-sans: 'Manrope', sans-serif;
   --font-display: 'Syne', sans-serif;
 
-  /* Strict Dark Theme Base */
-  --background: 0 0% 2%;
+  /* Pink Theme Base */
+  --background: 330 30% 6%;
   --foreground: 0 0% 98%;
   
-  --card: 0 0% 4%;
+  --card: 330 25% 9%;
   --card-foreground: 0 0% 98%;
-  --card-border: 0 0% 12%;
+  --card-border: 330 20% 18%;
   
-  --popover: 0 0% 4%;
+  --popover: 330 25% 9%;
   --popover-foreground: 0 0% 98%;
   
-  --primary: 268 83% 56%; /* Vibrant Purple */
+  --primary: 330 85% 65%; /* Vibrant Pink */
   --primary-foreground: 0 0% 100%;
   
-  --secondary: 0 0% 9%;
+  --secondary: 330 20% 13%;
   --secondary-foreground: 0 0% 98%;
   
-  --muted: 0 0% 9%;
-  --muted-foreground: 0 0% 60%;
+  --muted: 330 20% 13%;
+  --muted-foreground: 330 10% 60%;
   
-  --accent: 142 71% 45%; /* Neon Green */
+  --accent: 330 85% 65%; /* Pink */
   --accent-foreground: 0 0% 98%;
   
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 0 0% 12%;
-  --input: 0 0% 12%;
-  --ring: 268 83% 56%;
+  --border: 330 20% 18%;
+  --input: 330 20% 18%;
+  --ring: 330 85% 65%;
 
   --radius: 0.75rem;
 }
@@ -62,9 +62,11 @@
 
 /* Custom background mesh/glow for depth */
 .bg-mesh {
+  background-color: #1a0510;
   background-image: 
-    radial-gradient(circle at 50% 0%, rgba(147, 51, 234, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(34, 197, 94, 0.05) 0%, transparent 40%);
+    radial-gradient(circle at 50% 0%, rgba(236, 72, 153, 0.18) 0%, transparent 55%),
+    radial-gradient(circle at 80% 80%, rgba(244, 114, 182, 0.1) 0%, transparent 45%),
+    radial-gradient(circle at 20% 60%, rgba(217, 70, 139, 0.08) 0%, transparent 40%);
   background-size: 100% 100%;
   background-attachment: fixed;
 }
