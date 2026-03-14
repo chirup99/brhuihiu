@@ -104,7 +104,7 @@ const CARD_TYPES = [
 ];
 
 const VOICE_DEMO_CARDS = [
-  JSON.stringify({ type: "post", title: "Your Voice", content: "Speak up for your community, because your voice matters and deserves to be heard." }),
+  JSON.stringify({ type: "post", title: "Your Voice", content: "Speak up for your community. Your voice matters. Rise and be heard." }),
   JSON.stringify({ type: "reel", title: "Share Your Reel", url: "" }),
   JSON.stringify({ type: "image", title: "Your Image", imageUrl: "" }),
 ];
@@ -2991,7 +2991,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     {[
                       {
                         title: "Your Voice",
-                        content: "Speak up for your community, because your voice matters and deserves to be heard.",
+                        content: "Speak up for your community. Your voice matters. Rise and be heard.",
                         icon: Mic,
                         color: "from-[#1a0510] to-[#2d0a1e]",
                       },
