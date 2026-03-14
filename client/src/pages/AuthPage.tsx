@@ -3942,7 +3942,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         className={clsx(
                           "w-full rounded-lg py-3 font-semibold text-sm flex items-center justify-center gap-2 group no-underline transition-all",
                           hasWebsite
-                            ? "bg-primary text-white hover:opacity-90 shadow-lg cursor-pointer"
+                            ? "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 shadow-sm cursor-pointer"
                             : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200",
                         )}
                       >
