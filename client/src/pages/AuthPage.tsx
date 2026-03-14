@@ -219,32 +219,136 @@ const ROLES = ROLE_GROUPS.flatMap((g) => g.items);
 
 const CONSTITUENCIES = [
   {
-    region: "Hyderabad District",
-    items: ["Malakpet","Karwan","Goshamahal","Charminar","Chandrayangutta","Yakutpura","Bahadurpura","Nampally","Khairatabad","Jubilee Hills","Sanathnagar","Musheerabad","Amberpet","Secunderabad","Secunderabad Cantonment"],
+    region: "Adilabad",
+    items: ["Adilabad", "Boath"],
   },
   {
-    region: "Rangareddy District",
-    items: ["Maheshwaram","Rajendranagar","Serilingampally","Ibrahimpatnam","Chevella","Parigi","Tandur"],
+    region: "Kumuram Bheem Asifabad",
+    items: ["Sirpur", "Asifabad"],
   },
   {
-    region: "Medchal–Malkajgiri District",
-    items: ["Quthbullapur","Kukatpally","Uppal","Malkajgiri","Medchal"],
+    region: "Mancherial",
+    items: ["Chennur", "Bellampalli", "Mancherial"],
   },
   {
-    region: "Karimnagar Region",
-    items: ["Karimnagar","Huzurabad","Manakondur","Choppadandi","Husnabad"],
+    region: "Nirmal",
+    items: ["Khanapur", "Nirmal", "Mudhole"],
   },
   {
-    region: "Warangal Region",
-    items: ["Warangal West","Warangal East","Palakurthi","Narsampet","Parakal"],
+    region: "Nizamabad",
+    items: ["Bodhan", "Nizamabad Urban", "Nizamabad Rural", "Balkonda", "Armur"],
   },
   {
-    region: "Nizamabad Region",
-    items: ["Nizamabad Urban","Nizamabad Rural","Balkonda","Bodhan","Armoor"],
+    region: "Kamareddy",
+    items: ["Jukkal", "Banswada", "Yellareddy", "Kamareddy"],
   },
   {
-    region: "Nalgonda Region",
-    items: ["Nalgonda","Miryalaguda","Suryapet","Devarakonda","Nagarjuna Sagar"],
+    region: "Jagtial",
+    items: ["Koratla", "Jagtial", "Dharmapuri"],
+  },
+  {
+    region: "Peddapalli",
+    items: ["Ramagundam", "Manthani", "Peddapalle"],
+  },
+  {
+    region: "Karimnagar",
+    items: ["Karimnagar", "Choppadandi", "Manakondur", "Huzurabad"],
+  },
+  {
+    region: "Rajanna Sircilla",
+    items: ["Vemulawada", "Sircilla"],
+  },
+  {
+    region: "Siddipet",
+    items: ["Siddipet", "Husnabad", "Dubbak", "Gajwel"],
+  },
+  {
+    region: "Medak",
+    items: ["Medak", "Narsapur"],
+  },
+  {
+    region: "Sangareddy",
+    items: ["Narayankhed", "Andole", "Zahirabad", "Sangareddy", "Patancheru"],
+  },
+  {
+    region: "Medchal–Malkajgiri",
+    items: ["Medchal", "Malkajgiri", "Quthbullapur", "Kukatpally", "Uppal"],
+  },
+  {
+    region: "Rangareddy",
+    items: ["Ibrahimpatnam", "Lal Bahadur Nagar", "Maheshwaram", "Rajendranagar", "Serilingampally", "Chevella"],
+  },
+  {
+    region: "Vikarabad",
+    items: ["Pargi", "Vikarabad", "Tandur", "Kodangal"],
+  },
+  {
+    region: "Hyderabad",
+    items: ["Musheerabad", "Malakpet", "Amberpet", "Khairatabad", "Jubilee Hills", "Sanath Nagar", "Nampally", "Karwan", "Goshamahal", "Charminar", "Chandrayangutta", "Yakutpura", "Bahadurpura"],
+  },
+  {
+    region: "Secunderabad",
+    items: ["Secunderabad", "Secunderabad Cantt"],
+  },
+  {
+    region: "Mahabubnagar",
+    items: ["Mahabubnagar", "Jadcherla", "Devarkadra"],
+  },
+  {
+    region: "Narayanpet",
+    items: ["Narayanpet", "Makthal"],
+  },
+  {
+    region: "Wanaparthy",
+    items: ["Wanaparthy"],
+  },
+  {
+    region: "Jogulamba Gadwal",
+    items: ["Gadwal", "Alampur"],
+  },
+  {
+    region: "Nagarkurnool",
+    items: ["Nagarkurnool", "Achampet", "Kalwakurthy", "Kollapur"],
+  },
+  {
+    region: "Nalgonda",
+    items: ["Nalgonda", "Munugode", "Nagarjuna Sagar"],
+  },
+  {
+    region: "Suryapet",
+    items: ["Suryapet", "Kodad", "Huzurnagar", "Thungathurthy"],
+  },
+  {
+    region: "Yadadri Bhuvanagiri",
+    items: ["Bhongir", "Nakrekal", "Alair"],
+  },
+  {
+    region: "Warangal / Hanumakonda",
+    items: ["Warangal West", "Warangal East", "Parkal", "Wardhannapet"],
+  },
+  {
+    region: "Jangaon",
+    items: ["Jangaon", "Ghanpur Station", "Palakurthi"],
+  },
+  {
+    region: "Mahabubabad",
+    items: ["Mahabubabad", "Dornakal"],
+  },
+  {
+    region: "Mulugu",
+    items: ["Mulug"],
+  },
+  {
+    region: "Jayashankar Bhupalpally",
+    items: ["Bhupalpalle"],
+  },
+  {
+    region: "Khammam",
+    items: ["Khammam", "Palair", "Madhira", "Wyra"],
+  },
+  {
+    region: "Bhadradri Kothagudem",
+    items: ["Kothagudem", "Yellandu", "Pinapaka", "Aswaraopeta", "Bhadrachalam"],
   },
 ];
 
