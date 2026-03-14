@@ -3224,7 +3224,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       {form.watch("industry") || ""}
                     </p>
                     <p className="text-gray-400 text-[10px] italic">
-                      {form.watch("bio") || ""}
+                      {form.watch("bio") || "Voice of the People. Strength of the Nation."}
                     </p>
                     <div className="flex items-center justify-center gap-3 w-full pt-1">
                       {(() => {
