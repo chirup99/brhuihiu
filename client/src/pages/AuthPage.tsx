@@ -2947,10 +2947,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 <div className="flex items-center justify-between p-6 pb-4">
                   <div className="flex flex-col gap-1">
                     <h3 className="text-lg font-bold text-white">
-                      Exclusive Traders Circle
+                      BRS Voice Cards
                     </h3>
                     <p className="text-[10px] text-white/40 uppercase tracking-wider">
-                      Advanced Trading Analytics
+                      Rise Your Voice · Share Your Story
                     </p>
                   </div>
                   <button
@@ -2965,132 +2965,56 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   <div className="flex gap-4">
                     {[
                       {
-                        title: "Visual Trade Tracking",
-                        subtitle: "Track FOMO Mistakes on Calendar",
-                        tag: "Advanced Line Point Tracking",
-                        image:
-                          "linear-gradient(135deg, #ec4899 0%, #f472b6 100%)",
-                        video: "/1.mp4",
+                        title: "Your Voice",
+                        content: "Speak up for your community. Your voice matters. Rise and be heard.",
+                        icon: Mic,
+                        color: "from-[#1a0510] to-[#2d0a1e]",
                       },
                       {
-                        title: "Your Advanced Trading Journal",
-                        subtitle: "Daily Trade Tracking",
-                        tag: "Performance Analysis",
-                        image:
-                          "linear-gradient(135deg, #ec4899 0%, #f472b6 100%)",
-                        video: "/2.mp4",
+                        title: "Share Your Reel",
+                        content: "Upload your video reel and reach thousands across Telangana.",
+                        icon: Video,
+                        color: "from-zinc-950 to-black",
                       },
                       {
-                        title: "Multi-Broker Integration",
-                        subtitle: "Connect with 7+ brokers",
-                        tag: "Avoid Mistakes",
-                        image:
-                          "linear-gradient(135deg, #ec4899 0%, #f472b6 100%)",
-                        video: "/3.mp4",
+                        title: "Post Your Story",
+                        content: "Share your story and connect with BRS leaders and members.",
+                        icon: PenLine,
+                        color: "from-[#0f0520] to-[#1a0a30]",
                       },
                       {
-                        title: "AI Performance Trend",
-                        subtitle: "Smart Trading Intelligence",
-                        tag: "Top Tag for Trading Success",
-                        image:
-                          "linear-gradient(135deg, #ec4899 0%, #f472b6 100%)",
-                        video: "/4.mp4",
+                        title: "Your Image",
+                        content: "Upload a photo that represents your identity and mission.",
+                        icon: ImageIcon,
+                        color: "from-zinc-900 to-black",
                       },
                     ].map((card, idx) => (
                       <motion.div
                         key={idx}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="flex-shrink-0 w-48 h-56 rounded-2xl overflow-hidden cursor-pointer group relative"
-                      >
-                        {card.video ? (
-                          <video
-                            className="absolute inset-0 w-full h-full object-cover"
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            preload="auto"
-                            poster={card.image}
-                            style={{ background: card.image }}
-                          >
-                            <source src={card.video} type="video/mp4" />
-                          </video>
-                        ) : (
-                          <div
-                            className="absolute inset-0"
-                            style={{ background: card.image }}
-                          />
+                        transition={{ duration: 0.3, delay: idx * 0.06 }}
+                        className={clsx(
+                          "flex-shrink-0 w-48 h-56 rounded-2xl overflow-hidden relative flex flex-col justify-between p-4 bg-gradient-to-b shadow-xl border border-white/5",
+                          card.color,
                         )}
-                        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors" />
-                        <div className="absolute inset-0 flex flex-col justify-end p-4 text-white">
-                          <h4 className="font-bold text-sm leading-tight">
-                            {card.title}
-                          </h4>
-                          <p className="text-[10px] text-white/70">
-                            {card.subtitle}
-                          </p>
-                          <span className="inline-block bg-white/20 text-white/80 text-[9px] font-semibold px-2 py-1 rounded mt-2 w-fit border border-white/30">
-                            {card.tag}
-                          </span>
+                      >
+                        <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-white/80 text-[9px] font-bold tracking-[0.2em] uppercase">{card.title}</span>
+                          <card.icon className="w-3 h-3 text-white/70" />
+                        </div>
+                        <div className="flex-1 flex items-center justify-center py-3">
+                          <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
+                            <card.icon className="w-6 h-6 text-white/60" />
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-white/70 text-[10px] leading-relaxed line-clamp-3">{card.content}</p>
                         </div>
                       </motion.div>
                     ))}
                   </div>
-                </div>
-
-                {/* Preload container for videos - hidden from view */}
-                <div className="fixed opacity-0 pointer-events-none -z-50 overflow-hidden w-0 h-0">
-                  {[
-                    "/1.mp4",
-                    "/2.mp4",
-                    "/3.mp4",
-                    "/4.mp4"
-                  ].map((video) => (
-                    <video key={video} preload="auto" muted>
-                      <source src={video} type="video/mp4" />
-                    </video>
-                  ))}
-                </div>
-
-                <div className="px-6 pb-8 border-t border-white/10">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="flex flex-col items-center gap-4 pt-6"
-                  >
-                    <a
-                      href="https://perala.in"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="group cursor-pointer hover:bg-[#adb5bd] border border-white/5 rounded-2xl p-4 flex items-center justify-center transition-all duration-300 shadow-xl w-32 h-15 pt-[10px] pb-[10px] pl-[10px] pr-[10px] text-[#000000] bg-[#000000]"
-                    >
-                      <img
-                        src="/telangana-logo.png"
-                        alt="BRS Telangana"
-                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                      />
-                    </a>
-                    <div className="text-center space-y-3">
-                      <h3 className="text-xl font-bold text-white tracking-tight">
-                        Get Early Access
-                      </h3>
-                      <p className="text-[12px] text-white/70 max-w-xs">
-                        Perala: Your Advanced Trading Journal & Performance
-                        Analysis Hub.
-                      </p>
-                      <div className="flex items-center justify-center gap-2 flex-wrap pt-2">
-                        <span className="text-[10px] text-pink-400 font-semibold bg-pink-400/10 px-3 py-1 rounded-full border border-pink-400/20">
-                          Daily Trade Tracking
-                        </span>
-                        <span className="text-[10px] text-pink-400 font-semibold bg-pink-400/10 px-3 py-1 rounded-full border border-pink-400/20">
-                          AI Performance Analysis
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
                 </div>
               </motion.div>
             </>
