@@ -1595,7 +1595,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
   const onSubmit = async (values: InsertUser) => {
     try {
-      console.log("Submitting values:", values, "Mode:", mode);
       let result;
       const isRegistering = mode === "register" && !loggedInUser;
       const isCustomizing = mode === "customize";
@@ -1623,7 +1622,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
               typeof c === "string" && c !== "null" && c !== "",
           ),
         };
-        console.log("Registration payload:", payload);
         result = await registerMutation.mutateAsync(payload);
       }
 
@@ -1951,10 +1949,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
   // Sync displaySlug with user whenever user changes
   useEffect(() => {
-    if (user?.uniqueSlug && !displaySlug) {
+    if (user?.uniqueSlug) {
       setDisplaySlug(user.uniqueSlug);
     }
-  }, [user?.uniqueSlug, displaySlug]);
+  }, [user?.uniqueSlug]);
 
   // Sync notes from user object
   useEffect(() => {
@@ -2398,14 +2396,14 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
   if (isAuthLoading && localStorage.getItem("persona_user_id")) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+      <div className="min-h-[100dvh] bg-[#050505] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-pink-500 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-mesh overflow-hidden relative">
+    <div className="min-h-[100dvh] bg-mesh overflow-hidden relative">
       <div className="hidden">
         {professionalAvatars.map((src, i) => (
           <img key={i} src={src} alt="" aria-hidden="true" />
@@ -2423,8 +2421,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 onClick={logout}
                 className="flex items-center gap-3 p-1 pr-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-white transition-all group ml-auto backdrop-blur-md shrink-0"
               >
-                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/10 group-hover:border-purple-500/30 transition-colors">
-                  <User className="w-4 h-4 text-purple-400/80 group-hover:text-purple-400 transition-colors" />
+                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/10 group-hover:border-pink-500/30 transition-colors">
+                  <User className="w-4 h-4 text-pink-400/80 group-hover:text-pink-400 transition-colors" />
                 </div>
                 <div className="flex flex-col items-start">
                   <div className="flex items-center gap-1">
@@ -2470,7 +2468,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       <div className="mt-1 p-4 bg-white/5 border border-white/10 rounded-xl space-y-4">
                         <div className="space-y-1.5">
                           <label className="text-[8px] text-white/40 uppercase tracking-widest font-bold">
-                            Persona Code
+                            Voice Code
                           </label>
                           <div className="flex items-center justify-between group/item gap-2">
                             {isEditingSlug ? (
@@ -2556,13 +2554,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                     )
                                   }
                                   placeholder="New PIN"
-                                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:border-purple-500/50"
+                                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:border-pink-500/50"
                                   autoFocus
                                 />
                                 <button
                                   onClick={handlePinUpdate}
                                   disabled={updatePinMutation.isPending}
-                                  className="p-1 bg-purple-500/20 rounded-lg text-purple-400 hover:bg-purple-500/30 transition-colors disabled:opacity-50"
+                                  className="p-1 bg-pink-500/20 rounded-lg text-pink-400 hover:bg-pink-500/30 transition-colors disabled:opacity-50"
                                 >
                                   {updatePinMutation.isPending ? (
                                     <Loader2 className="w-3 h-3 animate-spin" />
@@ -2640,12 +2638,12 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                     >
                                       <stop
                                         offset="0%"
-                                        stopColor="rgb(168, 85, 247)"
+                                        stopColor="rgb(236, 72, 153)"
                                         stopOpacity="0.8"
                                       />
                                       <stop
                                         offset="100%"
-                                        stopColor="rgb(168, 85, 247)"
+                                        stopColor="rgb(190, 24, 93)"
                                         stopOpacity="0.1"
                                       />
                                     </linearGradient>
@@ -2695,7 +2693,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                           }}
                                           d={pathData}
                                           fill="none"
-                                          stroke="rgb(168, 85, 247)"
+                                          stroke="rgb(236, 72, 153)"
                                           strokeWidth="2"
                                           strokeLinecap="round"
                                         />
@@ -2885,7 +2883,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
         transition={{ type: "spring", damping: 20, stiffness: 100 }}
         onClick={() => isMenuOpen && setIsMenuOpen(false)}
         className={clsx(
-          "min-h-screen bg-mesh flex flex-col items-center justify-center p-4 pt-16 pb-24 relative z-20",
+          "min-h-[100dvh] bg-mesh flex flex-col items-center justify-center p-4 pt-16 pb-24-safe relative z-20",
           isMenuOpen ? "cursor-pointer select-none" : "",
         )}
       >
@@ -2930,7 +2928,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
               whileTap={{ scale: 0.9 }}
               exit={{ opacity: 0, scale: 0.5 }}
               onClick={() => setShowScannerDialog(true)}
-              className="fixed bottom-8 right-8 z-50 w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg border border-white/20"
+              className="fixed bottom-8-safe right-8 z-50 w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg border border-white/20"
             >
               <QrCode className="w-6 h-6 text-black" strokeWidth={2.5} />
             </motion.button>
@@ -2939,7 +2937,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
         <div
           ref={tradersRef}
-          className="fixed left-0 bottom-8 z-50"
+          className="fixed left-0 bottom-8-safe z-50"
         >
           <button
             onClick={() => setShowTradersModal(true)}
@@ -3427,7 +3425,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       }}
                       className="w-full bg-pink-500 text-white hover:bg-pink-600 rounded-lg py-3 font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg mb-4"
                     >
-                      <Pencil className="w-4 h-4" /> Edit Persona
+                      <Pencil className="w-4 h-4" /> Edit Profile
                     </button>
                   )}
                   {loggedInUser && user && loggedInUser.id === user.id && (
@@ -4291,51 +4289,51 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
                 <div className="text-center space-y-2 mb-8">
                   <h3 className="text-2xl font-bold text-white uppercase tracking-widest">
-                    Access Persona
+                    Welcome Back
                   </h3>
                   <p className="text-white/40 text-xs uppercase tracking-wider">
-                    Enter your unique credentials
+                    Enter your voice code and PIN
                   </p>
                 </div>
 
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold ml-1">
-                      Persona Code
+                      Voice Code
                     </label>
                     <input
                       type="text"
                       value={personaSlug}
                       onChange={(e) => setPersonaSlug(e.target.value)}
                       placeholder="e.g. x8y2z"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 transition-colors"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500/50 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold ml-1">
-                      PIN
+                      5-Digit PIN
                     </label>
                     <input
                       type="password"
                       maxLength={5}
                       value={personaPin}
-                      onChange={(e) => setPersonaPin(e.target.value)}
+                      onChange={(e) => setPersonaPin(e.target.value.replace(/\D/g, ""))}
                       placeholder="•••••"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 transition-colors tracking-[0.5em]"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500/50 transition-colors tracking-[0.5em]"
                     />
                   </div>
 
                   <button
                     onClick={handleVerifyPersona}
                     disabled={isVerifying}
-                    className="w-full bg-white text-black rounded-xl py-4 font-bold text-sm flex items-center justify-center gap-2 hover:bg-white/90 transition-all shadow-lg group"
+                    className="w-full bg-white text-pink-600 rounded-xl py-4 font-bold text-sm flex items-center justify-center gap-2 hover:bg-pink-50 transition-all shadow-lg group"
                   >
                     {isVerifying ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin text-pink-500" />
                     ) : (
                       <>
-                        Connect Persona
+                        Sign In
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </>
                     )}
@@ -4361,7 +4359,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
               <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-20 blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, #fce7f3, transparent)" }} />
 
               {/* Top bar — fixed height, never shrinks */}
-              <div className="flex-shrink-0 flex items-center justify-between px-5 pt-10 pb-3 relative z-10">
+              <div className="flex-shrink-0 flex items-center justify-between px-5 pt-10-safe pb-3 relative z-10">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full bg-white overflow-hidden shadow-md">
                     <img src="/brs-logo.png" alt="BRS" className="w-full h-full object-cover" />
@@ -4468,7 +4466,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
               {/* Download + Share button — hidden during image capture */}
               {!isCapturing && (
-                <div className="flex-shrink-0 px-6 pb-8 pt-3 relative z-10 space-y-2">
+                <div className="flex-shrink-0 px-6 pb-8-safe pt-3 relative z-10 space-y-2">
                   <p className="text-center text-white/70 text-xs leading-relaxed">
                     Download as wallpaper — set it on your phone so anyone can scan to connect instantly.
                   </p>
