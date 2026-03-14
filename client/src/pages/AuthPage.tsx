@@ -109,8 +109,8 @@ const CARD_TYPES = [
 ];
 
 const ROLES = [
-  { value: "working-president", label: "Working President" },
   { value: "people", label: "People" },
+  { value: "working-president", label: "Working President" },
   { value: "cm", label: "Chief Minister (CM)" },
   { value: "ward-member", label: "Ward Member" },
   { value: "panchayat-member", label: "Panchayat Member" },
