@@ -110,6 +110,7 @@ const CARD_TYPES = [
 
 const ROLES = [
   { value: "working-president", label: "Working President" },
+  { value: "people", label: "People" },
   { value: "cm", label: "Chief Minister (CM)" },
   { value: "ward-member", label: "Ward Member" },
   { value: "panchayat-member", label: "Panchayat Member" },
@@ -158,7 +159,6 @@ const ROLES = [
   { value: "youth-wing-president", label: "Youth Wing President" },
   { value: "women-wing-president", label: "Women Wing President" },
   { value: "party-member", label: "Party Member" },
-  { value: "people", label: "People" },
 ];
 
 const CARDS = [
