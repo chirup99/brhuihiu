@@ -649,7 +649,9 @@ const SwipeCardContent = forwardRef(
             )}
 
             <div className="flex-1 flex flex-col items-center justify-center w-full space-y-3">
-              {(card as any).empty ? null : card.type === "reel" ? (
+              {(card as any).empty ? (
+                <p className="text-white/50 text-[10px] uppercase tracking-[0.2em] font-bold text-center">No cards yet</p>
+              ) : card.type === "reel" ? (
                 thumbnailUrl ? (
                   <div
                     className="w-full aspect-video rounded-xl overflow-hidden shadow-lg border border-white/10 cursor-pointer group/thumb relative"
