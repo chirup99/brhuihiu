@@ -715,37 +715,73 @@ const XVideoCard = ({ tweetId, xUrl, onEditClick }: { tweetId: string; xUrl: str
     staleTime: 1000 * 60 * 30,
   });
 
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handlePlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const v = videoRef.current;
+    if (!v) return;
+    if (isPlaying) {
+      v.pause();
+      setIsPlaying(false);
+    } else {
+      v.play().catch(() => {});
+      setIsPlaying(true);
+    }
+  };
+
+  const handleMetadata = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    setIsLandscape(v.videoWidth > v.videoHeight);
+  };
+
   return (
     <div className="w-full h-full relative overflow-hidden rounded-[20px] bg-black flex items-center justify-center">
       {isLoading ? (
         <div className="flex flex-col items-center gap-2">
           <div className="w-8 h-8 rounded-full border-2 border-white/20 border-t-white animate-spin" />
-          <span className="text-white/40 text-[9px] uppercase tracking-widest font-bold">Loading video…</span>
+          <span className="text-white/40 text-[9px] uppercase tracking-widest font-bold">Loading…</span>
         </div>
       ) : isError || !data?.videoUrl ? (
         <div className="flex flex-col items-center gap-3">
           <Play className="w-10 h-10 text-white/30 fill-current" />
-          <p className="text-white/40 text-[9px] uppercase tracking-widest font-bold text-center px-4">
-            Tap X to view video
-          </p>
+          <p className="text-white/40 text-[9px] uppercase tracking-widest font-bold text-center px-4">Tap X to view video</p>
         </div>
       ) : (
-        <video
-          src={data.videoUrl}
-          poster={data.thumbnailUrl || undefined}
-          className="w-full h-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-          controls={false}
-        />
+        <>
+          <video
+            ref={videoRef}
+            src={data.videoUrl}
+            poster={data.thumbnailUrl || undefined}
+            className={isLandscape ? "w-full h-auto" : "w-full h-full object-cover"}
+            loop
+            playsInline
+            onLoadedMetadata={handleMetadata}
+            onEnded={() => setIsPlaying(false)}
+          />
+          <button
+            type="button"
+            onClick={handlePlay}
+            className={`absolute inset-0 flex items-center justify-center z-10 transition-opacity ${isPlaying ? "opacity-0 hover:opacity-100" : "opacity-100"}`}
+            style={{ background: isPlaying ? "transparent" : "rgba(0,0,0,0.3)" }}
+          >
+            <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-xl">
+              {isPlaying
+                ? <div className="flex gap-1"><div className="w-1 h-5 bg-white rounded-full" /><div className="w-1 h-5 bg-white rounded-full" /></div>
+                : <Play className="w-6 h-6 text-white fill-current ml-1" />
+              }
+            </div>
+          </button>
+        </>
       )}
       {onEditClick && (
         <button
           type="button"
           onClick={onEditClick}
-          className="absolute top-3 right-3 p-1.5 bg-black/60 backdrop-blur-sm rounded-full border border-white/10 text-white/70 hover:text-white transition-colors z-10"
+          className="absolute top-3 left-3 p-1.5 bg-black/60 backdrop-blur-sm rounded-full border border-white/10 text-white/70 hover:text-white transition-colors z-20"
         >
           <Pencil className="w-3 h-3" />
         </button>
@@ -755,7 +791,7 @@ const XVideoCard = ({ tweetId, xUrl, onEditClick }: { tweetId: string; xUrl: str
         target="_blank"
         rel="noopener noreferrer"
         onClick={(e) => e.stopPropagation()}
-        className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-black flex items-center justify-center shadow-lg border border-white/10 z-10 active:scale-90 transition-transform"
+        className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-black flex items-center justify-center shadow-lg border border-white/10 z-20 active:scale-90 transition-transform"
       >
         <SiX className="w-3.5 h-3.5 text-white" />
       </a>
