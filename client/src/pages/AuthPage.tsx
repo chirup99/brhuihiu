@@ -3671,12 +3671,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           className="w-full h-full rounded-2xl overflow-hidden relative flex flex-col justify-between p-4 bg-gradient-to-b from-[#1a0510] to-[#2d0a1e] shadow-xl border border-white/5 cursor-pointer"
                         >
                           <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none" />
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-white/80 text-[9px] font-bold tracking-[0.2em] uppercase truncate max-w-[120px]">
-                              {profile.uniqueSlug}
-                            </span>
-                            <Mic className="w-3 h-3 text-white/70 flex-shrink-0" />
-                          </div>
                           <div className="flex-1 flex flex-col items-center justify-center py-2 gap-2">
                             <div className="w-12 h-12 rounded-full bg-pink-500 flex items-center justify-center text-white text-lg font-bold shadow-lg border-2 border-white/20">
                               {profile.name?.[0]?.toUpperCase() || "?"}
