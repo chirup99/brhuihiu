@@ -4406,6 +4406,30 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
                 {/* Action Buttons Below iPhone - Compact */}
                 <div className="mt-5 space-y-2 px-1">
+                  {/* QR Theme Color Swatches */}
+                  <div className="flex items-center justify-center gap-2 pb-1">
+                    {[
+                      { color: "#000000", label: "Black" },
+                      { color: "#be185d", label: "Pink" },
+                      { color: "#7c3aed", label: "Purple" },
+                      { color: "#1d4ed8", label: "Blue" },
+                      { color: "#059669", label: "Green" },
+                      { color: "#d97706", label: "Amber" },
+                      { color: "#dc2626", label: "Red" },
+                    ].map(({ color, label }) => (
+                      <button
+                        key={color}
+                        onClick={() => setQrColor(color)}
+                        title={label}
+                        className="w-6 h-6 rounded-full border-2 transition-all active:scale-90 hover:scale-110"
+                        style={{
+                          backgroundColor: color,
+                          borderColor: qrColor === color ? "white" : "transparent",
+                          boxShadow: qrColor === color ? `0 0 0 1px ${color}` : "none",
+                        }}
+                      />
+                    ))}
+                  </div>
                   <button
                     onClick={downloadQR}
                     className="w-full bg-white text-black rounded-xl py-3 font-bold text-[11px] flex items-center justify-center gap-2 hover:bg-white/90 transition-all shadow-lg active:scale-95"
