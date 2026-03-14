@@ -3857,7 +3857,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
         </AnimatePresence>
 
         <AnimatePresence>
-          {showEventDialog && (
+          {false && (
             <>
               <motion.div
                 initial={{ opacity: 0 }}
@@ -4382,18 +4382,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         </button>
                         <button
                           type="button"
-                          onClick={() => setActiveTab("events")}
-                          className={clsx(
-                            "flex-1 py-2 text-[10px] font-bold rounded-lg transition-all uppercase tracking-wider",
-                            activeTab === "events"
-                              ? "bg-white text-pink-700 shadow-sm"
-                              : "text-pink-400 hover:text-pink-600",
-                          )}
-                        >
-                          Events
-                        </button>
-                        <button
-                          type="button"
                           onClick={() => setActiveTab("connect")}
                           className={clsx(
                             "flex-1 py-2 text-[10px] font-bold rounded-lg transition-all uppercase tracking-wider flex items-center justify-center gap-1.5",
@@ -4493,90 +4481,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                 </p>
                               )}
                             </div>
-                          </motion.div>
-                        ) : activeTab === "events" ? (
-                          <motion.div
-                            key="events"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="space-y-3"
-                          >
-                            <div className="flex items-center justify-between">
-                              <p className="text-[10px] text-pink-500 uppercase tracking-[0.2em] font-bold">Upcoming Events</p>
-                              {loggedInUser?.uniqueSlug === ADMIN_SLUG && (
-                                <button
-                                  type="button"
-                                  onClick={openCreateEvent}
-                                  className="w-6 h-6 bg-pink-500 hover:bg-pink-600 rounded-full flex items-center justify-center transition-colors shadow-sm"
-                                >
-                                  <Plus className="w-3.5 h-3.5 text-white" />
-                                </button>
-                              )}
-                            </div>
-                            {eventsLoading ? (
-                              <div className="h-[80px] flex items-center justify-center">
-                                <Loader2 className="w-5 h-5 animate-spin text-pink-300" />
-                              </div>
-                            ) : activeEvents.length === 0 ? (
-                              <div className="h-[80px] flex items-center justify-center border border-dashed border-pink-200 rounded-2xl bg-pink-50">
-                                <p className="text-xs text-gray-400 font-medium">No upcoming events</p>
-                              </div>
-                            ) : (
-                              <div className="space-y-2">
-                                {activeEvents.map((ev) => (
-                                  <div
-                                    key={ev.id}
-                                    className="bg-pink-50 border border-pink-100 rounded-xl p-3 relative"
-                                  >
-                                    <div className="flex items-start justify-between gap-2">
-                                      <div className="flex gap-3 min-w-0">
-                                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-pink-500 flex flex-col items-center justify-center text-white shadow-sm">
-                                          <span className="text-[9px] font-bold uppercase tracking-wide leading-none">
-                                            {new Date(ev.date + "T12:00:00").toLocaleString("en", { month: "short" })}
-                                          </span>
-                                          <span className="text-base font-black leading-none">
-                                            {new Date(ev.date + "T12:00:00").getDate()}
-                                          </span>
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                          <p className="text-xs font-bold text-gray-900 leading-tight truncate">{ev.title}</p>
-                                          {ev.description && (
-                                            <p className="text-[10px] text-gray-500 mt-0.5 leading-relaxed line-clamp-2">{ev.description}</p>
-                                          )}
-                                          <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                            {ev.time && (
-                                              <span className="text-[9px] text-pink-400 font-semibold">{ev.time}</span>
-                                            )}
-                                            {ev.location && (
-                                              <span className="text-[9px] text-gray-400 truncate">{ev.location}</span>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </div>
-                                      {loggedInUser?.uniqueSlug === ADMIN_SLUG && (
-                                        <div className="flex items-center gap-1 flex-shrink-0">
-                                          <button
-                                            type="button"
-                                            onClick={() => openEditEvent(ev)}
-                                            className="w-6 h-6 bg-pink-100 hover:bg-pink-200 rounded-lg flex items-center justify-center transition-colors"
-                                          >
-                                            <Pencil className="w-3 h-3 text-pink-500" />
-                                          </button>
-                                          <button
-                                            type="button"
-                                            onClick={() => deleteEventMutation.mutate(ev.id)}
-                                            className="w-6 h-6 bg-red-50 hover:bg-red-100 rounded-lg flex items-center justify-center transition-colors"
-                                          >
-                                            <Trash2 className="w-3 h-3 text-red-400" />
-                                          </button>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
                           </motion.div>
                         ) : (
                           <motion.div
