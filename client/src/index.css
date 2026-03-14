@@ -113,3 +113,9 @@
 .pb-24-safe {
   padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
 }
+.top-8-safe {
+  top: calc(2rem + env(safe-area-inset-top, 0px));
+}
+.pt-24-safe {
+  padding-top: calc(6rem + env(safe-area-inset-top, 0px));
+}

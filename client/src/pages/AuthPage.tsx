@@ -3140,7 +3140,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="absolute top-8 right-8 z-50 p-2 group"
+          className="absolute top-8-safe right-8 z-50 p-2 group"
         >
           {isMenuOpen ? (
             <div className="text-white/80 hover:text-white transition-colors">
@@ -3700,7 +3700,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                               : "text-pink-400 hover:text-pink-600",
                           )}
                         >
-                          Upcoming Events
+                          Events
                         </button>
                         <button
                           type="button"
