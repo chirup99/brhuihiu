@@ -2240,7 +2240,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
     setLocation("/");
   };
   const shareQR = async () => {
-    const element = document.getElementById("qr-card-share");
+    const element = document.getElementById("qr-wallpaper-render");
     if (!element) {
       toast({ title: "Error", description: "QR element not found", variant: "destructive" });
       return;
@@ -2250,7 +2250,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
       const dataUrl = await htmlToImage.toPng(element, {
         quality: 1,
         pixelRatio: 3,
-        backgroundColor: "#1a0510",
         cacheBust: true,
       });
 
@@ -2259,38 +2258,36 @@ export default function AuthPage({ slug }: { slug?: string }) {
         "/" +
         (displaySlug || user?.uniqueSlug || "");
 
-      const blob = await (await fetch(dataUrl)).blob();
-      const file = new File([blob], `brs-${user?.uniqueSlug || "connect"}.png`, { type: "image/png" });
+      // Always download the wallpaper image
+      const link = document.createElement("a");
+      link.download = `brs-voice-card-${user?.uniqueSlug || "connect"}.png`;
+      link.href = dataUrl;
+      link.click();
 
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: `BRS Connect — ${user?.name || "Profile"}`,
-          text: `Connect with ${user?.name || "me"} on BRS Connect`,
-          url: profileUrl,
-          files: [file],
-        });
-      } else if (navigator.share) {
-        await navigator.share({
-          title: `BRS Connect — ${user?.name || "Profile"}`,
-          text: `Connect with ${user?.name || "me"} on BRS Connect`,
-          url: profileUrl,
-        });
-      } else {
-        const link = document.createElement("a");
-        link.download = `brs-${user?.uniqueSlug || "connect"}.png`;
-        link.href = dataUrl;
-        link.click();
-        toast({ title: "Saved", description: "QR card saved to downloads." });
+      // Also try sharing the profile URL
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: `BRS Connect — ${user?.name || "Profile"}`,
+            text: `Connect with ${user?.name || "me"} on BRS Connect`,
+            url: profileUrl,
+          });
+        }
+      } catch (shareErr: any) {
+        // Share dismissed or failed — download already happened, that's fine
+        if (shareErr?.name !== "AbortError") {
+          console.error("Share error:", shareErr);
+        }
       }
+
+      toast({ title: "Saved!", description: "Voice card saved to your downloads." });
     } catch (err: any) {
-      if (err?.name !== "AbortError") {
-        console.error("Share error:", err);
-        toast({
-          title: "Share failed",
-          description: "Could not share. Please try again.",
-          variant: "destructive",
-        });
-      }
+      console.error("Download error:", err);
+      toast({
+        title: "Download failed",
+        description: "Could not generate image. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -4316,6 +4313,90 @@ export default function AuthPage({ slug }: { slug?: string }) {
           )}
         </AnimatePresence>
 
+        {/* Hidden wallpaper render — captured by shareQR, never shown to user */}
+        <div
+          id="qr-wallpaper-render"
+          style={{
+            position: "fixed",
+            left: "-9999px",
+            top: 0,
+            width: "390px",
+            height: "844px",
+            background: "linear-gradient(160deg, #ec4899 0%, #be185d 50%, #9d174d 100%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+            overflow: "hidden",
+          }}
+        >
+          {/* Decorative blob top-right */}
+          <div style={{ position: "absolute", top: 0, right: 0, width: 220, height: 220, borderRadius: "50%", opacity: 0.28, filter: "blur(48px)", background: "radial-gradient(circle, #f9a8d4, transparent)", pointerEvents: "none" }} />
+          {/* Decorative blob bottom-left */}
+          <div style={{ position: "absolute", bottom: 0, left: 0, width: 220, height: 220, borderRadius: "50%", opacity: 0.2, filter: "blur(48px)", background: "radial-gradient(circle, #fce7f3, transparent)", pointerEvents: "none" }} />
+
+          {/* BRS logo top-left */}
+          <div style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "52px 28px 0", position: "relative", zIndex: 1 }}>
+            <div style={{ width: 38, height: 38, borderRadius: "50%", background: "white", overflow: "hidden", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
+              <img src="/brs-logo.png" alt="BRS" style={{ width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
+            </div>
+            <div>
+              <p style={{ color: "white", fontWeight: 900, fontSize: 15, margin: 0, lineHeight: 1 }}>BRS Connect</p>
+              <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 9, margin: "2px 0 0", textTransform: "uppercase", letterSpacing: "0.15em" }}>Bharat Rashtra Samithi</p>
+            </div>
+          </div>
+
+          {/* Centered QR card */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, position: "relative", zIndex: 1, padding: "0 28px" }}>
+            <div style={{ width: 268, borderRadius: 28, background: "linear-gradient(175deg, #ffffff 0%, #fff0f7 100%)", padding: "24px 24px 20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 12, boxShadow: "0 20px 60px rgba(0,0,0,0.28)" }}>
+              {/* Avatar */}
+              <div style={{ width: 72, height: 72, borderRadius: "50%", padding: 3, background: "linear-gradient(135deg, #ec4899, #be185d)", flexShrink: 0 }}>
+                <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "white" }}>
+                  <img src={avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
+                </div>
+              </div>
+              {/* Name + role */}
+              <div style={{ textAlign: "center" }}>
+                <p style={{ color: "#111827", fontWeight: 900, fontSize: 17, margin: 0, lineHeight: 1.1 }}>{user?.name || form.watch("name") || "Your Name"}</p>
+                {(user?.role || form.watch("role")) && (
+                  <span style={{ display: "inline-block", marginTop: 5, fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#be185d", background: "rgba(236,72,153,0.1)", border: "1px solid rgba(236,72,153,0.25)", borderRadius: 999, padding: "2px 10px" }}>
+                    {(user?.role || form.watch("role") || "").replace(/_/g, " ")}
+                  </span>
+                )}
+              </div>
+              {/* Divider */}
+              <div style={{ width: "100%", height: 1, background: "linear-gradient(90deg, transparent, rgba(236,72,153,0.3), transparent)" }} />
+              {/* QR */}
+              <div style={{ borderRadius: 16, padding: 12, background: "rgba(236,72,153,0.06)", border: "1px solid rgba(236,72,153,0.15)" }}>
+                <QRCodeSVG
+                  value={window.location.origin + "/" + (displaySlug || user?.uniqueSlug || "")}
+                  size={134}
+                  level="H"
+                  includeMargin={false}
+                  fgColor="#be185d"
+                  bgColor="transparent"
+                />
+              </div>
+              {/* Voice Code */}
+              <div style={{ textAlign: "center", width: "100%" }}>
+                <p style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.3em", color: "#f472b6", margin: "0 0 4px" }}>Voice Code</p>
+                <div style={{ background: "#fdf2f8", border: "1px solid #fbcfe8", borderRadius: 12, padding: "6px 16px" }}>
+                  <p style={{ color: "#be185d", fontWeight: 900, fontFamily: "monospace", fontSize: 14, letterSpacing: "0.25em", textTransform: "uppercase", margin: 0 }}>
+                    {displaySlug || user?.uniqueSlug || "—"}
+                  </p>
+                </div>
+              </div>
+              {/* Footer */}
+              <p style={{ fontSize: 8, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>brsconnect.in · Scan to Connect</p>
+            </div>
+          </div>
+
+          {/* Bottom tagline */}
+          <div style={{ padding: "0 28px 52px", textAlign: "center", position: "relative", zIndex: 1 }}>
+            <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 11, margin: 0, letterSpacing: "0.04em" }}>Set this as your wallpaper · Anyone can scan to connect</p>
+          </div>
+        </div>
+
         <AnimatePresence>
           {showQRDialog && (
             <motion.div
@@ -4425,20 +4506,21 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 </div>
               </div>
 
-              {/* Share button — always pinned to bottom */}
+              {/* Download + Share button — always pinned to bottom */}
               <div className="flex-shrink-0 px-6 pb-8 pt-3 relative z-10 space-y-2">
                 <p className="text-center text-white/70 text-xs leading-relaxed">
-                  Save this as your wallpaper — anyone can scan it to connect with you instantly.
+                  Download as wallpaper — set it on your phone so anyone can scan to connect instantly.
                 </p>
                 <button
                   onClick={shareQR}
-                  className="w-full bg-white text-pink-600 rounded-2xl py-4 font-black text-sm flex items-center justify-center gap-2 transition-all shadow-xl active:scale-95"
+                  className="w-full bg-white text-pink-600 rounded-2xl py-4 font-black text-sm flex items-center justify-center gap-2 transition-all shadow-xl active:scale-95 hover:bg-pink-50"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
                   </svg>
-                  Share My Voice Card
+                  Download QR Wallpaper
                 </button>
               </div>
             </motion.div>
