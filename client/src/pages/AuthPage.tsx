@@ -29,6 +29,7 @@ import {
   Palette,
   Layout,
   Mail,
+  Search,
 } from "lucide-react";
 import {
   motion,
@@ -216,6 +217,8 @@ const ROLE_GROUPS: { group: string | null; items: { value: string; label: string
   },
 ];
 const ROLES = ROLE_GROUPS.flatMap((g) => g.items);
+
+const ADMIN_SLUG = "ktrbrs";
 
 const CONSTITUENCIES = [
   {
@@ -2303,6 +2306,14 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [isTradersExpanded, setIsTradersExpanded] = useState(false);
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
   const [showTradersModal, setShowTradersModal] = useState(false);
+  const [adminFeaturedSlugs, setAdminFeaturedSlugs] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("ktrbrs_featured_slugs") || "[]"); } catch { return []; }
+  });
+  const [featuredProfiles, setFeaturedProfiles] = useState<any[]>([]);
+  const [showAddProfileDialog, setShowAddProfileDialog] = useState(false);
+  const [addProfileSearch, setAddProfileSearch] = useState("");
+  const [addProfileResult, setAddProfileResult] = useState<any | "not_found" | null>(null);
+  const [addProfileLoading, setAddProfileLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(typeof window !== "undefined" ? window.innerWidth < 768 : false);
 
   useEffect(() => {
@@ -2313,6 +2324,47 @@ export default function AuthPage({ slug }: { slug?: string }) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    if (adminFeaturedSlugs.length === 0) { setFeaturedProfiles([]); return; }
+    Promise.all(
+      adminFeaturedSlugs.map((s) =>
+        fetch(`/api/user/slug/${s}`).then((r) => (r.ok ? r.json() : null)).catch(() => null)
+      )
+    ).then((profiles) => setFeaturedProfiles(profiles.filter(Boolean)));
+  }, [adminFeaturedSlugs]);
+
+  const addFeaturedSlug = (slug: string) => {
+    if (adminFeaturedSlugs.includes(slug)) return;
+    const updated = [...adminFeaturedSlugs, slug];
+    setAdminFeaturedSlugs(updated);
+    localStorage.setItem("ktrbrs_featured_slugs", JSON.stringify(updated));
+    setShowAddProfileDialog(false);
+    setAddProfileSearch("");
+    setAddProfileResult(null);
+  };
+
+  const removeFeaturedSlug = (slug: string) => {
+    const updated = adminFeaturedSlugs.filter((s) => s !== slug);
+    setAdminFeaturedSlugs(updated);
+    localStorage.setItem("ktrbrs_featured_slugs", JSON.stringify(updated));
+  };
+
+  const searchAdminProfile = async () => {
+    if (!addProfileSearch.trim()) return;
+    setAddProfileLoading(true);
+    setAddProfileResult(null);
+    try {
+      const res = await fetch(`/api/user/slug/${addProfileSearch.trim().toLowerCase()}`);
+      if (!res.ok) { setAddProfileResult("not_found"); return; }
+      const data = await res.json();
+      setAddProfileResult(data);
+    } catch {
+      setAddProfileResult("not_found");
+    } finally {
+      setAddProfileLoading(false);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -3541,8 +3593,72 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   </button>
                 </div>
 
+                {loggedInUser?.uniqueSlug === ADMIN_SLUG && (
+                  <div className="px-6 pb-4 flex items-center gap-2">
+                    <button
+                      onClick={() => setShowAddProfileDialog(true)}
+                      className="flex-1 bg-white/8 border border-white/15 rounded-xl px-3 py-2 flex items-center gap-2 text-left hover:bg-white/12 transition-colors"
+                    >
+                      <Search className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
+                      <span className="text-white/30 text-xs">Search voice profile to add...</span>
+                    </button>
+                    <button
+                      onClick={() => setShowAddProfileDialog(true)}
+                      className="w-9 h-9 bg-pink-500 hover:bg-pink-600 rounded-xl flex items-center justify-center transition-colors shadow-lg flex-shrink-0"
+                    >
+                      <Plus className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                )}
+
                 <div className="overflow-x-auto scrollbar-hide px-6 pb-6">
                   <div className="flex gap-4">
+                    {featuredProfiles.map((profile, idx) => (
+                      <motion.div
+                        key={profile.uniqueSlug || idx}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: idx * 0.06 }}
+                        className="flex-shrink-0 w-48 h-56 relative"
+                      >
+                        <div
+                          onClick={() => { setShowTradersModal(false); setLocation(`/${profile.uniqueSlug}`); }}
+                          className="w-full h-full rounded-2xl overflow-hidden relative flex flex-col justify-between p-4 bg-gradient-to-b from-[#1a0510] to-[#2d0a1e] shadow-xl border border-white/5 cursor-pointer"
+                        >
+                          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-white/80 text-[9px] font-bold tracking-[0.2em] uppercase truncate max-w-[120px]">
+                              {profile.uniqueSlug}
+                            </span>
+                            <Mic className="w-3 h-3 text-white/70 flex-shrink-0" />
+                          </div>
+                          <div className="flex-1 flex flex-col items-center justify-center py-2 gap-2">
+                            <div className="w-12 h-12 rounded-full bg-pink-500 flex items-center justify-center text-white text-lg font-bold shadow-lg border-2 border-white/20">
+                              {profile.name?.[0]?.toUpperCase() || "?"}
+                            </div>
+                            <div className="text-center">
+                              <p className="text-white text-xs font-semibold leading-tight line-clamp-1">{profile.name}</p>
+                              <p className="text-white/50 text-[9px] mt-0.5 uppercase tracking-wider line-clamp-1">
+                                {ROLES.find((r) => r.value === profile.role)?.label || profile.role || "Member"}
+                              </p>
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-white/50 text-[9px] leading-relaxed line-clamp-2 italic">
+                              {profile.bio || profile.industry || "BRS Member"}
+                            </p>
+                          </div>
+                        </div>
+                        {loggedInUser?.uniqueSlug === ADMIN_SLUG && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); removeFeaturedSlug(profile.uniqueSlug); }}
+                            className="absolute top-2 right-2 w-5 h-5 bg-red-500/90 hover:bg-red-600 rounded-full flex items-center justify-center z-10 shadow-lg transition-colors"
+                          >
+                            <X className="w-3 h-3 text-white" />
+                          </button>
+                        )}
+                      </motion.div>
+                    ))}
                     {[
                       {
                         title: "Your Voice",
@@ -3570,10 +3686,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       },
                     ].map((card, idx) => (
                       <motion.div
-                        key={idx}
+                        key={`static-${idx}`}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: idx * 0.06 }}
+                        transition={{ duration: 0.3, delay: (featuredProfiles.length + idx) * 0.06 }}
                         className={clsx(
                           "flex-shrink-0 w-48 h-56 rounded-2xl overflow-hidden relative flex flex-col justify-between p-4 bg-gradient-to-b shadow-xl border border-white/5",
                           card.color,
@@ -3596,6 +3712,90 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     ))}
                   </div>
                 </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showAddProfileDialog && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => { setShowAddProfileDialog(false); setAddProfileSearch(""); setAddProfileResult(null); }}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[61] bg-gray-950 border border-white/10 rounded-2xl p-5 shadow-2xl max-w-sm mx-auto"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-white font-bold text-sm">Add Voice Profile</h3>
+                    <p className="text-white/40 text-[10px] mt-0.5">Search by voice code to feature on the board</p>
+                  </div>
+                  <button
+                    onClick={() => { setShowAddProfileDialog(false); setAddProfileSearch(""); setAddProfileResult(null); }}
+                    className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white/50 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="flex gap-2 mb-4">
+                  <div className="flex-1 bg-white/8 border border-white/15 rounded-xl px-3 py-2 flex items-center gap-2">
+                    <Search className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
+                    <input
+                      autoFocus
+                      value={addProfileSearch}
+                      onChange={(e) => setAddProfileSearch(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && searchAdminProfile()}
+                      placeholder="Enter voice code..."
+                      className="flex-1 bg-transparent text-white text-sm placeholder:text-white/25 outline-none"
+                    />
+                  </div>
+                  <button
+                    onClick={searchAdminProfile}
+                    disabled={addProfileLoading || !addProfileSearch.trim()}
+                    className="bg-pink-500 hover:bg-pink-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl px-3 py-2 text-white text-xs font-bold transition-colors"
+                  >
+                    {addProfileLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Search"}
+                  </button>
+                </div>
+                {addProfileResult === "not_found" && (
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+                    <p className="text-white/40 text-xs">No profile found for this voice code.</p>
+                  </div>
+                )}
+                {addProfileResult && addProfileResult !== "not_found" && (
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-full bg-pink-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        {addProfileResult.name?.[0]?.toUpperCase() || "?"}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-white text-sm font-semibold truncate">{addProfileResult.name}</p>
+                        <p className="text-white/40 text-[10px] uppercase tracking-wider truncate">{addProfileResult.uniqueSlug}</p>
+                        <p className="text-white/30 text-[9px] truncate">
+                          {ROLES.find((r) => r.value === addProfileResult.role)?.label || addProfileResult.role}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => addFeaturedSlug(addProfileResult.uniqueSlug)}
+                      disabled={adminFeaturedSlugs.includes(addProfileResult.uniqueSlug)}
+                      className="w-9 h-9 bg-pink-500 hover:bg-pink-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-full flex items-center justify-center transition-colors shadow-lg flex-shrink-0"
+                    >
+                      {adminFeaturedSlugs.includes(addProfileResult.uniqueSlug)
+                        ? <Check className="w-4 h-4 text-white" />
+                        : <Plus className="w-4 h-4 text-white" />
+                      }
+                    </button>
+                  </div>
+                )}
               </motion.div>
             </>
           )}
