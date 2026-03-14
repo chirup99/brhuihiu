@@ -3687,57 +3687,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         )}
                       </motion.div>
                     ))}
-                    {[
-                      {
-                        title: "Your Voice",
-                        content: "Speak up for your community. Your voice matters. Rise and be heard.",
-                        icon: Mic,
-                        color: "from-[#1a0510] to-[#2d0a1e]",
-                      },
-                      {
-                        title: "Share Your Reel",
-                        content: "Upload your video reel and reach thousands across Telangana.",
-                        icon: Video,
-                        color: "from-zinc-950 to-black",
-                      },
-                      {
-                        title: "Post Your Story",
-                        content: "Share your story and connect with BRS leaders and members.",
-                        icon: PenLine,
-                        color: "from-[#0f0520] to-[#1a0a30]",
-                      },
-                      {
-                        title: "Your Image",
-                        content: "Upload a photo that represents your identity and mission.",
-                        icon: ImageIcon,
-                        color: "from-zinc-900 to-black",
-                      },
-                    ].map((card, idx) => (
-                      <motion.div
-                        key={`static-${idx}`}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: (featuredProfiles.length + idx) * 0.06 }}
-                        className={clsx(
-                          "flex-shrink-0 w-48 h-56 rounded-2xl overflow-hidden relative flex flex-col justify-between p-4 bg-gradient-to-b shadow-xl border border-white/5",
-                          card.color,
-                        )}
-                      >
-                        <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none" />
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-white/80 text-[9px] font-bold tracking-[0.2em] uppercase">{card.title}</span>
-                          <card.icon className="w-3 h-3 text-white/70" />
-                        </div>
-                        <div className="flex-1 flex items-center justify-center py-3">
-                          <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
-                            <card.icon className="w-6 h-6 text-white/60" />
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-white/70 text-[10px] leading-relaxed line-clamp-3">{card.content}</p>
-                        </div>
-                      </motion.div>
-                    ))}
                   </div>
                 </div>
               </motion.div>
