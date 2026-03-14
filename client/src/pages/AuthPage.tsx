@@ -12,7 +12,6 @@ import {
   Mic,
   QrCode,
   Instagram,
-  Linkedin,
   MessageCircle,
   Globe,
   Save,
@@ -48,7 +47,7 @@ import {
 import { useLogin, useRegister, useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import clsx from "clsx";
-import { SiInstagram, SiWhatsapp } from "react-icons/si";
+import { SiInstagram, SiWhatsapp, SiX } from "react-icons/si";
 import avatarWoman from "@assets/female.png";
 import avatarMan from "@assets/male.png";
 import pinkCarSrc from "@assets/pink-car.png";
@@ -2718,7 +2717,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     </div>
                     <div className="flex flex-col items-center gap-0.5">
                       <span className="text-[7px] text-white/30 uppercase tracking-widest font-bold">
-                        LinkedIn
+                        X
                       </span>
                       <span className="text-xs font-bold text-white/80">
                         {loggedInUser.linkedinClicks || 0}
@@ -2812,7 +2811,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             <ul className="space-y-1.5">
                               {[
                                 `Update ${industry} pitch card.`,
-                                "Share QR on LinkedIn.",
+                                "Share QR on X (Twitter).",
                                 "Set QR as wallpaper for easy networking.",
                                 "Write notes & todo list.",
                               ].map((s, i) => (
@@ -3304,11 +3303,11 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             )}
                             title={
                               hasLinkedin
-                                ? "LinkedIn"
-                                : "LinkedIn (Not Available)"
+                                ? "X (Twitter)"
+                                : "X (Not Available)"
                             }
                           >
-                            <Linkedin className="w-4 h-4" />
+                            <SiX className="w-4 h-4" />
                           </a>
                         );
                       })()}
@@ -3849,12 +3848,12 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
-                        LinkedIn
+                        X (Twitter)
                       </label>
                       <input
                         {...form.register("linkedin")}
                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900"
-                        placeholder="URL"
+                        placeholder="https://x.com/username"
                         onFocus={() => { setRoleOpen(false); setConstituencyOpen(false); }}
                       />
                     </div>
