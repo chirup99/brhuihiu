@@ -3639,17 +3639,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 </div>
 
                 {loggedInUser?.uniqueSlug === ADMIN_SLUG && (
-                  <div className="px-6 pb-4 flex items-center gap-2">
+                  <div className="px-6 pb-4 flex justify-end">
                     <button
                       onClick={() => setShowAddProfileDialog(true)}
-                      className="flex-1 bg-white/8 border border-white/15 rounded-xl px-3 py-2 flex items-center gap-2 text-left hover:bg-white/12 transition-colors"
-                    >
-                      <Search className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
-                      <span className="text-white/30 text-xs">Search voice profile to add...</span>
-                    </button>
-                    <button
-                      onClick={() => setShowAddProfileDialog(true)}
-                      className="w-9 h-9 bg-pink-500 hover:bg-pink-600 rounded-xl flex items-center justify-center transition-colors shadow-lg flex-shrink-0"
+                      className="w-9 h-9 bg-pink-500 hover:bg-pink-600 rounded-xl flex items-center justify-center transition-colors shadow-lg"
                     >
                       <Plus className="w-4 h-4 text-white" />
                     </button>
