@@ -330,6 +330,7 @@ interface SwipeCardProps {
   onSwipeLeft: () => void;
   onSwipeRight: () => void;
   onVideoPlayStateChange?: (isPlaying: boolean) => void;
+  isVideoPlaying?: boolean;
 }
 
 const getThumbnailUrl = (url: string) => {
@@ -382,7 +383,7 @@ const TrendLine = () => (
 );
 
 const SwipeCardContent = forwardRef(
-  ({ card, currentIndex, onSwipeLeft, onSwipeRight, onVideoPlayStateChange }: SwipeCardProps, ref) => {
+  ({ card, currentIndex, onSwipeLeft, onSwipeRight, onVideoPlayStateChange, isVideoPlaying }: SwipeCardProps, ref) => {
     const x = useMotionValue(0);
     const rotate = useTransform(x, [-200, 200], [-30, 30]);
     const opacity = useTransform(x, [-200, -150, 0, 150, 200], [0, 1, 1, 1, 0]);
@@ -488,7 +489,7 @@ const SwipeCardContent = forwardRef(
         ref={ref}
         key={currentIndex}
         style={{ x, rotate, opacity }}
-        drag="x"
+        drag={isVideoPlaying ? false : "x"}
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.2}
         onDragEnd={(_, info) => {
@@ -496,7 +497,8 @@ const SwipeCardContent = forwardRef(
           else if (info.offset.x > 80) onSwipeRight();
         }}
         className={clsx(
-          "absolute inset-0 bg-gradient-to-b rounded-[24px] p-4 shadow-2xl cursor-grab active:cursor-grabbing overflow-hidden group",
+          "absolute inset-0 bg-gradient-to-b rounded-[24px] p-4 shadow-2xl overflow-hidden group",
+          isVideoPlaying ? "cursor-default" : "cursor-grab active:cursor-grabbing",
           card.color,
         )}
       >
@@ -889,7 +891,7 @@ const SwipeCard = ({
   }, [isAnimating]);
 
   const triggerSwipe = async (dir: number) => {
-    if (isAnimating || displayCards.length <= 1) return;
+    if (isAnimating || displayCards.length <= 1 || isVideoPlaying) return;
     setIsVideoPlaying(false);
     setIsAnimating(true);
     await Promise.all([
@@ -974,6 +976,7 @@ const SwipeCard = ({
           onSwipeLeft={() => triggerSwipe(-1)}
           onSwipeRight={() => triggerSwipe(1)}
           onVideoPlayStateChange={setIsVideoPlaying}
+          isVideoPlaying={isVideoPlaying}
         />
       </motion.div>
     </div>
