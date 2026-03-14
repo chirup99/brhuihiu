@@ -765,15 +765,16 @@ const XVideoCard = ({ tweetId, xUrl, onEditClick }: { tweetId: string; xUrl: str
           <button
             type="button"
             onClick={handlePlay}
-            className={`absolute inset-0 flex items-center justify-center z-10 transition-opacity ${isPlaying ? "opacity-0 hover:opacity-100" : "opacity-100"}`}
-            style={{ background: isPlaying ? "transparent" : "rgba(0,0,0,0.3)" }}
+            onPointerDown={(e) => e.stopPropagation()}
+            onPointerUp={(e) => e.stopPropagation()}
+            className={`absolute inset-0 flex items-center justify-center z-10 transition-opacity ${isPlaying ? "opacity-0 active:opacity-100" : "opacity-100"}`}
+            style={{ background: isPlaying ? "transparent" : "rgba(0,0,0,0.35)" }}
           >
-            <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-xl">
-              {isPlaying
-                ? <div className="flex gap-1"><div className="w-1 h-5 bg-white rounded-full" /><div className="w-1 h-5 bg-white rounded-full" /></div>
-                : <Play className="w-6 h-6 text-white fill-current ml-1" />
-              }
-            </div>
+            {!isPlaying && (
+              <div className="w-16 h-16 rounded-full bg-white/25 backdrop-blur-md border-2 border-white/40 flex items-center justify-center shadow-2xl active:scale-95 transition-transform">
+                <Play className="w-7 h-7 text-white fill-current ml-1" />
+              </div>
+            )}
           </button>
         </>
       )}
