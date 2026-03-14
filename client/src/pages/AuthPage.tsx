@@ -4303,8 +4303,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
               <div className="absolute top-0 right-0 w-64 h-64 rounded-full opacity-30 blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, #f9a8d4, transparent)" }} />
               <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-20 blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, #fce7f3, transparent)" }} />
 
-              {/* Top bar */}
-              <div className="flex items-center justify-between px-5 pt-12 pb-4 relative z-10">
+              {/* Top bar — fixed height, never shrinks */}
+              <div className="flex-shrink-0 flex items-center justify-between px-5 pt-10 pb-3 relative z-10">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full bg-white overflow-hidden shadow-md">
                     <img src="/brs-logo.png" alt="BRS" className="w-full h-full object-cover" />
@@ -4322,83 +4322,85 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 </button>
               </div>
 
-              {/* Main content */}
-              <div className="flex-1 flex flex-col items-center justify-center px-6 gap-5 relative z-10">
+              {/* Scrollable content area */}
+              <div className="flex-1 overflow-y-auto relative z-10">
+                <div className="flex flex-col items-center px-6 py-4 gap-4 min-h-full justify-center">
 
-                {/* QR Card */}
-                <div
-                  id="qr-card-share"
-                  className="w-full max-w-[280px] rounded-[32px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.3)]"
-                  style={{ background: "linear-gradient(175deg, #ffffff 0%, #fff0f7 100%)" }}
-                >
-                  <div className="flex flex-col items-center px-6 pt-7 pb-6 gap-4">
+                  {/* QR Card */}
+                  <div
+                    id="qr-card-share"
+                    className="w-full max-w-[280px] rounded-[32px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.3)]"
+                    style={{ background: "linear-gradient(175deg, #ffffff 0%, #fff0f7 100%)" }}
+                  >
+                    <div className="flex flex-col items-center px-6 pt-6 pb-5 gap-3">
 
-                    {/* Avatar */}
-                    <button
-                      onClick={() => setShowAvatarDialog(true)}
-                      className="relative focus:outline-none"
-                    >
-                      <div className="w-20 h-20 rounded-full p-[3px] shadow-lg" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}>
-                        <div className="w-full h-full rounded-full overflow-hidden bg-white">
-                          <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                      {/* Avatar */}
+                      <button
+                        onClick={() => setShowAvatarDialog(true)}
+                        className="relative focus:outline-none"
+                      >
+                        <div className="w-18 h-18 rounded-full p-[3px] shadow-lg" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)", width: 72, height: 72 }}>
+                          <div className="w-full h-full rounded-full overflow-hidden bg-white">
+                            <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                          </div>
+                        </div>
+                        <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center shadow-md border-2 border-white" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          </svg>
+                        </div>
+                      </button>
+
+                      {/* Name + role */}
+                      <div className="text-center space-y-1">
+                        <h5 className="text-gray-900 text-base font-black tracking-tight leading-none">
+                          {user?.name || form.watch("name") || "Your Name"}
+                        </h5>
+                        {(user?.role || form.watch("role")) && (
+                          <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-3 py-0.5 rounded-full text-pink-600" style={{ background: "rgba(236,72,153,0.12)", border: "1px solid rgba(236,72,153,0.25)" }}>
+                            {(user?.role || form.watch("role") || "").replace(/_/g, " ")}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Divider */}
+                      <div className="w-full h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(236,72,153,0.3), transparent)" }} />
+
+                      {/* QR Code */}
+                      <div className="rounded-2xl p-3 shadow-inner" style={{ background: "rgba(236,72,153,0.06)", border: "1px solid rgba(236,72,153,0.15)" }}>
+                        <QRCodeSVG
+                          value={
+                            window.location.origin +
+                            "/" +
+                            (displaySlug || user?.uniqueSlug || window.location.pathname.split("/")[1] || "")
+                          }
+                          size={140}
+                          level="H"
+                          includeMargin={false}
+                          fgColor="#be185d"
+                          bgColor="transparent"
+                        />
+                      </div>
+
+                      {/* Voice Code */}
+                      <div className="text-center space-y-1 w-full">
+                        <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-pink-400">Voice Code</p>
+                        <div className="bg-pink-50 border border-pink-200 rounded-xl py-1.5 px-4">
+                          <p className="text-pink-700 font-black font-mono text-sm tracking-[0.25em] uppercase">
+                            {displaySlug || user?.uniqueSlug || "—"}
+                          </p>
                         </div>
                       </div>
-                      <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full flex items-center justify-center shadow-md border-2 border-white" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                      </div>
-                    </button>
 
-                    {/* Name + role */}
-                    <div className="text-center space-y-1">
-                      <h5 className="text-gray-900 text-lg font-black tracking-tight leading-none">
-                        {user?.name || form.watch("name") || "Your Name"}
-                      </h5>
-                      {(user?.role || form.watch("role")) && (
-                        <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-3 py-1 rounded-full text-pink-600" style={{ background: "rgba(236,72,153,0.12)", border: "1px solid rgba(236,72,153,0.25)" }}>
-                          {(user?.role || form.watch("role") || "").replace(/_/g, " ")}
-                        </span>
-                      )}
+                      {/* Footer */}
+                      <p className="text-[8px] text-gray-400 uppercase tracking-widest">brsconnect.in · Scan to Connect</p>
                     </div>
-
-                    {/* Divider */}
-                    <div className="w-full h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(236,72,153,0.3), transparent)" }} />
-
-                    {/* QR Code */}
-                    <div className="rounded-2xl p-3 shadow-inner" style={{ background: "rgba(236,72,153,0.06)", border: "1px solid rgba(236,72,153,0.15)" }}>
-                      <QRCodeSVG
-                        value={
-                          window.location.origin +
-                          "/" +
-                          (displaySlug || user?.uniqueSlug || window.location.pathname.split("/")[1] || "")
-                        }
-                        size={150}
-                        level="H"
-                        includeMargin={false}
-                        fgColor="#be185d"
-                        bgColor="transparent"
-                      />
-                    </div>
-
-                    {/* Voice Code */}
-                    <div className="text-center space-y-1 w-full">
-                      <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-pink-400">Voice Code</p>
-                      <div className="bg-pink-50 border border-pink-200 rounded-xl py-2 px-4">
-                        <p className="text-pink-700 font-black font-mono text-base tracking-[0.25em] uppercase">
-                          {displaySlug || user?.uniqueSlug || "—"}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Footer */}
-                    <p className="text-[8px] text-gray-400 uppercase tracking-widest">brsconnect.in · Scan to Connect</p>
                   </div>
                 </div>
               </div>
 
-              {/* Share button */}
-              <div className="px-6 pb-10 relative z-10 space-y-3">
+              {/* Share button — always pinned to bottom */}
+              <div className="flex-shrink-0 px-6 pb-8 pt-3 relative z-10 space-y-2">
                 <p className="text-center text-white/70 text-xs leading-relaxed">
                   Save this as your wallpaper — anyone can scan it to connect with you instantly.
                 </p>
