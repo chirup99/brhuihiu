@@ -716,6 +716,28 @@ const SwipeCardContent = forwardRef(
                   const subtype = (card as any).subtype || "tweet";
                   const tweetIdMatch = xUrl.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
                   const tweetId = tweetIdMatch?.[1];
+                  const broadcastMatch = xUrl.match(/(?:twitter\.com|x\.com)\/i\/(?:broadcasts|live)\/([\w]+)/);
+                  const broadcastId = broadcastMatch?.[1];
+                  if (broadcastId) return (
+                    <div className="w-full h-full absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black rounded-[24px] overflow-hidden">
+                      <div className="absolute inset-0 opacity-10" style={{ background: "radial-gradient(circle at 50% 40%, #e11d48, transparent 70%)" }} />
+                      <div className="flex items-center gap-2 relative z-10">
+                        <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_#ef4444]" />
+                        <span className="text-white font-black text-sm uppercase tracking-[0.2em]">Live</span>
+                      </div>
+                      <SiX className="w-8 h-8 text-white/60 relative z-10" />
+                      <a
+                        href={xUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="relative z-10 bg-white text-black font-bold text-xs px-5 py-2.5 rounded-full flex items-center gap-2 active:scale-95 transition-transform shadow-xl"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                        Watch Live on X
+                      </a>
+                    </div>
+                  );
                   if (!tweetId) return (
                     <div className="text-center space-y-3">
                       {subtype === "video" ? (
@@ -1304,12 +1326,12 @@ const MiniCard = ({
                     )}
                   </div>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">
-                    {(card as any).subtype === "video" ? "Add X Video URL" : "Add X Post URL"}
+                    {(card as any).subtype === "video" ? "Add X Video / Live URL" : "Add X Post URL"}
                   </span>
                 </div>
                 <input
                   className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-white/40"
-                  placeholder="https://x.com/user/status/..."
+                  placeholder={(card as any).subtype === "video" ? "https://x.com/user/status/... or /i/broadcasts/..." : "https://x.com/user/status/..."}
                   defaultValue={(card as any).url}
                   onBlur={(e) => {
                     onUpdate(JSON.stringify({ ...card, url: e.target.value }));
@@ -1596,6 +1618,35 @@ const MiniCard = ({
             const subtype = (card as any).subtype || "tweet";
             const tweetIdMatch = xUrl.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
             const tweetId = tweetIdMatch?.[1];
+            const broadcastMatch = xUrl.match(/(?:twitter\.com|x\.com)\/i\/(?:broadcasts|live)\/([\w]+)/);
+            const broadcastId = broadcastMatch?.[1];
+            if (broadcastId) return (
+              <div className="w-full h-full relative flex flex-col items-center justify-center gap-3 bg-black rounded-[18px] overflow-hidden">
+                <div className="absolute inset-0 opacity-10" style={{ background: "radial-gradient(circle at 50% 40%, #e11d48, transparent 70%)" }} />
+                <div className="flex items-center gap-2 relative z-10">
+                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_6px_#ef4444]" />
+                  <span className="text-white font-black text-xs uppercase tracking-[0.2em]">Live</span>
+                </div>
+                <SiX className="w-6 h-6 text-white/60 relative z-10" />
+                <a
+                  href={xUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative z-10 bg-white text-black font-bold text-[10px] px-4 py-2 rounded-full flex items-center gap-1.5 active:scale-95 transition-transform shadow-lg"
+                >
+                  <Play className="w-3 h-3 fill-current" />
+                  Watch Live on X
+                </a>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+                  className="absolute top-2 left-2 p-1.5 bg-black/60 backdrop-blur-sm rounded-full border border-white/10 text-white/70 hover:text-white transition-colors z-20"
+                >
+                  <Pencil className="w-3 h-3" />
+                </button>
+              </div>
+            );
             if (!tweetId) return (
               <button
                 type="button"
