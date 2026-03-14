@@ -2745,32 +2745,27 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   </div>
                 </div>
 
-                {/* AI Analysis Window */}
-                <div className="p-4 bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-white/10 rounded-xl space-y-3 backdrop-blur-md relative overflow-hidden group shrink-0">
+                {/* People's Reach Window */}
+                <div className="p-4 bg-gradient-to-br from-pink-500/10 to-rose-500/10 border border-pink-500/20 rounded-xl space-y-3 backdrop-blur-md relative overflow-hidden group shrink-0">
                   <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <TrendingUp className="w-6 h-6 text-purple-400" />
+                    <User className="w-6 h-6 text-pink-400" />
                   </div>
 
                   <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
-                      <span className="text-[8px] text-purple-400 uppercase tracking-[0.2em] font-bold">
-                        AI Analysis
+                      <div className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" />
+                      <span className="text-[8px] text-pink-400 uppercase tracking-[0.2em] font-bold">
+                        People's Reach
                       </span>
                     </div>
                     <h4 className="text-white font-bold text-xs">
-                      Growth Insights
+                      Connect Insights
                     </h4>
                   </div>
 
                   <div className="space-y-2 relative z-10">
                     {(() => {
                       const history = loggedInUser.reachHistory || [];
-                      const todayDate = new Date().toISOString();
-                      const twelveHoursAgo = new Date(
-                        Date.now() - 12 * 60 * 60 * 1000,
-                      ).toISOString();
-
                       const lastEntry =
                         history.length > 0
                           ? history[history.length - 1]
@@ -2779,50 +2774,48 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         history.length > 1
                           ? history[history.length - 2]
                           : { count: 0 };
-
                       const isDecreasing = lastEntry.count < prevEntry.count;
-                      const industry = loggedInUser.industry || "General";
 
                       return (
                         <>
                           <div className="p-2 bg-white/5 rounded-lg border border-white/5 space-y-1.5">
                             <div className="flex items-center justify-between">
                               <span className="text-[8px] text-white/40 uppercase font-bold tracking-tight">
-                                Status
+                                Reach Status
                               </span>
                               {isDecreasing ? (
                                 <span className="text-[8px] text-red-400 font-bold flex items-center gap-1">
-                                  <ChevronDown className="w-2 h-2" /> Decreasing
+                                  <ChevronDown className="w-2 h-2" /> Slowing
                                 </span>
                               ) : (
                                 <span className="text-[8px] text-green-400 font-bold flex items-center gap-1">
-                                  <TrendingUp className="w-2 h-2" /> Growing
+                                  <TrendingUp className="w-2 h-2" /> Rising
                                 </span>
                               )}
                             </div>
                             <p className="text-[9px] text-white/70 leading-tight">
                               {isDecreasing
-                                ? `Reach down. In ${industry}, consistency is key.`
-                                : `Profile gaining traction in ${industry}.`}
+                                ? "Keep connecting — every voice matters for BRS."
+                                : "Your profile is reaching more people. Keep it up!"}
                             </p>
                           </div>
 
                           <div className="space-y-1.5">
                             <span className="text-[8px] text-white/40 uppercase font-bold tracking-[0.1em]">
-                              AI Suggestions
+                              Tips to Grow
                             </span>
                             <ul className="space-y-1.5">
                               {[
-                                `Update ${industry} pitch card.`,
-                                "Share QR on X (Twitter).",
+                                "Share your QR at local BRS events.",
+                                "Connect with leaders & party workers.",
+                                "Post your voice card to spread your message.",
                                 "Set QR as wallpaper for easy networking.",
-                                "Write notes & todo list.",
                               ].map((s, i) => (
                                 <li
                                   key={i}
                                   className="flex items-start gap-1.5 text-[9px] text-white/60"
                                 >
-                                  <div className="w-0.5 h-0.5 rounded-full bg-purple-500 mt-1.5 shrink-0" />
+                                  <div className="w-0.5 h-0.5 rounded-full bg-pink-500 mt-1.5 shrink-0" />
                                   {s}
                                 </li>
                               ))}
