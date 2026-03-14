@@ -3004,13 +3004,14 @@ export default function AuthPage({ slug }: { slug?: string }) {
         >
           {/* Pink car animation strip */}
           <div className="relative overflow-hidden h-10 -mx-5 sm:-mx-6 -mt-5 sm:-mt-6 mb-4 bg-pink-50 border-b border-pink-100">
-            <motion.img
+            <img
               src={pinkCarSrc}
               alt="pink car"
               className="absolute h-8 top-1 object-contain drop-shadow-sm"
-              style={{ width: "auto" }}
-              animate={{ x: ["calc(-150px)", "calc(100% + 150px)"] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "linear", repeatDelay: 0.5 }}
+              style={{
+                width: "auto",
+                animation: "carDrive 3.5s linear infinite",
+              }}
             />
           </div>
 
