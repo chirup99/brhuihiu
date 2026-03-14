@@ -108,58 +108,107 @@ const CARD_TYPES = [
   },
 ];
 
-const ROLES = [
-  { value: "people", label: "People" },
-  { value: "working-president", label: "Working President" },
-  { value: "cm", label: "Chief Minister (CM)" },
-  { value: "ward-member", label: "Ward Member" },
-  { value: "panchayat-member", label: "Panchayat Member" },
-  { value: "sarpanch", label: "Sarpanch (Village Head)" },
-  { value: "booth-president", label: "Party Booth President" },
-  { value: "booth-committee-member", label: "Booth Committee Member" },
-  { value: "village-party-president", label: "Village Party President" },
-  { value: "mptc", label: "MPTC – Mandal Parishad Territorial Constituency" },
-  { value: "mpp", label: "Mandal Parishad President (MPP)" },
-  { value: "mandal-party-president", label: "Mandal Party President" },
-  { value: "mandal-party-committee", label: "Mandal Party Committee Member" },
-  { value: "zptc", label: "ZPTC – Zilla Parishad Territorial Constituency" },
-  { value: "zp-chairman", label: "Zilla Parishad Chairman" },
-  { value: "district-president", label: "District Party President" },
-  { value: "district-committee", label: "District Party Committee Member" },
-  { value: "ward-councillor", label: "Ward Councillor" },
-  { value: "municipal-chairman", label: "Municipal Chairman" },
-  { value: "mayor", label: "Mayor" },
-  { value: "municipal-party-president", label: "Municipal Party President" },
-  { value: "mla", label: "MLA – Member of Legislative Assembly" },
-  { value: "mlc", label: "MLC – Member of Legislative Council" },
-  { value: "state-president", label: "State Party President" },
-  { value: "state-general-secretary", label: "State Party General Secretary" },
-  { value: "state-committee", label: "State Party Committee Member" },
-  { value: "mp-lok-sabha", label: "MP (Lok Sabha) – Member of Parliament" },
-  { value: "mp-rajya-sabha", label: "MP (Rajya Sabha)" },
-  { value: "national-president", label: "National Party President" },
-  { value: "national-general-secretary", label: "National General Secretary" },
-  { value: "national-executive", label: "National Executive Member" },
-  { value: "cabinet-minister-state", label: "Cabinet Minister (State)" },
-  { value: "minister-of-state-state", label: "Minister of State (State)" },
-  { value: "prime-minister", label: "Prime Minister (PM)" },
-  { value: "cabinet-minister-central", label: "Cabinet Minister (Central)" },
-  { value: "minister-of-state-central", label: "Minister of State (Central)" },
-  { value: "deputy-minister", label: "Deputy Minister" },
-  { value: "general-secretary", label: "General Secretary" },
-  { value: "secretary", label: "Secretary" },
-  { value: "joint-secretary", label: "Joint Secretary" },
-  { value: "treasurer", label: "Treasurer" },
-  { value: "party-spokesperson", label: "Party Spokesperson" },
-  { value: "party-observer", label: "Party Observer" },
-  { value: "party-incharge", label: "Party Incharge" },
-  { value: "party-leader", label: "Party Leader" },
-  { value: "party-coordinator", label: "Party Coordinator" },
-  { value: "party-convener", label: "Party Convener" },
-  { value: "youth-wing-president", label: "Youth Wing President" },
-  { value: "women-wing-president", label: "Women Wing President" },
-  { value: "party-member", label: "Party Member" },
+const ROLE_GROUPS: { group: string | null; items: { value: string; label: string }[] }[] = [
+  {
+    group: null,
+    items: [{ value: "people", label: "People" }],
+  },
+  {
+    group: "Senior Leadership",
+    items: [
+      { value: "working-president", label: "Working President" },
+      { value: "cm", label: "Chief Minister (CM)" },
+    ],
+  },
+  {
+    group: "Village / Local Level",
+    items: [
+      { value: "ward-member", label: "Ward Member" },
+      { value: "panchayat-member", label: "Panchayat Member" },
+      { value: "sarpanch", label: "Sarpanch (Village Head)" },
+      { value: "booth-president", label: "Party Booth President" },
+      { value: "booth-committee-member", label: "Booth Committee Member" },
+      { value: "village-party-president", label: "Village Party President" },
+    ],
+  },
+  {
+    group: "Mandal Level",
+    items: [
+      { value: "mptc", label: "MPTC – Mandal Parishad Territorial Constituency" },
+      { value: "mpp", label: "Mandal Parishad President (MPP)" },
+      { value: "mandal-party-president", label: "Mandal Party President" },
+      { value: "mandal-party-committee", label: "Mandal Party Committee Member" },
+    ],
+  },
+  {
+    group: "District Level",
+    items: [
+      { value: "zptc", label: "ZPTC – Zilla Parishad Territorial Constituency" },
+      { value: "zp-chairman", label: "Zilla Parishad Chairman" },
+      { value: "district-president", label: "District Party President" },
+      { value: "district-committee", label: "District Party Committee Member" },
+    ],
+  },
+  {
+    group: "City / Municipal Level",
+    items: [
+      { value: "ward-councillor", label: "Ward Councillor" },
+      { value: "municipal-chairman", label: "Municipal Chairman" },
+      { value: "mayor", label: "Mayor" },
+      { value: "municipal-party-president", label: "Municipal Party President" },
+    ],
+  },
+  {
+    group: "State Level",
+    items: [
+      { value: "mla", label: "MLA – Member of Legislative Assembly" },
+      { value: "mlc", label: "MLC – Member of Legislative Council" },
+      { value: "state-president", label: "State Party President" },
+      { value: "state-general-secretary", label: "State Party General Secretary" },
+      { value: "state-committee", label: "State Party Committee Member" },
+    ],
+  },
+  {
+    group: "National Level",
+    items: [
+      { value: "mp-lok-sabha", label: "MP (Lok Sabha) – Member of Parliament" },
+      { value: "mp-rajya-sabha", label: "MP (Rajya Sabha)" },
+      { value: "national-president", label: "National Party President" },
+      { value: "national-general-secretary", label: "National General Secretary" },
+      { value: "national-executive", label: "National Executive Member" },
+    ],
+  },
+  {
+    group: "Minister Level",
+    items: [
+      { value: "cabinet-minister-state", label: "Cabinet Minister (State)" },
+      { value: "minister-of-state-state", label: "Minister of State (State)" },
+      { value: "cabinet-minister-central", label: "Cabinet Minister (Central)" },
+      { value: "minister-of-state-central", label: "Minister of State (Central)" },
+      { value: "deputy-minister", label: "Deputy Minister" },
+      { value: "prime-minister", label: "Prime Minister (PM)" },
+    ],
+  },
+  {
+    group: "Party / Org Roles",
+    items: [
+      { value: "general-secretary", label: "General Secretary" },
+      { value: "secretary", label: "Secretary" },
+      { value: "joint-secretary", label: "Joint Secretary" },
+      { value: "treasurer", label: "Treasurer" },
+      { value: "party-spokesperson", label: "Party Spokesperson" },
+      { value: "party-observer", label: "Party Observer" },
+      { value: "party-incharge", label: "Party Incharge" },
+      { value: "party-leader", label: "Party Leader" },
+      { value: "party-coordinator", label: "Party Coordinator" },
+      { value: "party-convener", label: "Party Convener" },
+      { value: "youth-wing-president", label: "Youth Wing President" },
+      { value: "women-wing-president", label: "Women Wing President" },
+      { value: "party-member", label: "Party Member" },
+    ],
+  },
 ];
+const ROLES = ROLE_GROUPS.flatMap((g) => g.items);
 
 const CONSTITUENCIES = [
   {
@@ -1451,6 +1500,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [constituencyOpen, setConstituencyOpen] = useState(false);
   const [constituencySearch, setConstituencySearch] = useState("");
+  const [roleOpen, setRoleOpen] = useState(false);
+  const [roleSearch, setRoleSearch] = useState("");
   const { user: authUser, isLoading: isAuthLoading } = useAuth();
   const [localUser, setLocalUser] = useState<any>(() => {
     const saved = localStorage.getItem("persona_user");
@@ -3645,21 +3696,66 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       Role
                     </label>
                     <div className="relative">
-                      <select
-                        {...form.register("role")}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 appearance-none"
+                      <button
+                        type="button"
+                        onClick={() => { setRoleOpen(!roleOpen); setRoleSearch(""); }}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 flex items-center justify-between"
                       >
-                        {ROLES.map((r) => (
-                          <option
-                            key={r.value}
-                            value={r.value}
-                            
-                          >
-                            {r.label}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                        <span className={form.watch("role") ? "text-gray-900" : "text-gray-400"}>
+                          {ROLES.find((r) => r.value === form.watch("role"))?.label || "Select Role"}
+                        </span>
+                        <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      </button>
+                      {roleOpen && (
+                        <div className="absolute top-full mt-1 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-30 max-h-56 flex flex-col">
+                          <div className="p-2 border-b border-gray-100">
+                            <input
+                              autoFocus
+                              type="text"
+                              value={roleSearch}
+                              onChange={(e) => setRoleSearch(e.target.value)}
+                              className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-pink-400"
+                              placeholder="Search role..."
+                            />
+                          </div>
+                          <div className="overflow-y-auto flex-1">
+                            {ROLE_GROUPS.map((group, gi) => {
+                              const filtered = group.items.filter((r) =>
+                                r.label.toLowerCase().includes(roleSearch.toLowerCase())
+                              );
+                              if (filtered.length === 0) return null;
+                              return (
+                                <div key={gi}>
+                                  {group.group && (
+                                    <div className="px-3 py-1 text-[9px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 sticky top-0">
+                                      {group.group}
+                                    </div>
+                                  )}
+                                  {filtered.map((r) => (
+                                    <button
+                                      key={r.value}
+                                      type="button"
+                                      onClick={() => {
+                                        form.setValue("role", r.value);
+                                        setRoleOpen(false);
+                                        setRoleSearch("");
+                                      }}
+                                      className={clsx(
+                                        "w-full text-left px-4 py-2 text-sm transition-colors",
+                                        form.watch("role") === r.value
+                                          ? "bg-pink-50 text-pink-700 font-semibold"
+                                          : "text-gray-700 hover:bg-gray-50"
+                                      )}
+                                    >
+                                      {r.label}
+                                    </button>
+                                  ))}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-1">
