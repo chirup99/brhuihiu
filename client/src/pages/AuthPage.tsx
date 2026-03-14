@@ -619,21 +619,21 @@ const SwipeCard = ({
   const rotate = useTransform(x, [-220, 220], [-14, 14]);
   const frontOpacity = useTransform(x, [-180, -80, 0, 80, 180], [0.4, 1, 1, 1, 0.4]);
 
-  // Motion values for stack cards (animate independently)
-  const midY = useMotionValue(16);
-  const midScale = useMotionValue(0.94);
-  const backY = useMotionValue(28);
-  const backScale = useMotionValue(0.88);
+  // Motion values for stack cards (animate independently) — left-peek offset
+  const midX = useMotionValue(-12);
+  const midScale = useMotionValue(0.96);
+  const backX = useMotionValue(-22);
+  const backScale = useMotionValue(0.92);
 
   // Live sync: stack cards inch forward as top card is dragged
   useEffect(() => {
     const unsub = x.on("change", (v) => {
       if (isAnimating) return;
       const p = Math.min(Math.abs(v) / 180, 1);
-      midY.set(16 - p * 16);
-      midScale.set(0.94 + p * 0.06);
-      backY.set(28 - p * 12);
-      backScale.set(0.88 + p * 0.06);
+      midX.set(-12 + p * 12);
+      midScale.set(0.96 + p * 0.04);
+      backX.set(-22 + p * 10);
+      backScale.set(0.92 + p * 0.04);
     });
     return unsub;
   }, [isAnimating]);
@@ -643,27 +643,26 @@ const SwipeCard = ({
     setIsAnimating(true);
     await Promise.all([
       animate(x, dir * 440, { duration: 0.28, ease: [0.4, 0, 0.85, 1] }),
-      animate(midY, 0, { duration: 0.28, ease: [0.25, 0, 0.5, 1] }),
+      animate(midX, 0, { duration: 0.28, ease: [0.25, 0, 0.5, 1] }),
       animate(midScale, 1, { duration: 0.28, ease: [0.25, 0, 0.5, 1] }),
-      animate(backY, 16, { duration: 0.28, ease: [0.25, 0, 0.5, 1] }),
-      animate(backScale, 0.94, { duration: 0.28, ease: [0.25, 0, 0.5, 1] }),
+      animate(backX, -12, { duration: 0.28, ease: [0.25, 0, 0.5, 1] }),
+      animate(backScale, 0.96, { duration: 0.28, ease: [0.25, 0, 0.5, 1] }),
     ]);
-    // Update index and reset all positions synchronously before re-render
     setActiveIndex((prev) => (prev + 1) % displayCards.length);
     x.set(0);
-    midY.set(16);
-    midScale.set(0.94);
-    backY.set(28);
-    backScale.set(0.88);
+    midX.set(-12);
+    midScale.set(0.96);
+    backX.set(-22);
+    backScale.set(0.92);
     setIsAnimating(false);
   };
 
   const snapBack = () => {
     animate(x, 0, { type: "spring", stiffness: 340, damping: 30 });
-    animate(midY, 16, { type: "spring", stiffness: 340, damping: 30 });
-    animate(midScale, 0.94, { type: "spring", stiffness: 340, damping: 30 });
-    animate(backY, 28, { type: "spring", stiffness: 340, damping: 30 });
-    animate(backScale, 0.88, { type: "spring", stiffness: 340, damping: 30 });
+    animate(midX, -12, { type: "spring", stiffness: 340, damping: 30 });
+    animate(midScale, 0.96, { type: "spring", stiffness: 340, damping: 30 });
+    animate(backX, -22, { type: "spring", stiffness: 340, damping: 30 });
+    animate(backScale, 0.92, { type: "spring", stiffness: 340, damping: 30 });
   };
 
   if (!displayCards.length) return null;
@@ -674,21 +673,21 @@ const SwipeCard = ({
 
   return (
     <div className="relative w-full max-w-[240px] aspect-[3/4] mx-auto" style={{ perspective: "1200px" }}>
-      {/* Back card */}
+      {/* Back card — peeks from the left */}
       {displayCards.length > 2 && (
         <motion.div
           className={clsx("absolute inset-0 rounded-[24px] bg-gradient-to-b overflow-hidden shadow-md", bkCard.color)}
-          style={{ y: backY, scale: backScale, zIndex: 10 }}
+          style={{ x: backX, scale: backScale, zIndex: 10 }}
         >
           <div className="absolute inset-0 bg-white/15 rounded-[24px]" />
         </motion.div>
       )}
 
-      {/* Middle card */}
+      {/* Middle card — peeks from the left */}
       {displayCards.length > 1 && (
         <motion.div
           className={clsx("absolute inset-0 rounded-[24px] bg-gradient-to-b overflow-hidden shadow-lg", midCard.color)}
-          style={{ y: midY, scale: midScale, zIndex: 20 }}
+          style={{ x: midX, scale: midScale, zIndex: 20 }}
         >
           <div className="absolute inset-0 bg-white/8 rounded-[24px]" />
         </motion.div>
