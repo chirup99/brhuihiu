@@ -2726,8 +2726,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
             </div>
           ) : (
             <div className="flex flex-col gap-1.5 items-end">
-              <div className="w-8 h-1 bg-white rounded-full transition-all group-hover:w-6"></div>
-              <div className="w-5 h-1 bg-white rounded-full transition-all group-hover:w-8"></div>
+              <div className="w-8 h-1 bg-pink-700 rounded-full transition-all group-hover:w-6"></div>
+              <div className="w-5 h-1 bg-pink-700 rounded-full transition-all group-hover:w-8"></div>
             </div>
           )}
         </button>
@@ -2950,27 +2950,27 @@ export default function AuthPage({ slug }: { slug?: string }) {
               />
             </div>
             <div className="text-left">
-              <h1 className="text-xl font-display font-black tracking-widest uppercase text-white leading-none">
+              <h1 className="text-xl font-display font-black tracking-widest uppercase text-pink-900 leading-none">
                 BRS
               </h1>
-              <p className="text-[9px] tracking-[0.18em] text-pink-300/70 font-medium mt-0.5 whitespace-nowrap">
+              <p className="text-[9px] tracking-[0.18em] text-pink-500 font-medium mt-0.5 whitespace-nowrap">
                 Bharat Rashtra Samithi
               </p>
             </div>
           </div>
 
-          <h2 className="text-xl md:text-2xl font-display font-bold text-white mb-1">
+          <h2 className="text-xl md:text-2xl font-display font-bold text-pink-900 mb-1">
             People Party
           </h2>
-          <p className="text-white/50 text-xs mb-3 max-w-xs mx-auto leading-relaxed">
+          <p className="text-gray-500 text-xs mb-3 max-w-xs mx-auto leading-relaxed">
             Where people meet, vibe & understand each other.
           </p>
 
           <div className="flex items-center justify-center gap-3 mb-3">
-            <span className="text-[9px] font-semibold text-pink-400 bg-pink-500/10 border border-pink-500/20 px-2.5 py-0.5 rounded-full">
+            <span className="text-[9px] font-semibold text-pink-600 bg-pink-50 border border-pink-300 px-2.5 py-0.5 rounded-full">
               Real Connections
             </span>
-            <span className="text-[9px] font-semibold text-pink-400 bg-pink-500/10 border border-pink-500/20 px-2.5 py-0.5 rounded-full">
+            <span className="text-[9px] font-semibold text-pink-600 bg-pink-50 border border-pink-300 px-2.5 py-0.5 rounded-full">
               People First
             </span>
           </div>
@@ -2980,7 +2980,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
           ref={personaCardRef}
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-md bg-white/5 border border-white/8 backdrop-blur-sm rounded-2xl shadow-xl p-5 sm:p-6 z-10 relative overflow-hidden"
+          className="w-full max-w-md bg-gray-950 border border-pink-500/20 rounded-2xl shadow-2xl p-5 sm:p-6 z-10 relative overflow-hidden"
         >
           {(mode === "login" || mode === "swipe") && (
             <div className="flex p-0.5 bg-white/6 border border-white/8 rounded-xl mb-5 relative">

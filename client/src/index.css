@@ -60,14 +60,14 @@
   }
 }
 
-/* Pink background */
+/* Pink white background */
 .bg-mesh {
-  background-color: #1a0510;
+  background-color: #ffffff;
   background-image: 
-    radial-gradient(ellipse at 50% 0%, rgba(236, 72, 153, 0.55) 0%, transparent 55%),
-    radial-gradient(ellipse at 0% 100%, rgba(219, 39, 119, 0.30) 0%, transparent 50%),
-    radial-gradient(ellipse at 100% 60%, rgba(244, 114, 182, 0.20) 0%, transparent 45%),
-    radial-gradient(ellipse at 50% 50%, rgba(190, 24, 93, 0.12) 0%, transparent 70%);
+    radial-gradient(ellipse at 50% 0%, rgba(236, 72, 153, 0.10) 0%, transparent 55%),
+    radial-gradient(ellipse at 0% 100%, rgba(219, 39, 119, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 60%, rgba(244, 114, 182, 0.05) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 50%, rgba(190, 24, 93, 0.04) 0%, transparent 70%);
   background-size: 100% 100%;
   background-attachment: fixed;
 }
