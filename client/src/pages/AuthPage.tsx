@@ -161,6 +161,37 @@ const ROLES = [
   { value: "party-member", label: "Party Member" },
 ];
 
+const CONSTITUENCIES = [
+  {
+    region: "Hyderabad District",
+    items: ["Malakpet","Karwan","Goshamahal","Charminar","Chandrayangutta","Yakutpura","Bahadurpura","Nampally","Khairatabad","Jubilee Hills","Sanathnagar","Musheerabad","Amberpet","Secunderabad","Secunderabad Cantonment"],
+  },
+  {
+    region: "Rangareddy District",
+    items: ["Maheshwaram","Rajendranagar","Serilingampally","Ibrahimpatnam","Chevella","Parigi","Tandur"],
+  },
+  {
+    region: "Medchal–Malkajgiri District",
+    items: ["Quthbullapur","Kukatpally","Uppal","Malkajgiri","Medchal"],
+  },
+  {
+    region: "Karimnagar Region",
+    items: ["Karimnagar","Huzurabad","Manakondur","Choppadandi","Husnabad"],
+  },
+  {
+    region: "Warangal Region",
+    items: ["Warangal West","Warangal East","Palakurthi","Narsampet","Parakal"],
+  },
+  {
+    region: "Nizamabad Region",
+    items: ["Nizamabad Urban","Nizamabad Rural","Balkonda","Bodhan","Armoor"],
+  },
+  {
+    region: "Nalgonda Region",
+    items: ["Nalgonda","Miryalaguda","Suryapet","Devarakonda","Nagarjuna Sagar"],
+  },
+];
+
 const CARDS = [
   {
     id: 1,
@@ -1418,6 +1449,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
   const [whatsappCountryCode, setWhatsappCountryCode] = useState("+91");
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [constituencyOpen, setConstituencyOpen] = useState(false);
+  const [constituencySearch, setConstituencySearch] = useState("");
   const { user: authUser, isLoading: isAuthLoading } = useAuth();
   const [localUser, setLocalUser] = useState<any>(() => {
     const saved = localStorage.getItem("persona_user");
@@ -3631,43 +3664,67 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
-                      Industry
+                      Constituency
                     </label>
                     <div className="relative">
-                      <select
-                        {...form.register("industry")}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 appearance-none"
+                      <button
+                        type="button"
+                        onClick={() => { setConstituencyOpen(!constituencyOpen); setConstituencySearch(""); }}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 appearance-none flex items-center justify-between"
                       >
-                        <option value="" >
-                          Select Industry
-                        </option>
-                        {[
-                          "Fintech",
-                          "Healthtech",
-                          "Edtech",
-                          "Ecommerce & Retail",
-                          "Agritech",
-                          "SaaS",
-                          "Cleantech & Greentech",
-                          "Logistics",
-                          "🌱 Sustainability & Energy (EVs)",
-                          "DeepTech",
-                          "Spacetech",
-                          "Robotics & Automation",
-                          "Cybersecurity",
-                          "AR/VR",
-                          "Media & Entertainment",
-                        ].map((industry) => (
-                          <option
-                            key={industry}
-                            value={industry}
-                            
-                          >
-                            {industry}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                        <span className={form.watch("industry") ? "text-gray-900" : "text-gray-400"}>
+                          {form.watch("industry") || "Select Constituency"}
+                        </span>
+                        <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      </button>
+                      {constituencyOpen && (
+                        <div className="absolute top-full mt-1 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-30 max-h-56 flex flex-col">
+                          <div className="p-2 border-b border-gray-100">
+                            <input
+                              autoFocus
+                              type="text"
+                              value={constituencySearch}
+                              onChange={(e) => setConstituencySearch(e.target.value)}
+                              className="w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5 text-sm text-gray-900 outline-none focus:border-pink-400"
+                              placeholder="Search constituency..."
+                            />
+                          </div>
+                          <div className="overflow-y-auto flex-1">
+                            {CONSTITUENCIES.map((group) => {
+                              const filtered = group.items.filter((c) =>
+                                c.toLowerCase().includes(constituencySearch.toLowerCase())
+                              );
+                              if (filtered.length === 0) return null;
+                              return (
+                                <div key={group.region}>
+                                  <div className="px-3 py-1 text-[9px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 sticky top-0">
+                                    {group.region}
+                                  </div>
+                                  {filtered.map((c) => (
+                                    <button
+                                      key={c}
+                                      type="button"
+                                      onClick={() => {
+                                        form.setValue("industry", c);
+                                        setConstituencyOpen(false);
+                                        setConstituencySearch("");
+                                      }}
+                                      className={clsx(
+                                        "w-full text-left px-4 py-2 text-sm transition-colors",
+                                        form.watch("industry") === c
+                                          ? "bg-pink-50 text-pink-700 font-semibold"
+                                          : "text-gray-700 hover:bg-gray-50"
+                                      )}
+                                    >
+                                      {c}
+                                    </button>
+                                  ))}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-1">
