@@ -52,6 +52,7 @@ import { SiInstagram, SiWhatsapp } from "react-icons/si";
 import avatarWoman from "@assets/female.png";
 import avatarMan from "@assets/male.png";
 import pinkCarSrc from "@assets/pink-car.png";
+import brsLogoSlider from "@assets/brs-logo-slider.png";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useMutation } from "@tanstack/react-query";
 
@@ -1358,6 +1359,34 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [mode, setMode] = useState<AuthMode>("login");
+
+  type CarPhase = "ltr" | "rtl" | "pause";
+  const [carPhase, setCarPhase] = useState<CarPhase>("ltr");
+  const [msgIndex, setMsgIndex] = useState(0);
+
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout>;
+    if (carPhase === "ltr") {
+      t = setTimeout(() => setCarPhase("rtl"), 2200);
+    } else if (carPhase === "rtl") {
+      t = setTimeout(() => setCarPhase("pause"), 2200);
+    } else {
+      t = setTimeout(() => { setCarPhase("ltr"); setMsgIndex(0); }, 4000);
+    }
+    return () => clearTimeout(t);
+  }, [carPhase]);
+
+  useEffect(() => {
+    if (carPhase !== "pause") return;
+    const msgs = [0, 1, 2];
+    let i = 0;
+    const iv = setInterval(() => {
+      i = (i + 1) % msgs.length;
+      setMsgIndex(i);
+    }, 1300);
+    return () => clearInterval(iv);
+  }, [carPhase]);
+
   const [whatsappCountryCode, setWhatsappCountryCode] = useState("+91");
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const { user: authUser, isLoading: isAuthLoading } = useAuth();
@@ -3003,31 +3032,78 @@ export default function AuthPage({ slug }: { slug?: string }) {
           className="w-full max-w-md bg-white border border-pink-200 rounded-2xl shadow-2xl p-5 sm:p-6 z-10 relative overflow-hidden"
         >
           {/* Pink car animation strip */}
-          <div className="relative overflow-hidden h-7 -mx-5 sm:-mx-6 -mt-5 sm:-mt-6 mb-4 bg-pink-50 border-b border-pink-100">
-            <div
-              className="absolute top-0 h-full flex items-center"
-              style={{ animation: "carDrive 2s linear infinite" }}
-            >
-              <div className="flex items-center gap-0">
-                <div className="flex flex-col gap-[3px] mr-1">
-                  <div className="h-px bg-pink-300 opacity-70" style={{ width: 18 }} />
-                  <div className="h-px bg-pink-200 opacity-50" style={{ width: 12 }} />
-                  <div className="h-px bg-pink-300 opacity-70" style={{ width: 16 }} />
-                </div>
-                <img
-                  src={pinkCarSrc}
-                  alt="pink car"
-                  className="object-contain"
-                  style={{
-                    height: 22,
-                    width: "auto",
-                    transform: "scaleX(1.08) scaleY(0.92)",
-                    filter: "drop-shadow(2px 0 3px rgba(236,72,153,0.35))",
-                  }}
-                />
+          {(() => {
+            const pauseMessages = [
+              { lang: "Telugu", text: "వేగంగా కలుపుతాం" },
+              { lang: "Hindi",  text: "तेज़ी से जोड़ते हैं" },
+              { lang: "Urdu",   text: "تیزی سے جوڑتے ہیں" },
+            ];
+            const SpeedLines = ({ side }: { side: "left" | "right" }) => (
+              <div className={clsx("flex flex-col gap-[3px]", side === "left" ? "mr-1" : "ml-1")}>
+                <div className="h-px bg-pink-400 opacity-80" style={{ width: 20 }} />
+                <div className="h-px bg-pink-300 opacity-55" style={{ width: 13 }} />
+                <div className="h-px bg-pink-400 opacity-80" style={{ width: 17 }} />
               </div>
-            </div>
-          </div>
+            );
+            const CarImg = ({ flip }: { flip?: boolean }) => (
+              <img
+                src={pinkCarSrc}
+                alt="pink car"
+                className="object-contain"
+                style={{
+                  height: 22,
+                  width: "auto",
+                  transform: `scaleX(${flip ? -1.08 : 1.08}) scaleY(0.92)`,
+                  filter: "drop-shadow(2px 0 3px rgba(236,72,153,0.4))",
+                }}
+              />
+            );
+            return (
+              <div className="relative overflow-hidden h-10 -mx-5 sm:-mx-6 -mt-5 sm:-mt-6 mb-4 bg-pink-50 border-b border-pink-100">
+                {carPhase === "ltr" && (
+                  <div
+                    className="absolute top-0 h-full flex items-center"
+                    style={{ animation: "carDriveRight 2.2s linear forwards" }}
+                  >
+                    <SpeedLines side="left" />
+                    <CarImg />
+                  </div>
+                )}
+                {carPhase === "rtl" && (
+                  <div
+                    className="absolute top-0 h-full flex items-center"
+                    style={{ animation: "carDriveLeft 2.2s linear forwards" }}
+                  >
+                    <CarImg flip />
+                    <SpeedLines side="right" />
+                  </div>
+                )}
+                {carPhase === "pause" && (
+                  <div className="absolute inset-0 flex items-center justify-center gap-2 px-3 animate-fadeIn">
+                    <img
+                      src={brsLogoSlider}
+                      alt="BRS"
+                      className="object-contain flex-shrink-0"
+                      style={{ height: 28, width: 28 }}
+                    />
+                    <CarImg />
+                    <div className="flex flex-col items-start leading-tight overflow-hidden">
+                      <span
+                        key={msgIndex}
+                        className="text-[10px] font-bold text-pink-600 whitespace-nowrap animate-fadeIn"
+                        style={{ direction: msgIndex === 2 ? "rtl" : "ltr" }}
+                      >
+                        {pauseMessages[msgIndex].text}
+                      </span>
+                      <span className="text-[8px] text-pink-400 uppercase tracking-wider">
+                        We Connect People · Speed
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {(mode === "login" || mode === "swipe") && (
             <div className="flex p-0.5 bg-pink-50 border border-pink-200 rounded-xl mb-5 relative">
