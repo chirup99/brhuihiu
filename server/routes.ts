@@ -366,11 +366,12 @@ export async function registerRoutes(
 
       const variants: any[] = (videoMedia.video_info?.variants || [])
         .filter((v: any) => v.content_type === "video/mp4" && v.url)
-        .sort((a: any, b: any) => (b.bitrate || 0) - (a.bitrate || 0));
+        .sort((a: any, b: any) => (a.bitrate || 0) - (b.bitrate || 0));
 
       if (!variants.length) return res.status(404).send("No MP4 variants found");
 
-      const videoUrl = variants[0].url;
+      // Pick the second-lowest bitrate if available (better quality than minimum, still smooth)
+      const videoUrl = (variants[1] || variants[0]).url;
       const range = req.headers.range;
 
       const fetchHeaders: Record<string, string> = {
