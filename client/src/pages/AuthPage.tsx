@@ -36,6 +36,7 @@ import {
   AnimatePresence,
   useMotionValue,
   useTransform,
+  animate,
 } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -566,8 +567,6 @@ const SwipeCard = ({
           const card = JSON.parse(c);
           if (!card || !card.type) return CARDS[0];
           const typeInfo = CARD_TYPES.find((t) => t.type === card.type);
-
-          // Set name field based on card type
           let name = card.title || "Untitled";
           if (card.type === "revenue" || card.type === "traction") {
             name = card.value || card.title || "Growth";
@@ -576,8 +575,6 @@ const SwipeCard = ({
           } else if (card.type === "product") {
             name = card.title || "Product";
           }
-
-          // Determine subname based on card type
           let subname = "";
           if (card.type === "reel") {
             subname = card.url || "";
@@ -588,117 +585,139 @@ const SwipeCard = ({
           } else {
             subname = card.url || "Persona";
           }
-
           return {
             ...card,
             type: card.type,
             title: card.title || "Untitled",
-            name: name,
-            subname: subname,
-            thumbnailUrl:
-              card.type === "reel" ? getThumbnailUrl(card.url) : null,
+            name,
+            subname,
+            thumbnailUrl: card.type === "reel" ? getThumbnailUrl(card.url) : null,
             color: typeInfo?.color || "from-gray-700 to-gray-800",
-            bgStack1: "bg-black/20",
-            bgStack2: "bg-black/10",
           };
         } catch (e) {
           return CARDS[0];
         }
       });
     }
-
-    // If we are viewing another persona (isOtherPersona) or we are a logged in user with no cards
-    // and cards array is empty, show the "NO CARDS" state instead of demo cards.
     if (propsUser || (cards.length === 0 && window.location.pathname !== "/")) {
-      return [
-        {
-          title: "NO CARDS",
-          name: "EMPTY",
-          subname: "PERSONA",
-          color: "from-gray-800 to-gray-900",
-          bgStack1: "bg-black/20",
-          bgStack2: "bg-black/10",
-        },
-      ];
+      return [{ title: "NO CARDS", name: "EMPTY", subname: "PERSONA", color: "from-gray-800 to-gray-900" }];
     }
-
-    return CARDS.map((c) => ({
-      ...c,
-      name: c.name.toUpperCase(),
-      subname: c.subname.toUpperCase(),
-    }));
+    return CARDS.map((c) => ({ ...c, name: c.name.toUpperCase(), subname: c.subname.toUpperCase() }));
   }, [cards, propsUser]);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
 
-  // Reset index if displayCards changes and current index is out of bounds
   useEffect(() => {
-    if (currentIndex >= displayCards.length) {
-      setCurrentIndex(0);
-    }
-  }, [displayCards.length, currentIndex]);
+    if (activeIndex >= displayCards.length) setActiveIndex(0);
+  }, [displayCards.length]);
 
-  const handleSwipeLeft = () => {
-    if (displayCards.length === 0) return;
-    setCurrentIndex((prev) => (prev + 1) % displayCards.length);
+  // Motion values for top card drag
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-220, 220], [-14, 14]);
+  const frontOpacity = useTransform(x, [-180, -80, 0, 80, 180], [0.4, 1, 1, 1, 0.4]);
+
+  // Motion values for stack cards (animate independently)
+  const midY = useMotionValue(16);
+  const midScale = useMotionValue(0.94);
+  const backY = useMotionValue(28);
+  const backScale = useMotionValue(0.88);
+
+  // Live sync: stack cards inch forward as top card is dragged
+  useEffect(() => {
+    const unsub = x.on("change", (v) => {
+      if (isAnimating) return;
+      const p = Math.min(Math.abs(v) / 180, 1);
+      midY.set(16 - p * 16);
+      midScale.set(0.94 + p * 0.06);
+      backY.set(28 - p * 12);
+      backScale.set(0.88 + p * 0.06);
+    });
+    return unsub;
+  }, [isAnimating]);
+
+  const triggerSwipe = async (dir: number) => {
+    if (isAnimating || displayCards.length <= 1) return;
+    setIsAnimating(true);
+    await Promise.all([
+      animate(x, dir * 440, { duration: 0.28, ease: [0.4, 0, 0.85, 1] }),
+      animate(midY, 0, { duration: 0.28, ease: [0.25, 0, 0.5, 1] }),
+      animate(midScale, 1, { duration: 0.28, ease: [0.25, 0, 0.5, 1] }),
+      animate(backY, 16, { duration: 0.28, ease: [0.25, 0, 0.5, 1] }),
+      animate(backScale, 0.94, { duration: 0.28, ease: [0.25, 0, 0.5, 1] }),
+    ]);
+    // Update index and reset all positions synchronously before re-render
+    setActiveIndex((prev) => (prev + 1) % displayCards.length);
+    x.set(0);
+    midY.set(16);
+    midScale.set(0.94);
+    backY.set(28);
+    backScale.set(0.88);
+    setIsAnimating(false);
   };
 
-  const handleSwipeRight = () => {
-    if (displayCards.length === 0) return;
-    setCurrentIndex(
-      (prev) => (prev - 1 + displayCards.length) % displayCards.length,
-    );
+  const snapBack = () => {
+    animate(x, 0, { type: "spring", stiffness: 340, damping: 30 });
+    animate(midY, 16, { type: "spring", stiffness: 340, damping: 30 });
+    animate(midScale, 0.94, { type: "spring", stiffness: 340, damping: 30 });
+    animate(backY, 28, { type: "spring", stiffness: 340, damping: 30 });
+    animate(backScale, 0.88, { type: "spring", stiffness: 340, damping: 30 });
   };
 
-  const currentCard = displayCards[currentIndex];
+  if (!displayCards.length) return null;
 
-  if (!currentCard) return null;
-
-  // Get next two cards for the stack effect
-  const nextCard = displayCards[(currentIndex + 1) % displayCards.length];
-  const nextNextCard = displayCards[(currentIndex + 2) % displayCards.length];
+  const frontCard = displayCards[activeIndex];
+  const midCard = displayCards[(activeIndex + 1) % displayCards.length];
+  const bkCard = displayCards[(activeIndex + 2) % displayCards.length];
 
   return (
-    <div className="relative w-full max-w-[240px] aspect-[3/4] mx-auto perspective-1000">
-      {/* Background stacked cards - only show if there's more than 1 card */}
-      {displayCards.length > 1 && (
-        <>
-          {/* Second card - furthest back */}
-          <div
-            className={clsx(
-              "absolute inset-0 rounded-[24px] pointer-events-none z-0 shadow-2xl bg-gradient-to-b",
-              nextNextCard?.color || "from-gray-700 to-gray-800",
-            )}
-            style={{
-              transform: "translateY(24px) translateX(12px) scale(0.98)",
-            }}
-          >
-            <div className="absolute inset-0 bg-black/40 rounded-[24px]" />
-          </div>
-          {/* First card - middle layer */}
-          <div
-            className={clsx(
-              "absolute inset-0 rounded-[24px] pointer-events-none z-10 shadow-xl bg-gradient-to-b",
-              nextCard?.color || "from-gray-700 to-gray-800",
-            )}
-            style={{
-              transform: "translateY(12px) translateX(6px) scale(0.99)",
-            }}
-          >
-            <div className="absolute inset-0 bg-black/25 rounded-[24px]" />
-          </div>
-        </>
+    <div className="relative w-full max-w-[240px] aspect-[3/4] mx-auto" style={{ perspective: "1200px" }}>
+      {/* Back card */}
+      {displayCards.length > 2 && (
+        <motion.div
+          className={clsx("absolute inset-0 rounded-[24px] bg-gradient-to-b overflow-hidden shadow-md", bkCard.color)}
+          style={{ y: backY, scale: backScale, zIndex: 10 }}
+        >
+          <div className="absolute inset-0 bg-black/50 rounded-[24px]" />
+        </motion.div>
       )}
 
-      {/* Main card - front */}
-      <SwipeCardContent
-        key={currentIndex}
-        card={currentCard}
-        currentIndex={currentIndex}
-        totalCards={displayCards.length}
-        onSwipeLeft={handleSwipeLeft}
-        onSwipeRight={handleSwipeRight}
-      />
+      {/* Middle card */}
+      {displayCards.length > 1 && (
+        <motion.div
+          className={clsx("absolute inset-0 rounded-[24px] bg-gradient-to-b overflow-hidden shadow-lg", midCard.color)}
+          style={{ y: midY, scale: midScale, zIndex: 20 }}
+        >
+          <div className="absolute inset-0 bg-black/28 rounded-[24px]" />
+        </motion.div>
+      )}
+
+      {/* Front card — fully interactive */}
+      <motion.div
+        key={activeIndex}
+        style={{ x, rotate, opacity: frontOpacity, zIndex: 30 }}
+        drag={isAnimating ? false : "x"}
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.12}
+        whileDrag={{ scale: 1.03 }}
+        onDragEnd={(_, info) => {
+          if (info.offset.x < -70) triggerSwipe(-1);
+          else if (info.offset.x > 70) triggerSwipe(1);
+          else snapBack();
+        }}
+        className={clsx(
+          "absolute inset-0 bg-gradient-to-b rounded-[24px] p-4 shadow-2xl cursor-grab active:cursor-grabbing overflow-hidden",
+          frontCard.color,
+        )}
+      >
+        <SwipeCardContent
+          card={frontCard}
+          currentIndex={activeIndex}
+          totalCards={displayCards.length}
+          onSwipeLeft={() => triggerSwipe(-1)}
+          onSwipeRight={() => triggerSwipe(1)}
+        />
+      </motion.div>
     </div>
   );
 };
@@ -3002,7 +3021,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   mode === "swipe" ? "text-pink-700" : "text-pink-300",
                 )}
               >
-                Mini-Cards
+                Voice
               </button>
               <motion.div
                 layoutId="activeTab"
