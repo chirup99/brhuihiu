@@ -101,6 +101,12 @@ const CARD_TYPES = [
     icon: PenLine,
     color: "from-[#1a0510] to-[#2d0a1e]",
   },
+  {
+    type: "xpost",
+    label: "X Post",
+    icon: SiX,
+    color: "from-[#0a0a0a] to-[#1a1a1a]",
+  },
 ];
 
 const VOICE_DEMO_CARDS = [
@@ -597,6 +603,27 @@ const SwipeCardContent = forwardRef(
                     </p>
                   )}
                 </div>
+              ) : card.type === "xpost" ? (
+                (() => {
+                  const xUrl = (card as any).url || "";
+                  const tweetIdMatch = xUrl.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
+                  const tweetId = tweetIdMatch?.[1];
+                  return tweetId ? (
+                    <div className="w-full h-full absolute inset-0" onClick={(e) => e.stopPropagation()}>
+                      <iframe
+                        src={`https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&chrome=nofooter`}
+                        className="w-full h-full border-0"
+                        allow="autoplay; encrypted-media"
+                        scrolling="no"
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-center space-y-3">
+                      <SiX className="w-10 h-10 text-white/30 mx-auto" />
+                      <p className="text-white/40 text-[10px] uppercase tracking-widest font-bold">No post added</p>
+                    </div>
+                  );
+                })()
               ) : (
                 <div className="text-center space-y-0.5">
                   <h3 className="text-white text-2xl font-bold leading-tight">
@@ -615,7 +642,8 @@ const SwipeCardContent = forwardRef(
             </div>
 
             {card.type !== "product" &&
-              card.type !== "image" && (
+              card.type !== "image" &&
+              card.type !== "xpost" && (
                 <div className="w-full">
                   <button
                     type="button"
@@ -671,9 +699,11 @@ const SwipeCard = ({
       if (card.type === "reel") name = card.title || "Video";
       else if (card.type === "image" || card.type === "product") name = card.title || "Image";
       else if (card.type === "post") name = card.title || "Post";
+      else if (card.type === "xpost") name = card.title || "X Post";
       let subname = "";
       if (card.type === "reel") subname = card.url || "";
       else if (card.type === "post") subname = card.content || "";
+      else if (card.type === "xpost") subname = card.url || "";
       else subname = card.url || "Persona";
       return {
         ...card,
@@ -945,7 +975,7 @@ const MiniCard = ({
       layoutId={`card-${idx}`}
       className={clsx(
         "h-full rounded-2xl relative overflow-hidden flex flex-col justify-between shadow-xl bg-gradient-to-b",
-        card.type === "reel" || card.type === "image" ? "p-0" : "p-4",
+        card.type === "reel" || card.type === "image" || card.type === "xpost" ? "p-0" : "p-4",
         cardTypeInfo?.color || "from-gray-700 to-gray-800",
       )}
     >
@@ -958,7 +988,7 @@ const MiniCard = ({
           <X className="w-4 h-4" />
         </button>
       )}
-      {card.type !== "reel" && card.type !== "image" && (
+      {card.type !== "reel" && card.type !== "image" && card.type !== "xpost" && (
         <div className="space-y-2">
           <h5 className="text-white font-bold text-lg leading-tight">
             {card.type === "post" ? "Post" : card.title}
@@ -974,11 +1004,11 @@ const MiniCard = ({
         {isEditing ? (
           <div className={clsx(
             "w-full space-y-2 z-10",
-            card.type === "reel" || card.type === "image"
+            card.type === "reel" || card.type === "image" || card.type === "xpost"
               ? "absolute inset-0 flex flex-col justify-center p-4 bg-black/70 backdrop-blur-md"
               : "bg-black/40 p-3 rounded-xl backdrop-blur-sm",
           )}>
-            {card.type !== "image" && card.type !== "post" && card.type !== "reel" && (
+            {card.type !== "image" && card.type !== "post" && card.type !== "reel" && card.type !== "xpost" && (
               <input
                 className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-xs text-white"
                 placeholder="Title"
@@ -1027,6 +1057,24 @@ const MiniCard = ({
                   onUpdate(JSON.stringify({ ...card, content: e.target.value }));
                 }}
               />
+            )}
+            {card.type === "xpost" && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center bg-white/10 border border-white/20">
+                    <SiX className="w-3 h-3 text-white" />
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">Add X Post URL</span>
+                </div>
+                <input
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-white/40"
+                  placeholder="https://x.com/user/status/..."
+                  defaultValue={(card as any).url}
+                  onBlur={(e) => {
+                    onUpdate(JSON.stringify({ ...card, url: e.target.value }));
+                  }}
+                />
+              </div>
             )}
             {(card.type === "image" || card.type === "product") && (
               <div className="space-y-1">
@@ -1301,6 +1349,42 @@ const MiniCard = ({
               )}
             </div>
           </div>
+        ) : card.type === "xpost" ? (
+          (() => {
+            const xUrl = (card as any).url || "";
+            const tweetIdMatch = xUrl.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
+            const tweetId = tweetIdMatch?.[1];
+            return tweetId ? (
+              <div className="w-full h-full relative" onClick={(e) => e.stopPropagation()}>
+                <iframe
+                  src={`https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&chrome=nofooter`}
+                  className="w-full h-full border-0"
+                  allow="autoplay; encrypted-media"
+                  scrolling="no"
+                />
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+                  className="absolute top-3 right-3 p-1.5 bg-black/60 backdrop-blur-sm rounded-full border border-white/10 text-white/70 hover:text-white transition-colors z-10"
+                >
+                  <Pencil className="w-3 h-3" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className="w-full h-full flex flex-col items-center justify-center gap-3 group"
+              >
+                <div className="w-16 h-16 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors">
+                  <SiX className="w-7 h-7 text-white/40 group-hover:text-white/70 transition-colors" />
+                </div>
+                <span className="text-white/40 text-[9px] font-bold uppercase tracking-widest group-hover:text-white/60 transition-colors">
+                  Add X post URL
+                </span>
+              </button>
+            );
+          })()
         ) : card.type === "revenue" && isPlaying ? (
           <div className="w-full h-full flex flex-col items-center justify-center p-2">
             <div className="w-full h-24 relative overflow-visible">
@@ -4024,11 +4108,17 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                                 title: "Image Card",
                                                 imageUrl: "",
                                               }
-                                            : {
-                                                type: "post",
-                                                title: "Post Card",
-                                                content: "",
-                                              };
+                                            : t.type === "xpost"
+                                              ? {
+                                                  type: "xpost",
+                                                  title: "X Post",
+                                                  url: "",
+                                                }
+                                              : {
+                                                  type: "post",
+                                                  title: "Post Card",
+                                                  content: "",
+                                                };
                                       currentCards[idx] = JSON.stringify(newCard);
                                       setSelectedCards(currentCards);
                                     }}
