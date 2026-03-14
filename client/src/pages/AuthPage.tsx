@@ -3870,7 +3870,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 initial={{ opacity: 0, scale: 0.95, y: 24 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 24 }}
-                className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[61] w-[calc(100vw-32px)] max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden"
+                className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[61] w-[calc(100vw-32px)] max-w-sm max-h-[calc(100dvh-32px)] bg-white rounded-2xl shadow-2xl overflow-y-auto"
                 style={{ touchAction: "auto" }}
               >
                 <div className="h-1.5 w-full bg-gradient-to-r from-pink-400 via-pink-500 to-pink-600" />
