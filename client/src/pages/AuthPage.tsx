@@ -765,10 +765,12 @@ const XVideoCard = ({ tweetId, xUrl, onEditClick }: { tweetId: string; xUrl: str
           <button
             type="button"
             onClick={handlePlay}
-            onPointerDown={(e) => e.stopPropagation()}
-            onPointerUp={(e) => e.stopPropagation()}
+            onPointerDown={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
+            onPointerUp={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
+            onTouchStart={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
+            onTouchEnd={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
             className={`absolute inset-0 flex items-center justify-center z-10 transition-opacity ${isPlaying ? "opacity-0 active:opacity-100" : "opacity-100"}`}
-            style={{ background: isPlaying ? "transparent" : "rgba(0,0,0,0.35)" }}
+            style={{ background: isPlaying ? "transparent" : "rgba(0,0,0,0.35)", touchAction: "manipulation" }}
           >
             {!isPlaying && (
               <div className="w-16 h-16 rounded-full bg-white/25 backdrop-blur-md border-2 border-white/40 flex items-center justify-center shadow-2xl active:scale-95 transition-transform">
