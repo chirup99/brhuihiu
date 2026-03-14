@@ -4130,64 +4130,82 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   <X className="w-4 h-4" />
                 </button>
 
-                {/* iPhone Frame - Ultra Compact & Minimalist */}
-                <div className="relative aspect-[9/19.5] bg-[#050505] rounded-[42px] p-1.5 shadow-[0_0_0_1px_#1a1a1a,0_0_0_4px_#000,0_15px_40px_rgba(0,0,0,0.6)] overflow-hidden border-[1px] border-white/5">
+                {/* iPhone Frame - Pink Theme */}
+                <div className="relative aspect-[9/19.5] rounded-[42px] p-1.5 overflow-hidden border border-pink-500/30 shadow-[0_0_0_1px_rgba(236,72,153,0.2),0_0_0_4px_rgba(190,24,93,0.15),0_20px_50px_rgba(236,72,153,0.25)]" style={{ background: "linear-gradient(145deg, #2d0a1a, #1a0510)" }}>
                   {/* Tiny Dynamic Island */}
                   <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-14 h-4 bg-black rounded-full z-50 flex items-center justify-end px-2.5">
-                    <div className="w-0.5 h-0.5 rounded-full bg-blue-500/20 shadow-[0_0_2px_#3b82f6]" />
+                    <div className="w-0.5 h-0.5 rounded-full bg-pink-500/40 shadow-[0_0_3px_#ec4899]" />
                   </div>
 
                   {/* iPhone Screen Content */}
                   <div
                     id="iphone-screen-preview"
-                    className="w-full h-full bg-[#050505] rounded-[36px] relative overflow-hidden flex flex-col items-center p-4"
+                    className="w-full h-full rounded-[36px] relative overflow-hidden flex flex-col items-center"
+                    style={{
+                      background: "linear-gradient(160deg, #1a0510 0%, #2d0a1e 40%, #1a0510 100%)",
+                    }}
                   >
+                    {/* Pink glow at top */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 rounded-full blur-2xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(236,72,153,0.4) 0%, transparent 70%)" }} />
+
                     {/* Status Bar */}
-                    <div className="status-bar-container w-full flex justify-between items-center px-6 pt-2 pb-1 z-50">
-                      <span className="text-white text-[10px] font-medium">
+                    <div className="status-bar-container w-full flex justify-between items-center px-5 pt-3 pb-1 z-50">
+                      <span className="text-pink-200/70 text-[9px] font-semibold">
                         {currentTime}
                       </span>
                       <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 rounded-full border border-white/20" />
-                        <div className="w-4 h-2 rounded-sm border border-white/20" />
+                        <div className="w-2.5 h-2.5 rounded-full border border-pink-400/30" />
+                        <div className="w-3.5 h-1.5 rounded-sm border border-pink-400/30" />
                       </div>
                     </div>
 
-                    <div className="flex flex-col items-center w-full space-y-4 mt-4">
+                    <div className="flex flex-col items-center w-full px-4 pt-3 pb-4 flex-1">
                       {/* Profile Section */}
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="relative group">
-                          <div className="w-16 h-16 rounded-full border-2 border-white/10 p-1 bg-white/5">
-                            <img
-                              src={avatarUrl}
-                              alt="Avatar"
-                              className="w-full h-full rounded-full object-cover"
-                            />
+                      <div className="flex flex-col items-center gap-2 w-full">
+                        <div className="relative">
+                          <div className="w-16 h-16 rounded-full p-[2px]" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}>
+                            <div className="w-full h-full rounded-full overflow-hidden border-2 border-black/20">
+                              <img
+                                src={avatarUrl}
+                                alt="Avatar"
+                                className="w-full h-full rounded-full object-cover"
+                              />
+                            </div>
                           </div>
                           <button
                             onClick={() => setShowAvatarDialog(true)}
-                            className="edit-avatar-button absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg border border-black/5 hover:scale-110 transition-transform"
+                            className="edit-avatar-button absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center shadow-lg border border-pink-900/30 hover:scale-110 transition-transform"
+                            style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}
                           >
-                            <Pencil className="w-3 h-3 text-black" />
+                            <Pencil className="w-2.5 h-2.5 text-white" />
                           </button>
                         </div>
-                        <div className="text-center space-y-0.5">
-                          <h5 className="text-white text-lg font-bold tracking-tight">
-                            {user?.name || "Founder Name"}
+
+                        <div className="text-center space-y-1.5">
+                          <h5 className="text-white text-sm font-bold tracking-tight leading-none">
+                            {user?.name || form.watch("name") || "Your Name"}
                           </h5>
-                          <p className="text-white/40 text-[8px] uppercase tracking-[0.2em] font-black">
-                            {user?.role || "FOUNDER"}
-                          </p>
-                          <p className="text-white/30 text-[8px] uppercase tracking-wider line-clamp-1 px-4">
-                            {user?.bio || ""}
-                          </p>
+                          {(user?.role || form.watch("role")) && (
+                            <span className="inline-block text-[7px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full" style={{ background: "rgba(236,72,153,0.2)", color: "#f472b6", border: "1px solid rgba(236,72,153,0.3)" }}>
+                              {(user?.role || form.watch("role") || "").replace(/_/g, " ")}
+                            </span>
+                          )}
+                          {(user?.bio || form.watch("bio")) && (
+                            <p className="text-pink-200/40 text-[7px] line-clamp-1 px-3 italic">
+                              {user?.bio || form.watch("bio")}
+                            </p>
+                          )}
                         </div>
                       </div>
 
-                      {/* QR Code Section - More Compact */}
+                      {/* Divider */}
+                      <div className="w-full h-px my-3" style={{ background: "linear-gradient(90deg, transparent, rgba(236,72,153,0.3), transparent)" }} />
+
+                      {/* QR Code Section */}
                       <div
                         id="qr-download-area"
-                        className="p-4 bg-white rounded-[24px] shadow-2xl flex flex-col items-center"
+                        className="rounded-[20px] p-3 flex flex-col items-center shadow-xl"
+                        style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.97) 0%, rgba(255,240,248,0.97) 100%)" }}
                       >
                         <QRCodeSVG
                           value={
@@ -4198,26 +4216,30 @@ export default function AuthPage({ slug }: { slug?: string }) {
                               window.location.pathname.split("/")[1] ||
                               "")
                           }
-                          size={140}
+                          size={118}
                           level="H"
                           includeMargin={false}
                           fgColor={qrColor}
-                          bgColor={qrBgColor}
+                          bgColor="transparent"
                         />
                       </div>
 
-                      <div className="text-center space-y-1">
-                        <p className="text-[8px] text-white/20 uppercase tracking-[0.3em] font-black">
-                          Scan to Connect
-                        </p>
-                        <p className="text-[10px] font-mono font-bold text-white/70 tracking-[0.2em] uppercase">
-                          Code: {displaySlug || user?.uniqueSlug}
+                      <div className="text-center mt-2.5 space-y-1">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <div className="h-px w-6" style={{ background: "linear-gradient(90deg, transparent, rgba(236,72,153,0.5))" }} />
+                          <p className="text-[7px] font-bold uppercase tracking-[0.25em]" style={{ color: "rgba(244,114,182,0.6)" }}>
+                            Scan to Connect
+                          </p>
+                          <div className="h-px w-6" style={{ background: "linear-gradient(90deg, rgba(236,72,153,0.5), transparent)" }} />
+                        </div>
+                        <p className="text-[9px] font-mono font-bold tracking-[0.15em] uppercase" style={{ color: "rgba(244,114,182,0.85)" }}>
+                          {displaySlug || user?.uniqueSlug || "—"}
                         </p>
                       </div>
                     </div>
 
                     {/* Home Indicator */}
-                    <div className="home-indicator absolute bottom-2 left-1/2 -translate-x-1/2 w-16 h-1 bg-white/10 rounded-full" />
+                    <div className="home-indicator absolute bottom-2 left-1/2 -translate-x-1/2 w-16 h-1 rounded-full" style={{ background: "rgba(236,72,153,0.25)" }} />
 
                     {/* Avatar Selection Dialog */}
                     <AnimatePresence>
@@ -4228,15 +4250,15 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           exit={{ opacity: 0, scale: 0.9 }}
                           className="absolute inset-0 z-[60] flex items-center justify-center p-4"
                         >
-                          <div className="bg-black/80 backdrop-blur-xl border border-white/10 rounded-3xl p-4 w-full max-w-[240px]">
+                          <div className="border border-pink-500/20 rounded-3xl p-4 w-full max-w-[240px] backdrop-blur-xl" style={{ background: "rgba(26,5,16,0.92)" }}>
                             <div className="flex justify-between items-center mb-3">
-                              <span className="text-white text-[10px] font-bold uppercase tracking-widest">
+                              <span className="text-pink-300 text-[10px] font-bold uppercase tracking-widest">
                                 Select Avatar
                               </span>
                               <button
                                 onClick={() => setShowAvatarDialog(false)}
                               >
-                                <X className="w-3 h-3 text-white/40" />
+                                <X className="w-3 h-3 text-pink-400/50" />
                               </button>
                             </div>
                             <div className="grid grid-cols-3 gap-3">
@@ -4257,7 +4279,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                       setAvatarUrl(url);
                                       setShowAvatarDialog(false);
                                     }}
-                                    className="aspect-square rounded-full border-2 border-white/10 overflow-hidden hover:border-white/60 transition-all"
+                                    className="aspect-square rounded-full border-2 border-pink-500/20 overflow-hidden hover:border-pink-400/60 transition-all"
                                   >
                                     <img
                                       src={url}
@@ -4272,16 +4294,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         </motion.div>
                       )}
                     </AnimatePresence>
-
-                    {/* Tiny Controls */}
-                    <div className="bottom-controls w-full flex justify-between items-center px-3 opacity-30 mt-auto">
-                      <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center">
-                        <Save className="w-3 h-3 text-white" />
-                      </div>
-                      <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center">
-                        <QrCode className="w-3 h-3 text-white" />
-                      </div>
-                    </div>
                   </div>
                 </div>
 
