@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import type { Server } from "http";
-import { storage } from "./storage";
+import { storage, type BRSEvent } from "./storage";
 import { api } from "@shared/routes";
 import { insertUserSchema } from "@shared/schema";
 import { z } from "zod";
@@ -610,6 +610,76 @@ export async function registerRoutes(
     } catch (err) {
       console.error("Click track error:", err);
       res.status(400).json({ message: "Invalid request" });
+    }
+  });
+
+  app.get("/api/events", async (_req, res) => {
+    try {
+      const events = await storage.getEvents();
+      const now = new Date().toISOString().split("T")[0];
+      const active = events.filter((e) => e.date >= now);
+      res.json(active);
+    } catch (err) {
+      console.error("Get events error:", err);
+      res.status(500).json({ message: "Failed to fetch events" });
+    }
+  });
+
+  app.post("/api/events", async (req, res) => {
+    try {
+      const input = z.object({
+        title: z.string().min(1),
+        description: z.string().default(""),
+        date: z.string().min(1),
+        time: z.string().optional(),
+        location: z.string().optional(),
+      }).parse(req.body);
+      const events = await storage.getEvents();
+      const newEvent: BRSEvent = {
+        id: crypto.randomUUID(),
+        ...input,
+        createdAt: new Date().toISOString(),
+      };
+      await storage.saveEvents([...events, newEvent]);
+      res.status(201).json(newEvent);
+    } catch (err) {
+      console.error("Create event error:", err);
+      res.status(400).json({ message: "Invalid event data" });
+    }
+  });
+
+  app.patch("/api/events/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const input = z.object({
+        title: z.string().min(1).optional(),
+        description: z.string().optional(),
+        date: z.string().optional(),
+        time: z.string().optional(),
+        location: z.string().optional(),
+      }).parse(req.body);
+      const events = await storage.getEvents();
+      const idx = events.findIndex((e) => e.id === id);
+      if (idx === -1) return res.status(404).json({ message: "Event not found" });
+      events[idx] = { ...events[idx], ...input };
+      await storage.saveEvents(events);
+      res.json(events[idx]);
+    } catch (err) {
+      console.error("Update event error:", err);
+      res.status(400).json({ message: "Invalid event data" });
+    }
+  });
+
+  app.delete("/api/events/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const events = await storage.getEvents();
+      const filtered = events.filter((e) => e.id !== id);
+      await storage.saveEvents(filtered);
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Delete event error:", err);
+      res.status(500).json({ message: "Failed to delete event" });
     }
   });
 

@@ -2,6 +2,18 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { type InsertUser, type User } from "@shared/schema";
 
+export interface BRSEvent {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  time?: string;
+  location?: string;
+  createdAt: string;
+}
+
+const EVENTS_RECORD_ID = "brs_system_events";
+
 const client = new DynamoDBClient({
   region: process.env.AWS_REGION || "ap-south-1",
   credentials: {
@@ -19,10 +31,13 @@ export interface IStorage {
   getUserBySlug(slug: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, user: Partial<InsertUser>): Promise<User>;
+  getEvents(): Promise<BRSEvent[]>;
+  saveEvents(events: BRSEvent[]): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
+  private events: BRSEvent[] = [];
 
   constructor() {
     this.users = new Map();
@@ -78,6 +93,14 @@ export class MemStorage implements IStorage {
     const updatedUser = { ...user, ...partialUser };
     this.users.set(id, updatedUser);
     return updatedUser;
+  }
+
+  async getEvents(): Promise<BRSEvent[]> {
+    return this.events;
+  }
+
+  async saveEvents(events: BRSEvent[]): Promise<void> {
+    this.events = events;
   }
 }
 
@@ -212,6 +235,31 @@ export class DynamoDBStorage implements IStorage {
     }));
 
     return Attributes as User;
+  }
+
+  async getEvents(): Promise<BRSEvent[]> {
+    try {
+      const { Item } = await ddbDocClient.send(new GetCommand({
+        TableName: TABLE_NAME,
+        Key: { id: EVENTS_RECORD_ID },
+      }));
+      return (Item?.events as BRSEvent[]) || [];
+    } catch (e) {
+      console.error("DynamoDB getEvents error:", e);
+      return [];
+    }
+  }
+
+  async saveEvents(events: BRSEvent[]): Promise<void> {
+    try {
+      await ddbDocClient.send(new PutCommand({
+        TableName: TABLE_NAME,
+        Item: { id: EVENTS_RECORD_ID, events },
+      }));
+    } catch (e) {
+      console.error("DynamoDB saveEvents error:", e);
+      throw e;
+    }
   }
 }
 

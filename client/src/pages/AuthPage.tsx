@@ -2314,6 +2314,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [addProfileSearch, setAddProfileSearch] = useState("");
   const [addProfileResult, setAddProfileResult] = useState<any | "not_found" | null>(null);
   const [addProfileLoading, setAddProfileLoading] = useState(false);
+  const [showEventDialog, setShowEventDialog] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<{ id: string; title: string; description: string; date: string; time?: string; location?: string } | null>(null);
+  const [eventForm, setEventForm] = useState({ title: "", description: "", date: "", time: "", location: "" });
   const [isMobile, setIsMobile] = useState(typeof window !== "undefined" ? window.innerWidth < 768 : false);
 
   useEffect(() => {
@@ -2363,6 +2366,58 @@ export default function AuthPage({ slug }: { slug?: string }) {
       setAddProfileResult("not_found");
     } finally {
       setAddProfileLoading(false);
+    }
+  };
+
+  const { data: eventsData, isLoading: eventsLoading } = useQuery<any[]>({
+    queryKey: ["/api/events"],
+    refetchInterval: 60000,
+  });
+
+  const activeEvents = (eventsData || []).filter((e) => {
+    const today = new Date().toISOString().split("T")[0];
+    return e.date >= today;
+  });
+
+  const createEventMutation = useMutation({
+    mutationFn: (data: typeof eventForm) => apiRequest("POST", "/api/events", data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/events"] }); closeEventDialog(); },
+  });
+
+  const updateEventMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<typeof eventForm> }) => apiRequest("PATCH", `/api/events/${id}`, data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/events"] }); closeEventDialog(); },
+  });
+
+  const deleteEventMutation = useMutation({
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/events/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/events"] }),
+  });
+
+  const openCreateEvent = () => {
+    setEditingEvent(null);
+    setEventForm({ title: "", description: "", date: "", time: "", location: "" });
+    setShowEventDialog(true);
+  };
+
+  const openEditEvent = (ev: any) => {
+    setEditingEvent(ev);
+    setEventForm({ title: ev.title, description: ev.description || "", date: ev.date, time: ev.time || "", location: ev.location || "" });
+    setShowEventDialog(true);
+  };
+
+  const closeEventDialog = () => {
+    setShowEventDialog(false);
+    setEditingEvent(null);
+    setEventForm({ title: "", description: "", date: "", time: "", location: "" });
+  };
+
+  const submitEventForm = () => {
+    if (!eventForm.title.trim() || !eventForm.date) return;
+    if (editingEvent) {
+      updateEventMutation.mutate({ id: editingEvent.id, data: eventForm });
+    } else {
+      createEventMutation.mutate(eventForm);
     }
   };
 
@@ -3801,6 +3856,102 @@ export default function AuthPage({ slug }: { slug?: string }) {
           )}
         </AnimatePresence>
 
+        <AnimatePresence>
+          {showEventDialog && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={closeEventDialog}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[61] bg-white border border-pink-100 rounded-2xl p-5 shadow-2xl max-w-sm mx-auto"
+                style={{ touchAction: "auto" }}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-gray-900 font-bold text-sm">{editingEvent ? "Edit Event" : "Create Event"}</h3>
+                    <p className="text-gray-400 text-[10px] mt-0.5">Fill in the event details below</p>
+                  </div>
+                  <button onClick={closeEventDialog} className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-500">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Event Title *</label>
+                    <input
+                      type="text"
+                      value={eventForm.title}
+                      onChange={(e) => setEventForm((f) => ({ ...f, title: e.target.value }))}
+                      placeholder="e.g. BRS Rally Hyderabad"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Date *</label>
+                    <input
+                      type="date"
+                      value={eventForm.date}
+                      min={new Date().toISOString().split("T")[0]}
+                      onChange={(e) => setEventForm((f) => ({ ...f, date: e.target.value }))}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Time</label>
+                      <input
+                        type="time"
+                        value={eventForm.time}
+                        onChange={(e) => setEventForm((f) => ({ ...f, time: e.target.value }))}
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Location</label>
+                      <input
+                        type="text"
+                        value={eventForm.location}
+                        onChange={(e) => setEventForm((f) => ({ ...f, location: e.target.value }))}
+                        placeholder="Venue / City"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Description</label>
+                    <textarea
+                      value={eventForm.description}
+                      onChange={(e) => setEventForm((f) => ({ ...f, description: e.target.value }))}
+                      placeholder="Brief details about this event..."
+                      rows={3}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400 resize-none"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={submitEventForm}
+                    disabled={!eventForm.title.trim() || !eventForm.date || createEventMutation.isPending || updateEventMutation.isPending}
+                    className="w-full bg-pink-500 hover:bg-pink-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg py-2.5 font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                  >
+                    {(createEventMutation.isPending || updateEventMutation.isPending) ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>{editingEvent ? "Save Changes" : "Create Event"}</>
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -4321,16 +4472,83 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="h-[120px] flex items-center justify-center border border-dashed border-pink-200 rounded-2xl bg-pink-50"
+                            className="space-y-3"
                           >
-                            <div className="text-center space-y-2">
-                              <p className="text-[10px] text-pink-400 uppercase tracking-[0.2em] font-bold">
-                                Upcoming Events
-                              </p>
-                              <p className="text-xs text-gray-400 font-medium">
-                                Coming Soon
-                              </p>
+                            <div className="flex items-center justify-between">
+                              <p className="text-[10px] text-pink-500 uppercase tracking-[0.2em] font-bold">Upcoming Events</p>
+                              {loggedInUser?.uniqueSlug === ADMIN_SLUG && (
+                                <button
+                                  type="button"
+                                  onClick={openCreateEvent}
+                                  className="w-6 h-6 bg-pink-500 hover:bg-pink-600 rounded-full flex items-center justify-center transition-colors shadow-sm"
+                                >
+                                  <Plus className="w-3.5 h-3.5 text-white" />
+                                </button>
+                              )}
                             </div>
+                            {eventsLoading ? (
+                              <div className="h-[80px] flex items-center justify-center">
+                                <Loader2 className="w-5 h-5 animate-spin text-pink-300" />
+                              </div>
+                            ) : activeEvents.length === 0 ? (
+                              <div className="h-[80px] flex items-center justify-center border border-dashed border-pink-200 rounded-2xl bg-pink-50">
+                                <p className="text-xs text-gray-400 font-medium">No upcoming events</p>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                {activeEvents.map((ev) => (
+                                  <div
+                                    key={ev.id}
+                                    className="bg-pink-50 border border-pink-100 rounded-xl p-3 relative"
+                                  >
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="flex gap-3 min-w-0">
+                                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-pink-500 flex flex-col items-center justify-center text-white shadow-sm">
+                                          <span className="text-[9px] font-bold uppercase tracking-wide leading-none">
+                                            {new Date(ev.date + "T12:00:00").toLocaleString("en", { month: "short" })}
+                                          </span>
+                                          <span className="text-base font-black leading-none">
+                                            {new Date(ev.date + "T12:00:00").getDate()}
+                                          </span>
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                          <p className="text-xs font-bold text-gray-900 leading-tight truncate">{ev.title}</p>
+                                          {ev.description && (
+                                            <p className="text-[10px] text-gray-500 mt-0.5 leading-relaxed line-clamp-2">{ev.description}</p>
+                                          )}
+                                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                            {ev.time && (
+                                              <span className="text-[9px] text-pink-400 font-semibold">{ev.time}</span>
+                                            )}
+                                            {ev.location && (
+                                              <span className="text-[9px] text-gray-400 truncate">{ev.location}</span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      {loggedInUser?.uniqueSlug === ADMIN_SLUG && (
+                                        <div className="flex items-center gap-1 flex-shrink-0">
+                                          <button
+                                            type="button"
+                                            onClick={() => openEditEvent(ev)}
+                                            className="w-6 h-6 bg-pink-100 hover:bg-pink-200 rounded-lg flex items-center justify-center transition-colors"
+                                          >
+                                            <Pencil className="w-3 h-3 text-pink-500" />
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => deleteEventMutation.mutate(ev.id)}
+                                            className="w-6 h-6 bg-red-50 hover:bg-red-100 rounded-lg flex items-center justify-center transition-colors"
+                                          >
+                                            <Trash2 className="w-3 h-3 text-red-400" />
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </motion.div>
                         ) : (
                           <motion.div
