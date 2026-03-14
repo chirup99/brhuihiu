@@ -610,14 +610,24 @@ const SwipeCardContent = forwardRef(
                   const tweetIdMatch = xUrl.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
                   const tweetId = tweetIdMatch?.[1];
                   return tweetId ? (
-                    <div className="w-full h-full absolute inset-0 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                    <div className="w-full h-full absolute inset-0 overflow-hidden rounded-[24px]">
                       <iframe
-                        src={`https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&chrome=nofooter${subtype === "video" ? "&cards=hidden" : ""}`}
+                        src={`https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&chrome=nofooter&conversation=none`}
                         className="w-full border-0"
-                        style={subtype === "video" ? { height: "calc(100% + 60px)", marginTop: "-30px" } : { height: "100%" }}
+                        style={{ height: "100%", pointerEvents: "none" }}
                         allow="autoplay; encrypted-media"
+                        sandbox="allow-scripts allow-same-origin allow-popups allow-presentation"
                         scrolling="no"
                       />
+                      <a
+                        href={xUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-black flex items-center justify-center shadow-lg border border-white/10 z-10 active:scale-90 transition-transform"
+                      >
+                        <SiX className="w-3.5 h-3.5 text-white" />
+                      </a>
                     </div>
                   ) : (
                     <div className="text-center space-y-3">
@@ -1370,23 +1380,15 @@ const MiniCard = ({
             const tweetIdMatch = xUrl.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
             const tweetId = tweetIdMatch?.[1];
             return tweetId ? (
-              <div className="w-full h-full relative" onClick={(e) => e.stopPropagation()}>
-                {subtype === "video" ? (
-                  <iframe
-                    src={`https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&chrome=nofooter&cards=hidden`}
-                    className="w-full border-0"
-                    style={{ height: "calc(100% + 60px)", marginTop: "-30px" }}
-                    allow="autoplay; encrypted-media"
-                    scrolling="no"
-                  />
-                ) : (
-                  <iframe
-                    src={`https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&chrome=nofooter`}
-                    className="w-full h-full border-0"
-                    allow="autoplay; encrypted-media"
-                    scrolling="no"
-                  />
-                )}
+              <div className="w-full h-full relative overflow-hidden rounded-[20px]">
+                <iframe
+                  src={`https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&chrome=nofooter&conversation=none`}
+                  className="w-full border-0"
+                  style={{ height: "100%", pointerEvents: "none" }}
+                  allow="autoplay; encrypted-media"
+                  sandbox="allow-scripts allow-same-origin allow-popups allow-presentation"
+                  scrolling="no"
+                />
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
@@ -1394,6 +1396,15 @@ const MiniCard = ({
                 >
                   <Pencil className="w-3 h-3" />
                 </button>
+                <a
+                  href={xUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute bottom-3 right-3 w-7 h-7 rounded-full bg-black flex items-center justify-center shadow-lg border border-white/10 z-10 active:scale-90 transition-transform"
+                >
+                  <SiX className="w-3 h-3 text-white" />
+                </a>
               </div>
             ) : (
               <button
