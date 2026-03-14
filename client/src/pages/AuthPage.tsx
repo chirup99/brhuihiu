@@ -4160,8 +4160,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   </div>
                   <div className="space-y-3">
                     <div className="space-y-1">
-                      <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
-                        WhatsApp
+                      <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold flex items-center gap-1">
+                        WhatsApp <span className="normal-case text-gray-400 font-normal tracking-normal">(optional)</span>
                       </label>
                       <div className="relative">
                         <div className="flex gap-2">
@@ -4267,8 +4267,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
-                        Email
+                      <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold flex items-center gap-1">
+                        Email <span className="normal-case text-gray-400 font-normal tracking-normal">(optional)</span>
                       </label>
                       <input
                         {...form.register("email")}
@@ -4279,8 +4279,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
-                      Website URL
+                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold flex items-center gap-1">
+                      Website URL <span className="normal-case text-gray-400 font-normal tracking-normal">(optional)</span>
                     </label>
                     <input
                       {...form.register("website")}
