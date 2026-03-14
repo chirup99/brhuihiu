@@ -619,10 +619,10 @@ const SwipeCard = ({
   const rotate = useTransform(x, [-220, 220], [-14, 14]);
   const frontOpacity = useTransform(x, [-180, -80, 0, 80, 180], [0.4, 1, 1, 1, 0.4]);
 
-  // Motion values for stack cards (animate independently) — left-peek offset
-  const midX = useMotionValue(-12);
+  // Motion values for stack cards (animate independently) — right-peek offset
+  const midX = useMotionValue(12);
   const midScale = useMotionValue(0.96);
-  const backX = useMotionValue(-22);
+  const backX = useMotionValue(22);
   const backScale = useMotionValue(0.92);
 
   // Live sync: stack cards inch forward as top card is dragged
@@ -630,9 +630,9 @@ const SwipeCard = ({
     const unsub = x.on("change", (v) => {
       if (isAnimating) return;
       const p = Math.min(Math.abs(v) / 180, 1);
-      midX.set(-12 + p * 12);
+      midX.set(12 - p * 12);
       midScale.set(0.96 + p * 0.04);
-      backX.set(-22 + p * 10);
+      backX.set(22 - p * 10);
       backScale.set(0.92 + p * 0.04);
     });
     return unsub;
@@ -645,23 +645,27 @@ const SwipeCard = ({
       animate(x, dir * 440, { duration: 0.28, ease: [0.4, 0, 0.85, 1] }),
       animate(midX, 0, { duration: 0.28, ease: [0.25, 0, 0.5, 1] }),
       animate(midScale, 1, { duration: 0.28, ease: [0.25, 0, 0.5, 1] }),
-      animate(backX, -12, { duration: 0.28, ease: [0.25, 0, 0.5, 1] }),
+      animate(backX, 12, { duration: 0.28, ease: [0.25, 0, 0.5, 1] }),
       animate(backScale, 0.96, { duration: 0.28, ease: [0.25, 0, 0.5, 1] }),
     ]);
-    setActiveIndex((prev) => (prev + 1) % displayCards.length);
+    setActiveIndex((prev) =>
+      dir === -1
+        ? (prev + 1) % displayCards.length
+        : (prev - 1 + displayCards.length) % displayCards.length,
+    );
     x.set(0);
-    midX.set(-12);
+    midX.set(12);
     midScale.set(0.96);
-    backX.set(-22);
+    backX.set(22);
     backScale.set(0.92);
     setIsAnimating(false);
   };
 
   const snapBack = () => {
     animate(x, 0, { type: "spring", stiffness: 340, damping: 30 });
-    animate(midX, -12, { type: "spring", stiffness: 340, damping: 30 });
+    animate(midX, 12, { type: "spring", stiffness: 340, damping: 30 });
     animate(midScale, 0.96, { type: "spring", stiffness: 340, damping: 30 });
-    animate(backX, -22, { type: "spring", stiffness: 340, damping: 30 });
+    animate(backX, 22, { type: "spring", stiffness: 340, damping: 30 });
     animate(backScale, 0.92, { type: "spring", stiffness: 340, damping: 30 });
   };
 
@@ -673,7 +677,7 @@ const SwipeCard = ({
 
   return (
     <div className="relative w-full max-w-[240px] aspect-[3/4] mx-auto" style={{ perspective: "1200px" }}>
-      {/* Back card — peeks from the left */}
+      {/* Back card — peeks from the right */}
       {displayCards.length > 2 && (
         <motion.div
           className={clsx("absolute inset-0 rounded-[24px] bg-gradient-to-b overflow-hidden shadow-md", bkCard.color)}
@@ -683,7 +687,7 @@ const SwipeCard = ({
         </motion.div>
       )}
 
-      {/* Middle card — peeks from the left */}
+      {/* Middle card — peeks from the right */}
       {displayCards.length > 1 && (
         <motion.div
           className={clsx("absolute inset-0 rounded-[24px] bg-gradient-to-b overflow-hidden shadow-lg", midCard.color)}
@@ -3959,21 +3963,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 </div>
               )}
             </motion.div>
-
-            <div className="relative py-2">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-pink-100"></span>
-              </div>
-              <div className="relative flex justify-center text-[10px] uppercase">
-                <span className="bg-white px-2 text-pink-400 font-bold">
-                  {mode === "customize"
-                    ? "EDITING"
-                    : mode === "login"
-                      ? "FREE"
-                      : "FREE"}
-                </span>
-              </div>
-            </div>
 
             {mode === "swipe" && (
               <div className="flex items-center justify-between text-gray-400 text-[10px] uppercase tracking-wider font-bold px-4 mt-3">
