@@ -4292,84 +4292,88 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
         <AnimatePresence>
           {showQRDialog && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setShowQRDialog(false)}
-                className="absolute inset-0 bg-black/90 backdrop-blur-md"
-              />
-              <motion.div
-                initial={{ opacity: 0, scale: 0.92, y: 24 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.92, y: 24 }}
-                className="relative w-full max-w-[300px] mx-auto z-10"
-              >
-                {/* Close */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex flex-col"
+              style={{ background: "linear-gradient(160deg, #ec4899 0%, #be185d 50%, #9d174d 100%)" }}
+            >
+              {/* Decorative blobs */}
+              <div className="absolute top-0 right-0 w-64 h-64 rounded-full opacity-30 blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, #f9a8d4, transparent)" }} />
+              <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-20 blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, #fce7f3, transparent)" }} />
+
+              {/* Top bar */}
+              <div className="flex items-center justify-between px-5 pt-12 pb-4 relative z-10">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-white overflow-hidden shadow-md">
+                    <img src="/brs-logo.png" alt="BRS" className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <p className="text-white font-black text-sm tracking-tight leading-none">BRS Connect</p>
+                    <p className="text-white/60 text-[9px] uppercase tracking-widest">Bharat Rashtra Samithi</p>
+                  </div>
+                </div>
                 <button
                   onClick={() => setShowQRDialog(false)}
-                  className="absolute -top-11 right-0 p-2.5 bg-white/10 hover:bg-white/20 rounded-full text-white/70 hover:text-white transition-all border border-white/20 z-[150] active:scale-90"
+                  className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center active:scale-90 transition-all"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4 text-white" />
                 </button>
+              </div>
 
-                {/* QR Card — shareable */}
+              {/* Main content */}
+              <div className="flex-1 flex flex-col items-center justify-center px-6 gap-5 relative z-10">
+
+                {/* QR Card */}
                 <div
                   id="qr-card-share"
-                  className="rounded-[28px] overflow-hidden shadow-2xl border border-pink-500/20"
-                  style={{ background: "linear-gradient(160deg, #1a0510 0%, #2d0a1e 50%, #1a0510 100%)" }}
+                  className="w-full max-w-[280px] rounded-[32px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.3)]"
+                  style={{ background: "linear-gradient(175deg, #ffffff 0%, #fff0f7 100%)" }}
                 >
-                  {/* Pink glow */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(236,72,153,0.35) 0%, transparent 70%)" }} />
+                  <div className="flex flex-col items-center px-6 pt-7 pb-6 gap-4">
 
-                  <div className="relative flex flex-col items-center px-6 pt-8 pb-6 gap-5">
-                    {/* BRS logo + name */}
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-white overflow-hidden border border-pink-500/20">
-                        <img src="/brs-logo.png" alt="BRS" className="w-full h-full object-cover rounded-full" />
+                    {/* Avatar */}
+                    <button
+                      onClick={() => setShowAvatarDialog(true)}
+                      className="relative focus:outline-none"
+                    >
+                      <div className="w-20 h-20 rounded-full p-[3px] shadow-lg" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}>
+                        <div className="w-full h-full rounded-full overflow-hidden bg-white">
+                          <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                        </div>
                       </div>
-                      <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-pink-300/70">BRS Connect</span>
+                      <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full flex items-center justify-center shadow-md border-2 border-white" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </div>
+                    </button>
+
+                    {/* Name + role */}
+                    <div className="text-center space-y-1">
+                      <h5 className="text-gray-900 text-lg font-black tracking-tight leading-none">
+                        {user?.name || form.watch("name") || "Your Name"}
+                      </h5>
+                      {(user?.role || form.watch("role")) && (
+                        <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-3 py-1 rounded-full text-pink-600" style={{ background: "rgba(236,72,153,0.12)", border: "1px solid rgba(236,72,153,0.25)" }}>
+                          {(user?.role || form.watch("role") || "").replace(/_/g, " ")}
+                        </span>
+                      )}
                     </div>
 
-                    {/* Avatar + name */}
-                    <div className="flex flex-col items-center gap-2">
-                      <button
-                        onClick={() => setShowAvatarDialog(true)}
-                        className="relative group focus:outline-none"
-                      >
-                        <div className="w-16 h-16 rounded-full p-[2px]" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}>
-                          <div className="w-full h-full rounded-full overflow-hidden">
-                            <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                          </div>
-                        </div>
-                        <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-pink-500 border-2 border-[#1a0510] flex items-center justify-center shadow-md">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                          </svg>
-                        </div>
-                      </button>
-                      <div className="text-center space-y-1">
-                        <h5 className="text-white text-base font-bold tracking-tight">
-                          {user?.name || form.watch("name") || "Your Name"}
-                        </h5>
-                        {(user?.role || form.watch("role")) && (
-                          <span className="inline-block text-[8px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full" style={{ background: "rgba(236,72,153,0.2)", color: "#f472b6", border: "1px solid rgba(236,72,153,0.3)" }}>
-                            {(user?.role || form.watch("role") || "").replace(/_/g, " ")}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                    {/* Divider */}
+                    <div className="w-full h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(236,72,153,0.3), transparent)" }} />
 
                     {/* QR Code */}
-                    <div className="rounded-[20px] p-4 shadow-xl" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.97) 0%, rgba(255,240,248,0.97) 100%)" }}>
+                    <div className="rounded-2xl p-3 shadow-inner" style={{ background: "rgba(236,72,153,0.06)", border: "1px solid rgba(236,72,153,0.15)" }}>
                       <QRCodeSVG
                         value={
                           window.location.origin +
                           "/" +
                           (displaySlug || user?.uniqueSlug || window.location.pathname.split("/")[1] || "")
                         }
-                        size={140}
+                        size={150}
                         level="H"
                         includeMargin={false}
                         fgColor="#be185d"
@@ -4377,35 +4381,36 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       />
                     </div>
 
-                    {/* Scan label + slug */}
-                    <div className="text-center space-y-1">
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="h-px w-8" style={{ background: "linear-gradient(90deg, transparent, rgba(236,72,153,0.5))" }} />
-                        <p className="text-[8px] font-bold uppercase tracking-[0.25em]" style={{ color: "rgba(244,114,182,0.6)" }}>
-                          Scan to Connect
+                    {/* Voice Code */}
+                    <div className="text-center space-y-1 w-full">
+                      <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-pink-400">Voice Code</p>
+                      <div className="bg-pink-50 border border-pink-200 rounded-xl py-2 px-4">
+                        <p className="text-pink-700 font-black font-mono text-base tracking-[0.25em] uppercase">
+                          {displaySlug || user?.uniqueSlug || "—"}
                         </p>
-                        <div className="h-px w-8" style={{ background: "linear-gradient(90deg, rgba(236,72,153,0.5), transparent)" }} />
                       </div>
-                      <p className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase" style={{ color: "rgba(244,114,182,0.9)" }}>
-                        {displaySlug || user?.uniqueSlug || "—"}
-                      </p>
                     </div>
+
+                    {/* Footer */}
+                    <p className="text-[8px] text-gray-400 uppercase tracking-widest">brsconnect.in · Scan to Connect</p>
                   </div>
                 </div>
+              </div>
 
-                {/* Share button */}
+              {/* Share button */}
+              <div className="px-6 pb-10 relative z-10">
                 <button
                   onClick={shareQR}
-                  className="mt-4 w-full bg-pink-500 hover:bg-pink-600 text-white rounded-2xl py-3.5 font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95"
+                  className="w-full bg-white text-pink-600 rounded-2xl py-4 font-black text-sm flex items-center justify-center gap-2 transition-all shadow-xl active:scale-95"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
                     <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
                   </svg>
-                  Share
+                  Share My Voice Card
                 </button>
-              </motion.div>
-            </div>
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
 
