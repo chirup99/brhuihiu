@@ -934,6 +934,104 @@ const XVideoCard = ({ tweetId, xUrl, onEditClick, onPlayStateChange }: { tweetId
   );
 };
 
+const InstaVideoCard = ({ reelId, reelUrl, onEditClick, onPlayStateChange }: { reelId: string; reelUrl: string; onEditClick?: (e: React.MouseEvent) => void; onPlayStateChange?: (isPlaying: boolean) => void }) => {
+  const { data, isLoading, isError } = useQuery<{ videoUrl: string; thumbnailUrl: string | null }>({
+    queryKey: ["/api/insta-video", reelId],
+    queryFn: async () => {
+      const res = await fetch(`/api/insta-video/${reelId}`);
+      if (!res.ok) throw new Error("No video found");
+      return res.json();
+    },
+    retry: 1,
+    staleTime: 1000 * 60 * 30,
+  });
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handlePlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const v = videoRef.current;
+    if (!v) return;
+    if (isPlaying) {
+      v.pause();
+      setIsPlaying(false);
+      onPlayStateChange?.(false);
+    } else {
+      v.play().catch(() => {});
+      setIsPlaying(true);
+      onPlayStateChange?.(true);
+    }
+  };
+
+  return (
+    <div className="w-full h-full relative overflow-hidden rounded-[20px] bg-black flex items-center justify-center">
+      {isLoading ? (
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-8 h-8 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+          <span className="text-white/40 text-[9px] uppercase tracking-widest font-bold">Loading…</span>
+        </div>
+      ) : isError || !data?.videoUrl ? (
+        <div className="flex flex-col items-center gap-3">
+          <SiInstagram className="w-10 h-10 text-white/30" />
+          <p className="text-white/40 text-[9px] uppercase tracking-widest font-bold text-center px-4">Tap Instagram to view</p>
+        </div>
+      ) : (
+        <>
+          <video
+            ref={videoRef}
+            src={data.videoUrl}
+            poster={data.thumbnailUrl || undefined}
+            className={isLandscape ? "w-full h-auto" : "w-full h-full object-cover"}
+            loop
+            playsInline
+            onLoadedMetadata={() => {
+              const v = videoRef.current;
+              if (v) setIsLandscape(v.videoWidth > v.videoHeight);
+            }}
+            onEnded={() => { setIsPlaying(false); onPlayStateChange?.(false); }}
+          />
+          <button
+            type="button"
+            onClick={handlePlay}
+            onPointerDown={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
+            onPointerUp={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
+            onTouchStart={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
+            onTouchEnd={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
+            className={`absolute inset-0 flex items-center justify-center z-10 transition-opacity ${isPlaying ? "opacity-0 active:opacity-100" : "opacity-100"}`}
+            style={{ background: isPlaying ? "transparent" : "rgba(0,0,0,0.35)", touchAction: "manipulation" }}
+          >
+            {!isPlaying && (
+              <div className="w-16 h-16 rounded-full bg-white/25 backdrop-blur-md border-2 border-white/40 flex items-center justify-center shadow-2xl active:scale-95 transition-transform">
+                <Play className="w-7 h-7 text-white fill-current ml-1" />
+              </div>
+            )}
+          </button>
+        </>
+      )}
+      {onEditClick && (
+        <button
+          type="button"
+          onClick={onEditClick}
+          className="absolute top-3 left-3 p-1.5 bg-black/60 backdrop-blur-sm rounded-full border border-white/10 text-white/70 hover:text-white transition-colors z-20"
+        >
+          <Pencil className="w-3 h-3" />
+        </button>
+      )}
+      <a
+        href={reelUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center shadow-lg z-20 active:scale-90 transition-transform"
+      >
+        <SiInstagram className="w-3.5 h-3.5 text-white" />
+      </a>
+    </div>
+  );
+};
+
 const SwipeCard = ({
   cards,
   user: propsUser,

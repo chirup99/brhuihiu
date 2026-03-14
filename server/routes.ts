@@ -415,6 +415,103 @@ export async function registerRoutes(
     }
   });
 
+  const instaVideoCache = new Map<string, { videoUrl: string; thumbnailUrl: string | null; expires: number }>();
+
+  async function fetchInstaVideo(reelId: string): Promise<{ videoUrl: string; thumbnailUrl: string | null } | null> {
+    const cached = instaVideoCache.get(reelId);
+    if (cached && cached.expires > Date.now()) return { videoUrl: cached.videoUrl, thumbnailUrl: cached.thumbnailUrl };
+
+    const headers = {
+      "User-Agent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Referer": "https://www.instagram.com/",
+      "sec-fetch-dest": "document",
+      "sec-fetch-mode": "navigate",
+      "sec-fetch-site": "same-origin",
+    };
+
+    const res = await fetch(`https://www.instagram.com/reel/${reelId}/`, { headers });
+    if (!res.ok) return null;
+    const html = await res.text();
+
+    const videoMatch = html.match(/"video_url":"(https:[^"]+)"/);
+    const thumbMatch = html.match(/"thumbnail_src":"(https:[^"]+)"/) || html.match(/"display_url":"(https:[^"]+)"/);
+
+    if (!videoMatch) return null;
+
+    const videoUrl = videoMatch[1].replace(/\\u0026/g, "&").replace(/\\/g, "");
+    const thumbnailUrl = thumbMatch ? thumbMatch[1].replace(/\\u0026/g, "&").replace(/\\/g, "") : null;
+
+    instaVideoCache.set(reelId, { videoUrl, thumbnailUrl, expires: Date.now() + 30 * 60 * 1000 });
+    return { videoUrl, thumbnailUrl };
+  }
+
+  app.get("/api/insta-video/:reelId", async (req, res) => {
+    try {
+      const { reelId } = req.params;
+      if (!/^[\w-]+$/.test(reelId)) return res.status(400).json({ error: "Invalid reel ID" });
+
+      const result = await fetchInstaVideo(reelId);
+      if (!result) return res.status(404).json({ error: "No video found in this reel" });
+
+      res.json({ videoUrl: `/api/insta-video-proxy/${reelId}`, thumbnailUrl: result.thumbnailUrl });
+    } catch (err) {
+      console.error("Instagram video error:", err);
+      res.status(500).json({ error: "Failed to extract video" });
+    }
+  });
+
+  app.get("/api/insta-video-proxy/:reelId", async (req, res) => {
+    try {
+      const { reelId } = req.params;
+      if (!/^[\w-]+$/.test(reelId)) return res.status(400).send("Invalid reel ID");
+
+      const result = await fetchInstaVideo(reelId);
+      if (!result) return res.status(404).send("Video not found");
+
+      const range = req.headers.range;
+      const fetchHeaders: Record<string, string> = {
+        "User-Agent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36",
+        "Referer": "https://www.instagram.com/",
+      };
+      if (range) fetchHeaders["Range"] = range;
+
+      const videoRes = await fetch(result.videoUrl, { headers: fetchHeaders });
+
+      res.setHeader("Content-Type", videoRes.headers.get("content-type") || "video/mp4");
+      res.setHeader("Accept-Ranges", "bytes");
+      res.setHeader("Cache-Control", "public, max-age=1800");
+      const contentLength = videoRes.headers.get("content-length");
+      if (contentLength) res.setHeader("Content-Length", contentLength);
+      const contentRange = videoRes.headers.get("content-range");
+      if (contentRange) res.setHeader("Content-Range", contentRange);
+      res.status(videoRes.status);
+
+      const body = videoRes.body as any;
+      if (body && body.pipe) {
+        body.pipe(res);
+      } else if (body) {
+        const reader = body.getReader();
+        const pump = async () => {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) { res.end(); break; }
+            res.write(Buffer.from(value));
+          }
+        };
+        pump().catch(() => res.end());
+      } else {
+        const buf = await videoRes.arrayBuffer();
+        res.end(Buffer.from(buf));
+      }
+    } catch (err) {
+      console.error("Instagram video proxy error:", err);
+      res.status(500).send("Failed to proxy video");
+    }
+  });
+
   app.post("/api/user/connect", async (req, res) => {
     try {
       const { userId, targetSlug } = z.object({
