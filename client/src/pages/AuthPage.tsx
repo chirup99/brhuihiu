@@ -91,13 +91,13 @@ const CARD_TYPES = [
     type: "image",
     label: "Image",
     icon: ImageIcon,
-    color: "from-orange-500 to-orange-600",
+    color: "from-zinc-900 to-black",
   },
   {
     type: "post",
     label: "Post",
     icon: PenLine,
-    color: "from-blue-500 to-blue-600",
+    color: "from-[#1a0510] to-[#2d0a1e]",
   },
 ];
 
@@ -938,7 +938,7 @@ const MiniCard = ({
       layoutId={`card-${idx}`}
       className={clsx(
         "h-full rounded-2xl relative overflow-hidden flex flex-col justify-between shadow-xl bg-gradient-to-b",
-        isPlaying && card.type === "reel" ? "p-0" : "p-4",
+        (isPlaying && card.type === "reel") || card.type === "image" ? "p-0" : "p-4",
         cardTypeInfo?.color || "from-gray-700 to-gray-800",
       )}
     >
@@ -1204,33 +1204,63 @@ const MiniCard = ({
             </div>
           </div>
         ) : card.type === "image" || card.type === "product" ? (
-          <div className="w-full h-full flex items-center justify-center p-2">
+          <div className="w-full h-full relative">
             {(card as any).imageUrl ? (
-              <img
-                src={(card as any).imageUrl}
-                alt={card.title}
-                className="max-w-full max-h-full object-contain rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-transform"
-                onClick={() => setIsEditing(true)}
-              />
+              <>
+                <img
+                  src={(card as any).imageUrl}
+                  alt={card.title}
+                  className="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                  onClick={() => setIsEditing(true)}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="absolute bottom-3 right-3 p-1.5 bg-black/50 backdrop-blur-sm rounded-full border border-white/20 text-white/70 hover:text-white transition-colors z-10"
+                >
+                  <Pencil className="w-3 h-3" />
+                </button>
+              </>
             ) : (
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-all group"
+                className="w-full h-full flex flex-col items-center justify-center gap-3 group"
               >
-                <Plus className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+                <div className="w-16 h-16 rounded-full border-2 border-dashed border-pink-400/30 flex items-center justify-center group-hover:border-pink-400/60 transition-colors">
+                  <ImageIcon className="w-7 h-7 text-pink-400/50 group-hover:text-pink-400 transition-colors" />
+                </div>
+                <span className="text-pink-300/40 text-[9px] font-bold uppercase tracking-widest group-hover:text-pink-300/70 transition-colors">
+                  Tap to upload
+                </span>
               </button>
             )}
           </div>
         ) : card.type === "post" ? (
-          <div className="w-full h-full flex flex-col items-center justify-center p-2 overflow-hidden">
-            <div className="w-full h-full overflow-y-auto custom-scrollbar flex items-start pt-2">
-              <p
-                onClick={() => setIsEditing(true)}
-                className="text-white/90 text-sm text-center leading-relaxed cursor-pointer hover:bg-white/5 p-4 rounded-lg transition-colors w-full break-words"
-              >
-                {(card as any).content || "Tap to write your post..."}
-              </p>
+          <div className="w-full h-full flex flex-col overflow-hidden">
+            <div className="flex items-center gap-1.5 mb-2 px-1">
+              <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: "rgba(236,72,153,0.2)", border: "1px solid rgba(236,72,153,0.3)" }}>
+                <PenLine className="w-2.5 h-2.5 text-pink-400" />
+              </div>
+              <span className="text-[9px] font-bold uppercase tracking-widest text-pink-300/60">Post</span>
+            </div>
+            <div
+              className="flex-1 overflow-y-auto custom-scrollbar cursor-pointer rounded-xl p-2 hover:bg-white/5 transition-colors"
+              onClick={() => setIsEditing(true)}
+            >
+              {(card as any).content ? (
+                <p className="text-white/80 text-xs leading-relaxed break-words">
+                  {(card as any).content}
+                </p>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center gap-2 opacity-50">
+                  <div className="w-px h-8" style={{ background: "linear-gradient(to bottom, transparent, rgba(236,72,153,0.5), transparent)" }} />
+                  <p className="text-pink-300/60 text-[9px] text-center font-medium leading-relaxed">
+                    Tap to write<br />your post…
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         ) : card.type === "revenue" && isPlaying ? (
@@ -1305,31 +1335,29 @@ const MiniCard = ({
           </button>
         )}
       </div>
-      <div className="pt-2">
-        {card.type === "reel" ? null : card.type === "pitch" ? (
-          <button
-            onClick={() => handleSpeak((card as any).content || "")}
-            className={clsx(
-              "w-full rounded-full py-2 text-xs font-bold flex items-center justify-center gap-2 transition-colors",
-              isSpeaking ? "bg-red-500 text-white" : "bg-white text-black",
-            )}
-          >
-            {isSpeaking ? (
-              <>
-                <X className="w-3 h-3" /> Stop Pitch
-              </>
-            ) : (
-              <>
-                <Play className="w-3 h-3 fill-current" /> Play Pitch
-              </>
-            )}
-          </button>
-        ) : card.type === "image" || card.type === "product" ? (
-          <div className="space-y-1 text-center" />
-        ) : card.type === "post" ? (
-          <div className="space-y-1 text-center" />
-        ) : null}
-      </div>
+      {card.type !== "reel" && card.type !== "image" && card.type !== "post" && card.type !== "product" && (
+        <div className="pt-2">
+          {card.type === "pitch" ? (
+            <button
+              onClick={() => handleSpeak((card as any).content || "")}
+              className={clsx(
+                "w-full rounded-full py-2 text-xs font-bold flex items-center justify-center gap-2 transition-colors",
+                isSpeaking ? "bg-red-500 text-white" : "bg-white text-black",
+              )}
+            >
+              {isSpeaking ? (
+                <>
+                  <X className="w-3 h-3" /> Stop Pitch
+                </>
+              ) : (
+                <>
+                  <Play className="w-3 h-3 fill-current" /> Play Pitch
+                </>
+              )}
+            </button>
+          ) : null}
+        </div>
+      )}
     </motion.div>
   );
 };
