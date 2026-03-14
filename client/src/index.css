@@ -60,13 +60,12 @@
   }
 }
 
-/* Custom background mesh/glow for depth */
+/* Minimal pink background */
 .bg-mesh {
-  background-color: #1a0510;
+  background-color: #130309;
   background-image: 
-    radial-gradient(circle at 50% 0%, rgba(236, 72, 153, 0.18) 0%, transparent 55%),
-    radial-gradient(circle at 80% 80%, rgba(244, 114, 182, 0.1) 0%, transparent 45%),
-    radial-gradient(circle at 20% 60%, rgba(217, 70, 139, 0.08) 0%, transparent 40%);
+    radial-gradient(ellipse at 50% -10%, rgba(236, 72, 153, 0.22) 0%, transparent 60%),
+    radial-gradient(ellipse at 90% 100%, rgba(244, 114, 182, 0.08) 0%, transparent 50%);
   background-size: 100% 100%;
   background-attachment: fixed;
 }

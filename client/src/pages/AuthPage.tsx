@@ -2698,7 +2698,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
         transition={{ type: "spring", damping: 20, stiffness: 100 }}
         onClick={() => isMenuOpen && setIsMenuOpen(false)}
         className={clsx(
-          "min-h-screen bg-mesh flex flex-col items-center justify-center p-4 shadow-2xl relative z-20",
+          "min-h-screen bg-mesh flex flex-col items-center justify-center p-4 pt-16 pb-24 relative z-20",
           isMenuOpen ? "cursor-pointer select-none" : "",
         )}
       >
@@ -2979,39 +2979,39 @@ export default function AuthPage({ slug }: { slug?: string }) {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md text-center mb-6 z-10"
         >
-          <div className="flex items-center justify-center gap-3 mb-1">
-            <img
-              src="/brs-logo.png"
-              alt="BRS Logo"
-              className="w-12 h-12 object-contain drop-shadow-lg"
-            />
-            <h1 className="text-4xl font-display font-black tracking-widest uppercase text-white">
-              BRS
-            </h1>
+          {/* BRS Logo in circular avatar */}
+          <div className="flex flex-col items-center gap-3 mb-4">
+            <div className="w-20 h-20 rounded-full bg-white shadow-lg ring-4 ring-pink-500/30 flex items-center justify-center overflow-hidden">
+              <img
+                src="/brs-logo.png"
+                alt="BRS Logo"
+                className="w-16 h-16 object-contain"
+              />
+            </div>
+            <div>
+              <h1 className="text-2xl font-display font-black tracking-widest uppercase text-white leading-none">
+                BRS
+              </h1>
+              <p className="text-[10px] tracking-[0.2em] text-pink-300/70 font-medium mt-0.5">
+                Bharat Rashtra Samithi
+              </p>
+            </div>
           </div>
-          <p className="text-[11px] tracking-[0.25em] text-pink-300/80 font-semibold mb-6 flex items-center justify-center gap-2">
-            Bharat Rashtra Samithi
-          </p>
-          <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
+
+          <h2 className="text-2xl md:text-3xl font-display font-bold text-white mb-1.5">
             People Party
           </h2>
-          <p className="text-white/70 text-base mb-6 max-w-sm mx-auto">
-            BRS: Where People Meet, Vibe & Understand Each Other.
+          <p className="text-white/50 text-sm mb-5 max-w-xs mx-auto leading-relaxed">
+            Where people meet, vibe & understand each other.
           </p>
 
-          <div className="flex items-center justify-center gap-6 mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-pink-500 shadow-[0_0_8px_#ec4899]" />
-              <span className="text-[11px] font-medium text-pink-400/90 uppercase tracking-wider">
-                Real Connections
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-pink-500 shadow-[0_0_8px_#ec4899]" />
-              <span className="text-[11px] font-medium text-pink-400/90 uppercase tracking-wider">
-                People First
-              </span>
-            </div>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <span className="text-[10px] font-semibold text-pink-400 bg-pink-500/10 border border-pink-500/20 px-3 py-1 rounded-full">
+              Real Connections
+            </span>
+            <span className="text-[10px] font-semibold text-pink-400 bg-pink-500/10 border border-pink-500/20 px-3 py-1 rounded-full">
+              People First
+            </span>
           </div>
         </motion.div>
 
@@ -3019,17 +3019,17 @@ export default function AuthPage({ slug }: { slug?: string }) {
           ref={personaCardRef}
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-md bg-card border border-white/10 rounded-[20px] shadow-2xl p-5 sm:p-6 z-10 relative overflow-hidden max-h-[calc(100vh-120px)] md:max-h-[calc(100vh-160px)] flex flex-col"
+          className="w-full max-w-md bg-white/5 border border-white/8 backdrop-blur-sm rounded-2xl shadow-xl p-5 sm:p-6 z-10 relative overflow-hidden max-h-[calc(100vh-280px)] md:max-h-[calc(100vh-300px)] flex flex-col"
         >
           {(mode === "login" || mode === "swipe") && (
-            <div className="flex p-1 bg-white/10 rounded-lg mb-6 relative">
+            <div className="flex p-0.5 bg-white/6 border border-white/8 rounded-xl mb-5 relative">
               <button
                 onClick={() => setMode("login")}
                 className={clsx(
-                  "flex-1 py-2 text-sm font-semibold rounded-md z-10 transition-colors",
+                  "flex-1 py-2 text-xs font-bold rounded-[10px] z-10 transition-all",
                   mode === "login" || mode === "register"
                     ? "text-white"
-                    : "text-white/50",
+                    : "text-white/35",
                 )}
               >
                 BRS
@@ -3037,16 +3037,16 @@ export default function AuthPage({ slug }: { slug?: string }) {
               <button
                 onClick={() => setMode("swipe")}
                 className={clsx(
-                  "flex-1 py-2 text-sm font-semibold rounded-md z-10 transition-colors",
-                  mode === "swipe" ? "text-white" : "text-white/50",
+                  "flex-1 py-2 text-xs font-bold rounded-[10px] z-10 transition-all",
+                  mode === "swipe" ? "text-white" : "text-white/35",
                 )}
               >
                 Mini-Cards
               </button>
               <motion.div
                 layoutId="activeTab"
-                className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white/20 rounded-md shadow-sm pointer-events-none"
-                animate={{ left: mode === "swipe" ? "calc(50%)" : "4px" }}
+                className="absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] bg-white/12 border border-white/10 rounded-[10px] shadow-sm pointer-events-none"
+                animate={{ left: mode === "swipe" ? "calc(50%)" : "2px" }}
               />
             </div>
           )}
