@@ -3031,9 +3031,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
           {/* Pink car animation strip */}
           {(() => {
             const pauseMessages = [
-              { text: "సమస్యలు వేగంగా పరిష్కరిద్దాం", sub: "Telugu · Solving issues at speed" },
-              { text: "समस्याएं तेज़ी से हल करें", sub: "Hindi · Fast resolution for all" },
-              { text: "مسائل تیزی سے حل کریں", sub: "Urdu · Connect. Act. Resolve." },
+              { text: "అసహాయులకు మేము అండగా ఉంటాం", sub: "వేగంగా కలుపుతాం · We connect people with speed" },
+              { text: "बेसहारों के साथ हम खड़े हैं", sub: "तेज़ी से जोड़ते हैं · We connect with speed" },
+              { text: "بے بسوں کے ساتھ ہم ہیں", sub: "تیزی سے جوڑتے ہیں · We connect with speed" },
             ];
             const SpeedLines = () => (
               <div className="flex flex-col gap-[3px] mr-1.5">
