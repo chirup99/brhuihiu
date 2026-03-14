@@ -29,7 +29,6 @@ import {
   Palette,
   Layout,
   Mail,
-  Volume2,
 } from "lucide-react";
 import {
   motion,
@@ -2529,59 +2528,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [pin, setPin] = useState("");
   const [verifyPin, setVerifyPin] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
-  const [isVoicePlaying, setIsVoicePlaying] = useState(false);
-
-  const handleVoiceReplay = async () => {
-    const audioId = "voice-replay-audio";
-    const existing = document.getElementById(audioId) as HTMLAudioElement | null;
-    if (isVoicePlaying) {
-      window.speechSynthesis.cancel();
-      if (existing) { existing.pause(); existing.src = ""; }
-      setIsVoicePlaying(false);
-      return;
-    }
-    const roleLabel = ROLES.find((r) => r.value === user?.role)?.label || user?.role || "";
-    const parts: string[] = [];
-    if (user?.name) parts.push(user.name);
-    if (roleLabel) parts.push(roleLabel);
-    if (user?.bio) parts.push(user.bio);
-    (user?.cards || []).forEach((cardJson: string) => {
-      try {
-        const card = JSON.parse(cardJson);
-        if (card.type === "post" && card.content) parts.push(card.content);
-      } catch {}
-    });
-    const text = parts.join(". ");
-    if (!text) return;
-    setIsVoicePlaying(true);
-    try {
-      const voices = window.speechSynthesis.getVoices();
-      const edgeVoice = voices.find(
-        (v) => v.name.includes("Natural") && v.name.includes("Microsoft") && v.lang.startsWith("en"),
-      );
-      if (edgeVoice) {
-        const utt = new SpeechSynthesisUtterance(text);
-        utt.voice = edgeVoice;
-        utt.onend = () => setIsVoicePlaying(false);
-        utt.onerror = () => setIsVoicePlaying(false);
-        window.speechSynthesis.speak(utt);
-      } else {
-        let audioEl = document.getElementById(audioId) as HTMLAudioElement;
-        if (!audioEl) {
-          audioEl = document.createElement("audio");
-          audioEl.id = audioId;
-          audioEl.style.display = "none";
-          document.body.appendChild(audioEl);
-        }
-        audioEl.src = `https://api.lowline.ai/v1/tts?text=${encodeURIComponent(text)}&voice=en-US-AndrewNeural`;
-        audioEl.onended = () => setIsVoicePlaying(false);
-        audioEl.onerror = () => { audioEl.src = `https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=${encodeURIComponent(text.slice(0, 200))}`; audioEl.play().catch(() => setIsVoicePlaying(false)); };
-        await audioEl.play();
-      }
-    } catch {
-      setIsVoicePlaying(false);
-    }
-  };
 
   // Debounced slug availability check for home dialog
   useEffect(() => {
@@ -4704,7 +4650,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
             {isOtherPersona ? (
               <button
                 type="button"
-                onClick={() => { window.speechSynthesis.cancel(); const a = document.getElementById("voice-replay-audio") as HTMLAudioElement; if (a) { a.pause(); a.src = ""; } setIsVoicePlaying(false); setLocation(`/${loggedInUser.uniqueSlug}`); }}
+                onClick={() => { setLocation(`/${loggedInUser.uniqueSlug}`); }}
                 className="w-full bg-pink-500 text-white hover:bg-pink-600 rounded-lg py-3 font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg mt-2"
               >
                 Back to My Persona
