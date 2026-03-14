@@ -4398,7 +4398,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
               </div>
 
               {/* Share button */}
-              <div className="px-6 pb-10 relative z-10">
+              <div className="px-6 pb-10 relative z-10 space-y-3">
+                <p className="text-center text-white/70 text-xs leading-relaxed">
+                  Save this as your wallpaper — anyone can scan it to connect with you instantly.
+                </p>
                 <button
                   onClick={shareQR}
                   className="w-full bg-white text-pink-600 rounded-2xl py-4 font-black text-sm flex items-center justify-center gap-2 transition-all shadow-xl active:scale-95"
