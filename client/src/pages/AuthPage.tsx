@@ -4496,52 +4496,65 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/95 backdrop-blur-xl"
+                className="absolute inset-0 backdrop-blur-md"
+                style={{ background: "rgba(190,24,93,0.55)" }}
               />
               <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                initial={{ opacity: 0, scale: 0.92, y: 24 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="relative w-full max-w-sm bg-[#0a0a0a] border border-white/10 rounded-[32px] p-6 shadow-2xl text-center space-y-6 overflow-hidden"
+                exit={{ opacity: 0, scale: 0.92, y: 24 }}
+                transition={{ type: "spring", damping: 28, stiffness: 320 }}
+                className="relative w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl"
+                style={{ background: "linear-gradient(160deg, #ec4899 0%, #be185d 60%, #9d174d 100%)" }}
               >
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-blue-500 to-purple-500 opacity-50" />
+                {/* Decorative blobs */}
+                <div className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-25 blur-2xl pointer-events-none" style={{ background: "radial-gradient(circle, #f9a8d4, transparent)" }} />
+                <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full opacity-20 blur-2xl pointer-events-none" style={{ background: "radial-gradient(circle, #fce7f3, transparent)" }} />
 
-                <div className="space-y-1">
-                  <h3 className="text-xl font-bold text-white tracking-tight">
-                    {form.getValues("name")}
-                  </h3>
-                  <p className="text-white/40 text-xs">
-                    Your persona is live and ready.
-                  </p>
-                </div>
-
-                <div className="bg-white/5 rounded-2xl p-4 border border-white/10 space-y-2">
-                  <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold">
-                    Persona Code
-                  </p>
-                  <div className="text-2xl font-mono font-black text-white tracking-[0.3em]">
-                    {user?.uniqueSlug}
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 pt-6 pb-4 relative z-10">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-white overflow-hidden shadow">
+                      <img src="/brs-logo.png" alt="BRS" className="w-full h-full object-cover" />
+                    </div>
+                    <p className="text-white font-black text-sm tracking-tight">BRS Connect</p>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="space-y-2 text-left">
-                    <label className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold ml-1">
+                <div className="px-5 pb-6 relative z-10 space-y-5">
+                  {/* Name greeting */}
+                  <div className="text-center space-y-1">
+                    <h3 className="text-2xl font-black text-white tracking-tight leading-tight">
+                      {form.getValues("name") || "Welcome!"}
+                    </h3>
+                    <p className="text-white/70 text-xs">Your profile is live. Set a PIN to secure it.</p>
+                  </div>
+
+                  {/* Voice Code display */}
+                  <div className="rounded-2xl px-4 py-3 text-center space-y-1" style={{ background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.3)" }}>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/70">Voice Code</p>
+                    <p className="text-xl font-black font-mono text-white tracking-[0.3em] uppercase">
+                      {user?.uniqueSlug || "—"}
+                    </p>
+                  </div>
+
+                  {/* PIN input */}
+                  <div className="space-y-2">
+                    <label className="text-[9px] text-white/70 uppercase tracking-widest font-bold ml-1">
                       Set Login PIN (5 Digits)
                     </label>
-                    <div className="relative group">
-                      <input
-                        type="text"
-                        maxLength={5}
-                        placeholder="•••••"
-                        value={pin}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/\D/g, "");
-                          if (val.length <= 5) setPin(val);
-                        }}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-center text-xl font-mono tracking-[1em] text-white focus:outline-none focus:border-white/20 transition-all placeholder:text-white/10"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      maxLength={5}
+                      placeholder="•••••"
+                      value={pin}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, "");
+                        if (val.length <= 5) setPin(val);
+                      }}
+                      className="w-full rounded-2xl px-4 py-3 text-center text-xl font-mono tracking-[1em] text-pink-700 font-black placeholder:text-pink-300 focus:outline-none transition-all shadow-inner"
+                      style={{ background: "rgba(255,255,255,0.92)", border: "1.5px solid rgba(255,255,255,0.5)" }}
+                    />
                   </div>
 
                   <button
@@ -4571,18 +4584,15 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         });
                       }
                     }}
-                    className="w-full bg-white text-black rounded-xl py-3 font-bold text-sm hover:bg-white/90 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    className="w-full bg-white text-pink-600 rounded-2xl py-3.5 font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg hover:bg-pink-50"
                   >
                     {updateProfileMutation.isPending ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin text-pink-500" />
                     ) : (
-                      "Save & Continue"
+                      <>Save & Continue <ArrowRight className="w-4 h-4" /></>
                     )}
                   </button>
                 </div>
-
-                <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl" />
-                <div className="absolute -top-10 -left-10 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl" />
               </motion.div>
             </div>
           )}
@@ -4595,115 +4605,151 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setShowPersonaDialog(false)}
-                className="absolute inset-0 bg-black/95 backdrop-blur-xl"
+                className="absolute inset-0 backdrop-blur-md"
+                style={{ background: "rgba(190,24,93,0.55)" }}
               />
               <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                initial={{ opacity: 0, scale: 0.92, y: 24 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="relative w-full max-w-sm bg-[#0a0a0a] border border-white/10 rounded-[32px] p-8 shadow-2xl text-center space-y-6"
+                exit={{ opacity: 0, scale: 0.92, y: 24 }}
+                transition={{ type: "spring", damping: 28, stiffness: 320 }}
+                className="relative w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl"
+                style={{ background: "linear-gradient(160deg, #ec4899 0%, #be185d 60%, #9d174d 100%)" }}
               >
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-bold text-white tracking-tight">
-                    Access Persona
-                  </h3>
-                  <p className="text-white/40 text-sm">
-                    Enter your code and PIN to continue.
-                  </p>
+                {/* Decorative blobs */}
+                <div className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-25 blur-2xl pointer-events-none" style={{ background: "radial-gradient(circle, #f9a8d4, transparent)" }} />
+                <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full opacity-20 blur-2xl pointer-events-none" style={{ background: "radial-gradient(circle, #fce7f3, transparent)" }} />
+
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 pt-6 pb-4 relative z-10">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-white overflow-hidden shadow">
+                      <img src="/brs-logo.png" alt="BRS" className="w-full h-full object-cover" />
+                    </div>
+                    <p className="text-white font-black text-sm tracking-tight">BRS Connect</p>
+                  </div>
+                  <button
+                    onClick={() => setShowPersonaDialog(false)}
+                    className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center active:scale-90 transition-all"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="space-y-2 text-left">
-                    <label className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold ml-1">
-                      Persona Code
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. x1y2z"
-                      value={personaCode}
-                      onChange={(e) =>
-                        setPersonaCode(e.target.value.toLowerCase())
-                      }
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 transition-all font-mono"
-                    />
+                <div className="px-5 pb-6 relative z-10 space-y-5">
+                  {/* Title */}
+                  <div className="text-center space-y-1">
+                    <h3 className="text-2xl font-black text-white tracking-tight">
+                      Welcome Back
+                    </h3>
+                    <p className="text-white/70 text-xs">
+                      Enter your Voice Code and PIN to continue.
+                    </p>
                   </div>
 
-                  <div className="space-y-2 text-left">
-                    <label className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold ml-1">
-                      5-Digit PIN
-                    </label>
-                    <input
-                      type="password"
-                      maxLength={5}
-                      placeholder="•••••"
-                      value={verifyPin}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, "");
-                        if (val.length <= 5) setVerifyPin(val);
+                  {/* Inputs */}
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] text-white/70 uppercase tracking-widest font-bold ml-1">
+                        Voice Code
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. x1y2z"
+                        value={personaCode}
+                        onChange={(e) =>
+                          setPersonaCode(e.target.value.toLowerCase())
+                        }
+                        className="w-full rounded-2xl px-4 py-3 text-pink-800 font-mono font-bold placeholder:text-pink-300 focus:outline-none transition-all shadow-inner"
+                        style={{ background: "rgba(255,255,255,0.92)", border: "1.5px solid rgba(255,255,255,0.5)" }}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] text-white/70 uppercase tracking-widest font-bold ml-1">
+                        5-Digit PIN
+                      </label>
+                      <input
+                        type="password"
+                        maxLength={5}
+                        placeholder="•••••"
+                        value={verifyPin}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, "");
+                          if (val.length <= 5) setVerifyPin(val);
+                        }}
+                        className="w-full rounded-2xl px-4 py-3 text-center text-xl font-mono tracking-[1em] text-pink-700 font-black placeholder:text-pink-300 focus:outline-none transition-all shadow-inner"
+                        style={{ background: "rgba(255,255,255,0.92)", border: "1.5px solid rgba(255,255,255,0.5)" }}
+                      />
+                    </div>
+
+                    <button
+                      onClick={async () => {
+                        if (personaCode && verifyPin.length === 5) {
+                          try {
+                            const res = await apiRequest(
+                              "POST",
+                              "/api/auth/verify-persona",
+                              {
+                                slug: personaCode,
+                                pin: verifyPin,
+                              },
+                            );
+                            const userData = await res.json();
+
+                            // Set user and sync form
+                            localStorage.setItem("persona_user_id", userData.id);
+                            localStorage.setItem(
+                              "persona_user",
+                              JSON.stringify(userData),
+                            );
+                            await queryClient.invalidateQueries({
+                              queryKey: ["/api/me"],
+                            });
+                            setLocalUser(userData);
+                            setShowPersonaDialog(false);
+                            form.reset({
+                              email: userData.email || "",
+                              name: userData.name || "",
+                              role: userData.role || "people",
+                              bio: userData.bio || "",
+                              instagram: userData.instagram || "",
+                              linkedin: userData.linkedin || "",
+                              whatsapp: userData.whatsapp || "",
+                              website: userData.website || "",
+                              cards: userData.cards || [],
+                            });
+                            setSelectedCards(userData.cards || []);
+
+                            if (userData.uniqueSlug) {
+                              setLocation(`/${userData.uniqueSlug}`);
+                            }
+
+                            setMode("login");
+                            toast({
+                              title: "Welcome back!",
+                              description: `Successfully loaded profile: ${userData.name}`,
+                            });
+                          } catch (e: any) {
+                            toast({
+                              title: "Access Denied",
+                              description: "Invalid Voice Code or PIN.",
+                              variant: "destructive",
+                            });
+                          }
+                        }
                       }}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-center text-xl font-mono tracking-[1em] text-white focus:outline-none focus:border-purple-500/50 transition-all"
-                    />
+                      className="w-full bg-white text-pink-600 rounded-2xl py-3.5 font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg hover:bg-pink-50"
+                    >
+                      Sign In <ArrowRight className="w-4 h-4" />
+                    </button>
                   </div>
 
                   <button
-                    onClick={async () => {
-                      if (personaCode && verifyPin.length === 5) {
-                        try {
-                          const res = await apiRequest(
-                            "POST",
-                            "/api/auth/verify-persona",
-                            {
-                              slug: personaCode,
-                              pin: verifyPin,
-                            },
-                          );
-                          const userData = await res.json();
-
-                          // Set user and sync form
-                          localStorage.setItem("persona_user_id", userData.id);
-                          localStorage.setItem(
-                            "persona_user",
-                            JSON.stringify(userData),
-                          );
-                          await queryClient.invalidateQueries({
-                            queryKey: ["/api/me"],
-                          });
-                          setLocalUser(userData);
-                          setShowPersonaDialog(false);
-                          form.reset({
-                            email: userData.email || "",
-                            name: userData.name || "",
-                            role: userData.role || "people",
-                            bio: userData.bio || "",
-                            instagram: userData.instagram || "",
-                            linkedin: userData.linkedin || "",
-                            whatsapp: userData.whatsapp || "",
-                            website: userData.website || "",
-                            cards: userData.cards || [],
-                          });
-                          setSelectedCards(userData.cards || []);
-
-                          if (userData.uniqueSlug) {
-                            setLocation(`/${userData.uniqueSlug}`);
-                          }
-
-                          setMode("login");
-                          toast({
-                            title: "Welcome back!",
-                            description: `Successfully loaded persona: ${userData.name}`,
-                          });
-                        } catch (e: any) {
-                          toast({
-                            title: "Access Denied",
-                            description: "Invalid persona code or PIN.",
-                            variant: "destructive",
-                          });
-                        }
-                      }
-                    }}
-                    className="w-full bg-white text-black rounded-xl py-4 font-bold text-sm hover:bg-white/90 transition-all active:scale-95"
+                    onClick={() => setShowPersonaDialog(false)}
+                    className="w-full py-1 text-[10px] text-white/60 hover:text-white uppercase tracking-[0.3em] font-bold transition-colors text-center"
                   >
-                    Load Persona
+                    Dismiss
                   </button>
                 </div>
               </motion.div>
