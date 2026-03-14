@@ -3008,7 +3008,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
           </div>
 
           <h2 className="text-xl md:text-2xl font-display font-bold text-white mb-1">
-            People Party
+            BRS Connect
           </h2>
           <p className="text-white/70 text-xs mb-3 max-w-xs mx-auto leading-relaxed">
             Voice of the people. Strength of the nation.
