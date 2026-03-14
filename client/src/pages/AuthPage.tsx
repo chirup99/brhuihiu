@@ -3214,7 +3214,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       {form.watch("name")?.[0] || "P"}
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 tracking-tight">
-                      {form.watch("name") || "Political Profile"}
+                      {form.watch("name") || "Your Name"}
                     </h3>
                     <p className="text-gray-500 text-xs">
                       {ROLES.find((r) => r.value === form.watch("role"))
