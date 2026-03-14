@@ -2376,6 +2376,11 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
   return (
     <div className="min-h-screen bg-mesh overflow-hidden relative">
+      <div className="hidden">
+        {professionalAvatars.map((src, i) => (
+          <img key={i} src={src} alt="" aria-hidden="true" />
+        ))}
+      </div>
       <div className="absolute inset-0 flex flex-col justify-start items-end p-12 pt-24 pointer-events-none">
         <motion.div
           initial={{ opacity: 0, x: 20 }}
