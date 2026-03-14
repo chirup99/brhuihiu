@@ -2177,7 +2177,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
       password: "",
       name: user?.name || "",
       role: user?.role || "people",
-      bio: user?.bio || "Meet People & Build Real Connections",
+      bio: user?.bio || "Voice of the People. Strength of the Nation.",
       instagram: user?.instagram || "",
       linkedin: user?.linkedin || "",
       whatsapp: user?.whatsapp || "",
@@ -3214,7 +3214,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       {form.watch("name")?.[0] || "P"}
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 tracking-tight">
-                      {form.watch("name") || "Networking Profile"}
+                      {form.watch("name") || "Political Profile"}
                     </h3>
                     <p className="text-gray-500 text-xs">
                       {ROLES.find((r) => r.value === form.watch("role"))
