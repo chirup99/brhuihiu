@@ -2980,7 +2980,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
           ref={personaCardRef}
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-md bg-white/5 border border-white/8 backdrop-blur-sm rounded-2xl shadow-xl p-5 sm:p-6 z-10 relative overflow-hidden max-h-[calc(100vh-280px)] md:max-h-[calc(100vh-300px)] flex flex-col"
+          className="w-full max-w-md bg-white/5 border border-white/8 backdrop-blur-sm rounded-2xl shadow-xl p-5 sm:p-6 z-10 relative overflow-hidden"
         >
           {(mode === "login" || mode === "swipe") && (
             <div className="flex p-0.5 bg-white/6 border border-white/8 rounded-xl mb-5 relative">
@@ -3012,7 +3012,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
             </div>
           )}
 
-          <div className="space-y-4 overflow-y-auto flex-1">
+          <div className="space-y-4">
             <motion.div
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
