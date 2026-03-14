@@ -1930,7 +1930,35 @@ const CustomSwipeCard = ({ cards }: { cards: string[] }) => {
       .filter(Boolean);
   }, [cards]);
 
-  if (parsedCards.length === 0) return null;
+  if (parsedCards.length === 0) {
+    return (
+      <div className="relative w-full max-w-[240px] aspect-[3/4] mx-auto perspective-1000">
+        <div className="absolute inset-0 translate-y-4 translate-x-2 rounded-[24px] -z-20 opacity-40 scale-95 bg-black/10" />
+        <div className="absolute inset-0 translate-y-2 translate-x-1 rounded-[24px] -z-10 opacity-70 scale-[0.98] bg-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1a0510] to-[#2d0a1e] rounded-[24px] p-4 shadow-2xl overflow-hidden flex flex-col items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <span className="text-white/90 text-[9px] font-bold tracking-[0.2em] uppercase">Your Voice</span>
+            <PenLine className="w-3 h-3 text-white/60" />
+          </div>
+          <div className="flex flex-col items-center justify-center gap-4 flex-1 py-6">
+            <div className="w-16 h-16 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
+              <PenLine className="w-7 h-7 text-pink-300/70" />
+            </div>
+            <div className="text-center space-y-2 px-2">
+              <p className="text-white/80 text-xs font-semibold leading-relaxed">
+                Speak up for your community.
+              </p>
+              <p className="text-white/40 text-[10px] leading-relaxed">
+                Your voice matters. Rise and be heard.
+              </p>
+            </div>
+          </div>
+          <div className="w-full h-px bg-white/10 mb-2" />
+          <p className="text-white/20 text-[9px] uppercase tracking-widest">No cards yet</p>
+        </div>
+      </div>
+    );
+  }
 
   const currentCard = parsedCards[currentIndex]!;
   const nextCard = parsedCards[(currentIndex + 1) % parsedCards.length]!;
