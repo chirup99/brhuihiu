@@ -88,22 +88,16 @@ const CARD_TYPES = [
     color: "from-purple-500 to-purple-600",
   },
   {
-    type: "revenue",
-    label: "Revenue / Sales",
-    icon: TrendingUp,
-    color: "from-emerald-500 to-emerald-600",
-  },
-  {
-    type: "traction",
-    label: "Traction / Growth",
-    icon: TrendingUp,
-    color: "from-amber-500 to-amber-600",
-  },
-  {
-    type: "product",
-    label: "Product Show",
+    type: "image",
+    label: "Image Card",
     icon: Package,
     color: "from-orange-500 to-orange-600",
+  },
+  {
+    type: "post",
+    label: "Post Card",
+    icon: FileText,
+    color: "from-blue-500 to-blue-600",
   },
 ];
 
@@ -568,7 +562,7 @@ const SwipeCardContent = forwardRef(
                     </div>
                   </div>
                 )
-              ) : card.type === "product" ? (
+              ) : card.type === "image" || card.type === "product" ? (
                 (card as any).imageUrl ? (
                   <div className="w-full aspect-square rounded-xl overflow-hidden shadow-lg border border-white/10 mb-4">
                     <img
@@ -582,22 +576,18 @@ const SwipeCardContent = forwardRef(
                     <h3 className="text-white text-2xl font-bold leading-tight">
                       {card.name}
                     </h3>
-                    <h3 className="text-white text-sm opacity-60 font-medium leading-tight line-clamp-2 px-2">
-                      {card.subname}
-                    </h3>
                   </div>
                 )
-              ) : card.type === "revenue" || card.type === "traction" ? (
-                <div className="w-full flex flex-col items-center">
-                  <div className="text-center space-y-0.5 mb-2">
-                    <h3 className="text-white text-3xl font-bold leading-tight">
-                      {card.name}
-                    </h3>
-                    <h3 className="text-white text-sm opacity-60 font-medium leading-tight uppercase tracking-wider">
-                      {card.subname}
-                    </h3>
-                  </div>
-                  <TrendLine />
+              ) : card.type === "post" ? (
+                <div className="text-center space-y-2 px-2">
+                  <h3 className="text-white text-lg font-bold leading-tight">
+                    {card.name}
+                  </h3>
+                  {(card as any).content && (
+                    <p className="text-white/80 text-xs leading-relaxed line-clamp-5">
+                      {(card as any).content}
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div className="text-center space-y-0.5">
@@ -617,14 +607,13 @@ const SwipeCardContent = forwardRef(
             </div>
 
             {card.type !== "product" &&
-              card.type !== "traction" &&
-              card.type !== "revenue" && (
+              card.type !== "image" && (
                 <div className="w-full">
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (card.type === "pitch" && (card as any).content) {
+                      if ((card.type === "pitch" || card.type === "post") && (card as any).content) {
                         handleSpeak((card as any).content);
                       } else {
                         setIsPlaying(true);
@@ -671,20 +660,18 @@ const SwipeCard = ({
           if (!card || !card.type) return CARDS[0];
           const typeInfo = CARD_TYPES.find((t) => t.type === card.type);
           let name = card.title || "Untitled";
-          if (card.type === "revenue" || card.type === "traction") {
-            name = card.value || card.title || "Growth";
-          } else if (card.type === "reel") {
+          if (card.type === "reel") {
             name = card.title || "Video";
-          } else if (card.type === "product") {
-            name = card.title || "Product";
+          } else if (card.type === "image" || card.type === "product") {
+            name = card.title || "Image";
+          } else if (card.type === "post") {
+            name = card.title || "Post";
           }
           let subname = "";
           if (card.type === "reel") {
             subname = card.url || "";
-          } else if (card.type === "revenue") {
-            subname = card.revenue || "Sales";
-          } else if (card.type === "traction") {
-            subname = card.traction || "Growth";
+          } else if (card.type === "post") {
+            subname = card.content || "";
           } else {
             subname = card.url || "Persona";
           }
@@ -1012,41 +999,23 @@ const MiniCard = ({
                 }}
               />
             )}
-            {card.type === "revenue" && (
-              <div className="space-y-1">
-                <input
-                  className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-xs text-white"
-                  placeholder="Value (e.g. $10k)"
-                  defaultValue={(card as any).value}
-                  onBlur={(e) => {
-                    onUpdate(
-                      JSON.stringify({ ...card, value: e.target.value }),
-                    );
-                  }}
-                />
-              </div>
+            {card.type === "post" && (
+              <textarea
+                className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-xs text-white h-20 resize-none"
+                placeholder="Write your post content..."
+                defaultValue={(card as any).content}
+                onBlur={(e) => {
+                  onUpdate(JSON.stringify({ ...card, content: e.target.value }));
+                }}
+              />
             )}
-            {card.type === "traction" && (
-              <div className="space-y-1">
-                <input
-                  className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-xs text-white"
-                  placeholder="Value (e.g. +20%)"
-                  defaultValue={(card as any).value}
-                  onBlur={(e) => {
-                    onUpdate(
-                      JSON.stringify({ ...card, value: e.target.value }),
-                    );
-                  }}
-                />
-              </div>
-            )}
-            {card.type === "product" && (
+            {(card.type === "image" || card.type === "product") && (
               <div className="space-y-1">
                 <input
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  id={`product-image-${idx}`}
+                  id={`card-image-${idx}`}
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (file) {
@@ -1095,7 +1064,7 @@ const MiniCard = ({
                 <button
                   type="button"
                   onClick={() =>
-                    document.getElementById(`product-image-${idx}`)?.click()
+                    document.getElementById(`card-image-${idx}`)?.click()
                   }
                   className="w-full bg-white/10 border border-white/20 rounded px-2 py-2 text-[10px] text-white flex items-center justify-center gap-2 hover:bg-white/20"
                 >
@@ -1235,7 +1204,7 @@ const MiniCard = ({
               </p>
             </div>
           </div>
-        ) : card.type === "product" ? (
+        ) : card.type === "image" || card.type === "product" ? (
           <div className="w-full h-full flex items-center justify-center p-2">
             {(card as any).imageUrl ? (
               <img
@@ -1253,6 +1222,17 @@ const MiniCard = ({
                 <Plus className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
               </button>
             )}
+          </div>
+        ) : card.type === "post" ? (
+          <div className="w-full h-full flex flex-col items-center justify-center p-2 overflow-hidden">
+            <div className="w-full h-full overflow-y-auto custom-scrollbar flex items-start pt-2">
+              <p
+                onClick={() => setIsEditing(true)}
+                className="text-white/90 text-sm text-center leading-relaxed cursor-pointer hover:bg-white/5 p-4 rounded-lg transition-colors w-full break-words"
+              >
+                {(card as any).content || "Tap to write your post..."}
+              </p>
+            </div>
           </div>
         ) : card.type === "revenue" && isPlaying ? (
           <div className="w-full h-full flex flex-col items-center justify-center p-2">
@@ -1345,45 +1325,10 @@ const MiniCard = ({
               </>
             )}
           </button>
-        ) : card.type === "revenue" ? (
-          <div className="space-y-2">
-            {!isPlaying && (
-              <div className="text-center">
-                <div className="text-white font-bold text-xl">
-                  {(card as any).value}
-                </div>
-                {(card as any).revenue && (
-                  <div className="text-white/40 text-[10px] font-bold uppercase tracking-widest mt-1">
-                    Total: {(card as any).revenue}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        ) : card.type === "traction" ? (
-          <div className="space-y-2">
-            {!isPlaying && (
-              <div className="text-center">
-                <div className="text-white font-bold text-xl">
-                  {(card as any).value}
-                </div>
-                {(card as any).traction && (
-                  <div className="text-white/40 text-[10px] font-bold uppercase tracking-widest mt-1">
-                    Users: {(card as any).traction}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        ) : card.type === "product" ? (
-          <div className="space-y-1 text-center">
-            {(card as any).traction && (
-              <div className="text-emerald-400 font-bold text-sm mb-1 flex items-center justify-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                {(card as any).traction}
-              </div>
-            )}
-          </div>
+        ) : card.type === "image" || card.type === "product" ? (
+          <div className="space-y-1 text-center" />
+        ) : card.type === "post" ? (
+          <div className="space-y-1 text-center" />
         ) : null}
       </div>
     </motion.div>
@@ -4055,22 +4000,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           <div className="h-full border-2 border-dashed border-pink-200 rounded-2xl flex flex-col items-center justify-center p-4">
                             <div className="grid grid-cols-2 gap-2 w-full">
                               {CARD_TYPES.map((t) => {
-                                const productCount = selectedCards.filter((c) => {
-                                  try {
-                                    const parsed = JSON.parse(c);
-                                    return parsed.type === "product";
-                                  } catch {
-                                    return false;
-                                  }
-                                }).length;
-                                const isProductDisabled =
-                                  t.type === "product" && productCount >= 2;
-
                                 return (
                                   <button
                                     key={t.type}
                                     type="button"
-                                    disabled={isProductDisabled}
                                     onClick={() => {
                                       const currentCards = [...selectedCards];
                                       const newCard =
@@ -4080,37 +4013,21 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                               title: "New Reel",
                                               url: "",
                                             }
-                                          : t.type === "revenue"
+                                          : t.type === "image"
                                             ? {
-                                                type: "revenue",
-                                                title: "Monthly Sales",
-                                                value: "$0",
-                                                revenue: "",
+                                                type: "image",
+                                                title: "Image Card",
                                                 imageUrl: "",
                                               }
-                                            : t.type === "traction"
-                                              ? {
-                                                  type: "traction",
-                                                  title: "Traction",
-                                                  value: "0",
-                                                  traction: "",
-                                                  imageUrl: "",
-                                                }
-                                              : {
-                                                  type: "product",
-                                                  title: "Product",
-                                                  imageUrl: "",
-                                                  traction: "",
-                                                };
+                                            : {
+                                                type: "post",
+                                                title: "Post Card",
+                                                content: "",
+                                              };
                                       currentCards[idx] = JSON.stringify(newCard);
                                       setSelectedCards(currentCards);
                                     }}
-                                    className={clsx(
-                                      "flex flex-col items-center gap-1 p-2 rounded-xl transition-all",
-                                      isProductDisabled
-                                        ? "bg-pink-50 opacity-30 cursor-not-allowed"
-                                        : "bg-pink-50 hover:bg-pink-100",
-                                    )}
+                                    className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all bg-pink-50 hover:bg-pink-100"
                                   >
                                     <t.icon className="w-5 h-5 text-pink-400" />
                                     <span className="text-[8px] text-pink-500 uppercase font-bold">

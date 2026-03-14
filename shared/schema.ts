@@ -12,6 +12,16 @@ export const cardSchema = z.discriminatedUnion("type", [
     url: z.string(),
   }),
   z.object({
+    type: z.literal("image"),
+    title: z.string(),
+    imageUrl: z.string(),
+  }),
+  z.object({
+    type: z.literal("post"),
+    title: z.string(),
+    content: z.string(),
+  }),
+  z.object({
     type: z.literal("revenue"),
     title: z.string(),
     value: z.string(),
