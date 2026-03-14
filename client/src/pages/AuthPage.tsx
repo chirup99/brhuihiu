@@ -2686,6 +2686,11 @@ export default function AuthPage({ slug }: { slug?: string }) {
       // First check if persona exists on backend
       const checkRes = await fetch(`/api/user/slug/${personaSlug}`);
       if (!checkRes.ok) {
+        toast({
+          title: "Not Found",
+          description: "Voice code doesn't exist.",
+          variant: "destructive",
+        });
         setIsVerifying(false);
         return;
       }
