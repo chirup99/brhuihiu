@@ -329,6 +329,7 @@ interface SwipeCardProps {
   totalCards: number;
   onSwipeLeft: () => void;
   onSwipeRight: () => void;
+  onVideoPlayStateChange?: (isPlaying: boolean) => void;
 }
 
 const getThumbnailUrl = (url: string) => {
@@ -381,7 +382,7 @@ const TrendLine = () => (
 );
 
 const SwipeCardContent = forwardRef(
-  ({ card, currentIndex, onSwipeLeft, onSwipeRight }: SwipeCardProps, ref) => {
+  ({ card, currentIndex, onSwipeLeft, onSwipeRight, onVideoPlayStateChange }: SwipeCardProps, ref) => {
     const x = useMotionValue(0);
     const rotate = useTransform(x, [-200, 200], [-30, 30]);
     const opacity = useTransform(x, [-200, -150, 0, 150, 200], [0, 1, 1, 1, 0]);
@@ -622,7 +623,7 @@ const SwipeCardContent = forwardRef(
                     </div>
                   );
                   if (subtype === "video") return (
-                    <XVideoCard tweetId={tweetId} xUrl={xUrl} />
+                    <XVideoCard tweetId={tweetId} xUrl={xUrl} onPlayStateChange={onVideoPlayStateChange} />
                   );
                   return (
                     <div className="w-full h-full absolute inset-0 overflow-hidden rounded-[24px]">
@@ -703,7 +704,7 @@ const SwipeCardContent = forwardRef(
 
 SwipeCardContent.displayName = "SwipeCardContent";
 
-const XVideoCard = ({ tweetId, xUrl, onEditClick }: { tweetId: string; xUrl: string; onEditClick?: (e: React.MouseEvent) => void }) => {
+const XVideoCard = ({ tweetId, xUrl, onEditClick, onPlayStateChange }: { tweetId: string; xUrl: string; onEditClick?: (e: React.MouseEvent) => void; onPlayStateChange?: (isPlaying: boolean) => void }) => {
   const { data, isLoading, isError } = useQuery<{ videoUrl: string; thumbnailUrl: string | null }>({
     queryKey: ["/api/tweet-video", tweetId],
     queryFn: async () => {
@@ -726,9 +727,11 @@ const XVideoCard = ({ tweetId, xUrl, onEditClick }: { tweetId: string; xUrl: str
     if (isPlaying) {
       v.pause();
       setIsPlaying(false);
+      onPlayStateChange?.(false);
     } else {
       v.play().catch(() => {});
       setIsPlaying(true);
+      onPlayStateChange?.(true);
     }
   };
 
@@ -760,7 +763,7 @@ const XVideoCard = ({ tweetId, xUrl, onEditClick }: { tweetId: string; xUrl: str
             loop
             playsInline
             onLoadedMetadata={handleMetadata}
-            onEnded={() => setIsPlaying(false)}
+            onEnded={() => { setIsPlaying(false); onPlayStateChange?.(false); }}
           />
           <button
             type="button"
@@ -855,6 +858,7 @@ const SwipeCard = ({
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   useEffect(() => {
     if (activeIndex >= displayCards.length) setActiveIndex(0);
@@ -886,6 +890,7 @@ const SwipeCard = ({
 
   const triggerSwipe = async (dir: number) => {
     if (isAnimating || displayCards.length <= 1) return;
+    setIsVideoPlaying(false);
     setIsAnimating(true);
     await Promise.all([
       animate(x, dir * 440, { duration: 0.28, ease: [0.4, 0, 0.85, 1] }),
@@ -947,7 +952,7 @@ const SwipeCard = ({
       <motion.div
         key={activeIndex}
         style={{ x, rotate, opacity: frontOpacity, zIndex: 30 }}
-        drag={isAnimating ? false : "x"}
+        drag={isAnimating || isVideoPlaying ? false : "x"}
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.12}
         whileDrag={{ scale: 1.03 }}
@@ -957,7 +962,8 @@ const SwipeCard = ({
           else snapBack();
         }}
         className={clsx(
-          "absolute inset-0 bg-gradient-to-b rounded-[24px] p-4 shadow-2xl cursor-grab active:cursor-grabbing overflow-hidden",
+          "absolute inset-0 bg-gradient-to-b rounded-[24px] p-4 shadow-2xl overflow-hidden",
+          isVideoPlaying ? "cursor-default" : "cursor-grab active:cursor-grabbing",
           frontCard.color,
         )}
       >
@@ -967,6 +973,7 @@ const SwipeCard = ({
           totalCards={displayCards.length}
           onSwipeLeft={() => triggerSwipe(-1)}
           onSwipeRight={() => triggerSwipe(1)}
+          onVideoPlayStateChange={setIsVideoPlaying}
         />
       </motion.div>
     </div>
