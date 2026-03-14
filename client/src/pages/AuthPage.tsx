@@ -2420,6 +2420,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
     return `${hours}h ${mins}m`;
   };
   const [showHomeDialog, setShowHomeDialog] = useState(false);
+  const [homeSlugEditing, setHomeSlugEditing] = useState(false);
+  const [homeSlugValue, setHomeSlugValue] = useState("");
+  const [homeSlugStatus, setHomeSlugStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
   const [showPersonaDialog, setShowPersonaDialog] = useState(false);
   const [personaSlug, setPersonaSlug] = useState("");
   const [personaPin, setPersonaPin] = useState("");
@@ -2427,6 +2430,31 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [pin, setPin] = useState("");
   const [verifyPin, setVerifyPin] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
+
+  // Debounced slug availability check for home dialog
+  useEffect(() => {
+    if (!homeSlugEditing) return;
+    if (!homeSlugValue || homeSlugValue === user?.uniqueSlug) {
+      setHomeSlugStatus("idle");
+      return;
+    }
+    if (homeSlugValue.length < 3) {
+      setHomeSlugStatus("idle");
+      return;
+    }
+    setHomeSlugStatus("checking");
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/user/check-slug/${homeSlugValue}`);
+        const data = await res.json();
+        setHomeSlugStatus(data.taken ? "taken" : "available");
+      } catch {
+        setHomeSlugStatus("idle");
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [homeSlugValue, homeSlugEditing, user?.uniqueSlug]);
+
   const handleScan = async (data: string | null) => {
     if (data) {
       // The QR code contains the URL like "https://domain.com/slug" or just "slug"
@@ -5017,12 +5045,61 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     <p className="text-white/70 text-xs">Your profile is live. Set a PIN to secure it.</p>
                   </div>
 
-                  {/* Voice Code display */}
-                  <div className="rounded-2xl px-4 py-3 text-center space-y-1" style={{ background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.3)" }}>
-                    <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/70">Voice Code</p>
-                    <p className="text-xl font-black font-mono text-white tracking-[0.3em] uppercase">
-                      {user?.uniqueSlug || "—"}
-                    </p>
+                  {/* Voice Code display / edit */}
+                  <div className="rounded-2xl px-4 py-3 space-y-1" style={{ background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.3)" }}>
+                    <div className="flex items-center justify-between">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/70">Voice Code</p>
+                      {!homeSlugEditing ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setHomeSlugValue(user?.uniqueSlug || "");
+                            setHomeSlugStatus("idle");
+                            setHomeSlugEditing(true);
+                          }}
+                          className="p-1 rounded-lg bg-white/20 hover:bg-white/30 transition-colors active:scale-90"
+                        >
+                          <Pencil className="w-3 h-3 text-white" />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => { setHomeSlugEditing(false); setHomeSlugStatus("idle"); }}
+                          className="p-1 rounded-lg bg-white/20 hover:bg-white/30 transition-colors active:scale-90"
+                        >
+                          <X className="w-3 h-3 text-white" />
+                        </button>
+                      )}
+                    </div>
+                    {homeSlugEditing ? (
+                      <div className="space-y-1.5">
+                        <input
+                          autoFocus
+                          type="text"
+                          value={homeSlugValue}
+                          onChange={(e) => setHomeSlugValue(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+                          className="w-full rounded-xl px-3 py-2 text-center text-base font-mono font-black text-pink-700 placeholder:text-pink-300 focus:outline-none"
+                          style={{ background: "rgba(255,255,255,0.92)", border: "1.5px solid rgba(255,255,255,0.5)" }}
+                          placeholder="enter code..."
+                          maxLength={20}
+                        />
+                        <div className="flex items-center justify-center gap-1.5 h-4">
+                          {homeSlugStatus === "checking" && (
+                            <><Loader2 className="w-3 h-3 text-white/70 animate-spin" /><span className="text-[9px] text-white/70 font-bold">Checking…</span></>
+                          )}
+                          {homeSlugStatus === "available" && (
+                            <><div className="w-2 h-2 rounded-full bg-emerald-400" /><span className="text-[9px] text-emerald-300 font-bold uppercase tracking-widest">Available</span></>
+                          )}
+                          {homeSlugStatus === "taken" && (
+                            <><div className="w-2 h-2 rounded-full bg-red-400" /><span className="text-[9px] text-red-300 font-bold uppercase tracking-widest">Taken</span></>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-xl font-black font-mono text-white tracking-[0.3em] uppercase text-center">
+                        {user?.uniqueSlug || "—"}
+                      </p>
+                    )}
                   </div>
 
                   {/* PIN input */}
@@ -5045,35 +5122,28 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   </div>
 
                   <button
+                    disabled={updateProfileMutation.isPending || updateSlugMutation.isPending || homeSlugStatus === "taken" || homeSlugStatus === "checking"}
                     onClick={async () => {
-                      if (pin.length === 5) {
-                        try {
-                          await updateProfileMutation.mutateAsync({ pin });
-                          setShowHomeDialog(false);
-                          setShowQRDialog(true);
-                          toast({
-                            title: "Security Updated",
-                            description:
-                              "Your 5-digit PIN has been set successfully.",
-                          });
-                        } catch (e) {
-                          toast({
-                            title: "Error",
-                            description: "Failed to set PIN. Please try again.",
-                            variant: "destructive",
-                          });
+                      if (pin.length !== 5) {
+                        toast({ title: "Invalid PIN", description: "Please enter a 5-digit numeric PIN.", variant: "destructive" });
+                        return;
+                      }
+                      try {
+                        if (homeSlugEditing && homeSlugValue && homeSlugValue !== user?.uniqueSlug && homeSlugStatus === "available") {
+                          await updateSlugMutation.mutateAsync(homeSlugValue);
                         }
-                      } else {
-                        toast({
-                          title: "Invalid PIN",
-                          description: "Please enter a 5-digit numeric PIN.",
-                          variant: "destructive",
-                        });
+                        await updateProfileMutation.mutateAsync({ pin });
+                        setShowHomeDialog(false);
+                        setHomeSlugEditing(false);
+                        setShowQRDialog(true);
+                        toast({ title: "Profile Secured", description: "Your PIN and Voice Code have been saved." });
+                      } catch (e) {
+                        toast({ title: "Error", description: "Failed to save. Please try again.", variant: "destructive" });
                       }
                     }}
-                    className="w-full bg-white text-pink-600 rounded-2xl py-3.5 font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg hover:bg-pink-50"
+                    className="w-full bg-white text-pink-600 rounded-2xl py-3.5 font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg hover:bg-pink-50 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    {updateProfileMutation.isPending ? (
+                    {(updateProfileMutation.isPending || updateSlugMutation.isPending) ? (
                       <Loader2 className="w-4 h-4 animate-spin text-pink-500" />
                     ) : (
                       <>Save & Continue <ArrowRight className="w-4 h-4" /></>
