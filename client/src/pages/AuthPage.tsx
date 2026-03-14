@@ -55,7 +55,7 @@ import avatarBrsCar from "@assets/brs-car-logo.png";
 import pinkCarSrc from "@assets/pink-car.png";
 import brsLogoSlider from "@assets/brs-logo-slider.png";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 type AuthMode = "login" | "register" | "customize" | "swipe";
 
@@ -609,7 +609,22 @@ const SwipeCardContent = forwardRef(
                   const subtype = (card as any).subtype || "tweet";
                   const tweetIdMatch = xUrl.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
                   const tweetId = tweetIdMatch?.[1];
-                  return tweetId ? (
+                  if (!tweetId) return (
+                    <div className="text-center space-y-3">
+                      {subtype === "video" ? (
+                        <Play className="w-10 h-10 text-white/30 mx-auto fill-current" />
+                      ) : (
+                        <SiX className="w-10 h-10 text-white/30 mx-auto" />
+                      )}
+                      <p className="text-white/40 text-[10px] uppercase tracking-widest font-bold">
+                        {subtype === "video" ? "No video added" : "No post added"}
+                      </p>
+                    </div>
+                  );
+                  if (subtype === "video") return (
+                    <XVideoCard tweetId={tweetId} xUrl={xUrl} />
+                  );
+                  return (
                     <div className="w-full h-full absolute inset-0 overflow-hidden rounded-[24px]">
                       <iframe
                         src={`https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&chrome=nofooter&conversation=none`}
@@ -628,17 +643,6 @@ const SwipeCardContent = forwardRef(
                       >
                         <SiX className="w-3.5 h-3.5 text-white" />
                       </a>
-                    </div>
-                  ) : (
-                    <div className="text-center space-y-3">
-                      {subtype === "video" ? (
-                        <Play className="w-10 h-10 text-white/30 mx-auto fill-current" />
-                      ) : (
-                        <SiX className="w-10 h-10 text-white/30 mx-auto" />
-                      )}
-                      <p className="text-white/40 text-[10px] uppercase tracking-widest font-bold">
-                        {subtype === "video" ? "No video added" : "No post added"}
-                      </p>
                     </div>
                   );
                 })()
@@ -698,6 +702,66 @@ const SwipeCardContent = forwardRef(
 );
 
 SwipeCardContent.displayName = "SwipeCardContent";
+
+const XVideoCard = ({ tweetId, xUrl, onEditClick }: { tweetId: string; xUrl: string; onEditClick?: (e: React.MouseEvent) => void }) => {
+  const { data, isLoading, isError } = useQuery<{ videoUrl: string; thumbnailUrl: string | null }>({
+    queryKey: ["/api/tweet-video", tweetId],
+    queryFn: async () => {
+      const res = await fetch(`/api/tweet-video/${tweetId}`);
+      if (!res.ok) throw new Error("No video found");
+      return res.json();
+    },
+    retry: 1,
+    staleTime: 1000 * 60 * 30,
+  });
+
+  return (
+    <div className="w-full h-full relative overflow-hidden rounded-[20px] bg-black flex items-center justify-center">
+      {isLoading ? (
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-8 h-8 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+          <span className="text-white/40 text-[9px] uppercase tracking-widest font-bold">Loading video…</span>
+        </div>
+      ) : isError || !data?.videoUrl ? (
+        <div className="flex flex-col items-center gap-3">
+          <Play className="w-10 h-10 text-white/30 fill-current" />
+          <p className="text-white/40 text-[9px] uppercase tracking-widest font-bold text-center px-4">
+            Tap X to view video
+          </p>
+        </div>
+      ) : (
+        <video
+          src={data.videoUrl}
+          poster={data.thumbnailUrl || undefined}
+          className="w-full h-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          controls={false}
+        />
+      )}
+      {onEditClick && (
+        <button
+          type="button"
+          onClick={onEditClick}
+          className="absolute top-3 right-3 p-1.5 bg-black/60 backdrop-blur-sm rounded-full border border-white/10 text-white/70 hover:text-white transition-colors z-10"
+        >
+          <Pencil className="w-3 h-3" />
+        </button>
+      )}
+      <a
+        href={xUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-black flex items-center justify-center shadow-lg border border-white/10 z-10 active:scale-90 transition-transform"
+      >
+        <SiX className="w-3.5 h-3.5 text-white" />
+      </a>
+    </div>
+  );
+};
 
 const SwipeCard = ({
   cards,
@@ -1379,7 +1443,32 @@ const MiniCard = ({
             const subtype = (card as any).subtype || "tweet";
             const tweetIdMatch = xUrl.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
             const tweetId = tweetIdMatch?.[1];
-            return tweetId ? (
+            if (!tweetId) return (
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className="w-full h-full flex flex-col items-center justify-center gap-3 group"
+              >
+                <div className="w-16 h-16 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors">
+                  {subtype === "video" ? (
+                    <Play className="w-7 h-7 text-white/40 group-hover:text-white/70 transition-colors fill-current" />
+                  ) : (
+                    <SiX className="w-7 h-7 text-white/40 group-hover:text-white/70 transition-colors" />
+                  )}
+                </div>
+                <span className="text-white/40 text-[9px] font-bold uppercase tracking-widest group-hover:text-white/60 transition-colors">
+                  {subtype === "video" ? "Add X video URL" : "Add X post URL"}
+                </span>
+              </button>
+            );
+            if (subtype === "video") return (
+              <XVideoCard
+                tweetId={tweetId}
+                xUrl={xUrl}
+                onEditClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+              />
+            );
+            return (
               <div className="w-full h-full relative overflow-hidden rounded-[20px]">
                 <iframe
                   src={`https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&chrome=nofooter&conversation=none`}
@@ -1406,23 +1495,6 @@ const MiniCard = ({
                   <SiX className="w-3 h-3 text-white" />
                 </a>
               </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                className="w-full h-full flex flex-col items-center justify-center gap-3 group"
-              >
-                <div className="w-16 h-16 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center group-hover:border-white/40 transition-colors">
-                  {subtype === "video" ? (
-                    <Play className="w-7 h-7 text-white/40 group-hover:text-white/70 transition-colors fill-current" />
-                  ) : (
-                    <SiX className="w-7 h-7 text-white/40 group-hover:text-white/70 transition-colors" />
-                  )}
-                </div>
-                <span className="text-white/40 text-[9px] font-bold uppercase tracking-widest group-hover:text-white/60 transition-colors">
-                  {subtype === "video" ? "Add X video URL" : "Add X post URL"}
-                </span>
-              </button>
             );
           })()
         ) : card.type === "revenue" && isPlaying ? (

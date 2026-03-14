@@ -298,6 +298,48 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/tweet-video/:tweetId", async (req, res) => {
+    try {
+      const { tweetId } = req.params;
+      if (!/^\d+$/.test(tweetId)) return res.status(400).json({ error: "Invalid tweet ID" });
+
+      const token = Math.floor(Number(tweetId) / 1e15 * Math.PI).toString();
+      const url = `https://cdn.syndication.twimg.com/tweet-result?id=${tweetId}&lang=en&token=${token}`;
+
+      const response = await fetch(url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Accept": "application/json",
+          "Referer": "https://platform.twitter.com/",
+          "Origin": "https://platform.twitter.com"
+        }
+      });
+
+      if (!response.ok) return res.status(404).json({ error: "Tweet not found or not accessible" });
+
+      const data = await response.json() as any;
+      const mediaDetails = data.mediaDetails || data.extended_entities?.media || [];
+      const videoMedia = mediaDetails.find((m: any) => m.type === "video" || m.type === "animated_gif");
+
+      if (!videoMedia) return res.status(404).json({ error: "No video found in this tweet" });
+
+      const variants: any[] = (videoMedia.video_info?.variants || [])
+        .filter((v: any) => v.content_type === "video/mp4" && v.url)
+        .sort((a: any, b: any) => (b.bitrate || 0) - (a.bitrate || 0));
+
+      if (!variants.length) return res.status(404).json({ error: "No MP4 video variants found" });
+
+      res.json({
+        videoUrl: variants[0].url,
+        thumbnailUrl: videoMedia.media_url_https || videoMedia.media_url || null,
+        allVariants: variants.map((v: any) => ({ url: v.url, bitrate: v.bitrate }))
+      });
+    } catch (err) {
+      console.error("Tweet video error:", err);
+      res.status(500).json({ error: "Failed to extract video" });
+    }
+  });
+
   app.post("/api/user/connect", async (req, res) => {
     try {
       const { userId, targetSlug } = z.object({
