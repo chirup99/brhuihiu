@@ -1077,7 +1077,7 @@ const SwipeCard = ({
       return cards.map((c) => parseCardJson(c) || (voiceMode ? parseCardJson(VOICE_DEMO_CARDS[0])! : CARDS[0]));
     }
     if (voiceMode) {
-      return VOICE_DEMO_CARDS.map((c) => parseCardJson(c)!);
+      return [{ title: "NO CARDS", name: "NO VOICE CARDS", subname: "Add cards to get started", color: "from-pink-400 to-pink-600", empty: true }];
     }
     if (propsUser || (cards.length === 0 && window.location.pathname !== "/")) {
       return [{ title: "NO CARDS", name: "EMPTY", subname: "PERSONA", color: "from-gray-800 to-gray-900" }];
