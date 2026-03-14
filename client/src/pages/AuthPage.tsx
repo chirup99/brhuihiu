@@ -101,6 +101,12 @@ const CARD_TYPES = [
   },
 ];
 
+const VOICE_DEMO_CARDS = [
+  JSON.stringify({ type: "post", title: "Your Voice", content: "Speak up for your community. Your voice matters. Rise and be heard." }),
+  JSON.stringify({ type: "reel", title: "Share Your Reel", url: "" }),
+  JSON.stringify({ type: "image", title: "Your Image", imageUrl: "" }),
+];
+
 const ROLE_GROUPS: { group: string | null; items: { value: string; label: string }[] }[] = [
   {
     group: null,
@@ -648,52 +654,51 @@ SwipeCardContent.displayName = "SwipeCardContent";
 const SwipeCard = ({
   cards,
   user: propsUser,
+  voiceMode = false,
 }: {
   cards: string[];
   user?: any;
+  voiceMode?: boolean;
 }) => {
+  const parseCardJson = (c: string) => {
+    try {
+      const card = JSON.parse(c);
+      if (!card || !card.type) return null;
+      const typeInfo = CARD_TYPES.find((t) => t.type === card.type);
+      let name = card.title || "Untitled";
+      if (card.type === "reel") name = card.title || "Video";
+      else if (card.type === "image" || card.type === "product") name = card.title || "Image";
+      else if (card.type === "post") name = card.title || "Post";
+      let subname = "";
+      if (card.type === "reel") subname = card.url || "";
+      else if (card.type === "post") subname = card.content || "";
+      else subname = card.url || "Persona";
+      return {
+        ...card,
+        type: card.type,
+        title: card.title || "Untitled",
+        name,
+        subname,
+        thumbnailUrl: card.type === "reel" ? getThumbnailUrl(card.url) : null,
+        color: typeInfo?.color || "from-gray-700 to-gray-800",
+      };
+    } catch (e) {
+      return null;
+    }
+  };
+
   const displayCards = useMemo(() => {
     if (cards.length > 0) {
-      return cards.map((c) => {
-        try {
-          const card = JSON.parse(c);
-          if (!card || !card.type) return CARDS[0];
-          const typeInfo = CARD_TYPES.find((t) => t.type === card.type);
-          let name = card.title || "Untitled";
-          if (card.type === "reel") {
-            name = card.title || "Video";
-          } else if (card.type === "image" || card.type === "product") {
-            name = card.title || "Image";
-          } else if (card.type === "post") {
-            name = card.title || "Post";
-          }
-          let subname = "";
-          if (card.type === "reel") {
-            subname = card.url || "";
-          } else if (card.type === "post") {
-            subname = card.content || "";
-          } else {
-            subname = card.url || "Persona";
-          }
-          return {
-            ...card,
-            type: card.type,
-            title: card.title || "Untitled",
-            name,
-            subname,
-            thumbnailUrl: card.type === "reel" ? getThumbnailUrl(card.url) : null,
-            color: typeInfo?.color || "from-gray-700 to-gray-800",
-          };
-        } catch (e) {
-          return CARDS[0];
-        }
-      });
+      return cards.map((c) => parseCardJson(c) || (voiceMode ? parseCardJson(VOICE_DEMO_CARDS[0])! : CARDS[0]));
+    }
+    if (voiceMode) {
+      return VOICE_DEMO_CARDS.map((c) => parseCardJson(c)!);
     }
     if (propsUser || (cards.length === 0 && window.location.pathname !== "/")) {
       return [{ title: "NO CARDS", name: "EMPTY", subname: "PERSONA", color: "from-gray-800 to-gray-900" }];
     }
     return CARDS.map((c) => ({ ...c, name: c.name.toUpperCase(), subname: c.subname.toUpperCase() }));
-  }, [cards, propsUser]);
+  }, [cards, propsUser, voiceMode]);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -4108,7 +4113,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 </div>
               ) : (
                 <div className="py-2">
-                  <SwipeCard cards={selectedCards} user={user} />
+                  <SwipeCard cards={selectedCards} user={user} voiceMode={true} />
                 </div>
               )}
             </motion.div>
