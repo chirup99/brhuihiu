@@ -117,7 +117,6 @@ const ROLE_GROUPS: { group: string | null; items: { value: string; label: string
     group: "Senior Leadership",
     items: [
       { value: "working-president", label: "Working President" },
-      { value: "cm", label: "Chief Minister (CM)" },
     ],
   },
   {
@@ -3689,6 +3688,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       {...form.register("name")}
                       className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400"
                       placeholder="Your Name"
+                      onFocus={() => { setRoleOpen(false); setConstituencyOpen(false); }}
                     />
                   </div>
                   <div className="space-y-1">
@@ -3831,6 +3831,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       {...form.register("bio")}
                       className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900"
                       placeholder="Startup / Business"
+                      onFocus={() => { setRoleOpen(false); setConstituencyOpen(false); }}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
@@ -3842,6 +3843,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         {...form.register("instagram")}
                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900"
                         placeholder="URL"
+                        onFocus={() => { setRoleOpen(false); setConstituencyOpen(false); }}
                       />
                     </div>
                     <div className="space-y-1">
@@ -3852,6 +3854,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         {...form.register("linkedin")}
                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900"
                         placeholder="URL"
+                        onFocus={() => { setRoleOpen(false); setConstituencyOpen(false); }}
                       />
                     </div>
                   </div>
@@ -3936,6 +3939,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             {...form.register("whatsapp")}
                             className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400"
                             placeholder="Phone number / WB community URL"
+                            onFocus={() => { setRoleOpen(false); setConstituencyOpen(false); }}
                             onChange={(e) => {
                               const value = e.target.value;
                               const isUrl =
@@ -3970,6 +3974,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         {...form.register("email")}
                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900"
                         placeholder="Email"
+                        onFocus={() => { setRoleOpen(false); setConstituencyOpen(false); }}
                       />
                     </div>
                   </div>
@@ -3981,6 +3986,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       {...form.register("website")}
                       className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900"
                       placeholder="https://your-website.com"
+                      onFocus={() => { setRoleOpen(false); setConstituencyOpen(false); }}
                     />
                   </div>
                   <div className="flex gap-2 mt-4">
