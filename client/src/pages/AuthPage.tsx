@@ -51,6 +51,7 @@ import clsx from "clsx";
 import { SiInstagram, SiWhatsapp } from "react-icons/si";
 import avatarWoman from "@assets/female.png";
 import avatarMan from "@assets/male.png";
+import pinkCarSrc from "@assets/pink-car.png";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useMutation } from "@tanstack/react-query";
 
@@ -3001,6 +3002,18 @@ export default function AuthPage({ slug }: { slug?: string }) {
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-md bg-white border border-pink-200 rounded-2xl shadow-2xl p-5 sm:p-6 z-10 relative overflow-hidden"
         >
+          {/* Pink car animation strip */}
+          <div className="relative overflow-hidden h-10 -mx-5 sm:-mx-6 -mt-5 sm:-mt-6 mb-4 bg-pink-50 border-b border-pink-100">
+            <motion.img
+              src={pinkCarSrc}
+              alt="pink car"
+              className="absolute h-8 top-1 object-contain drop-shadow-sm"
+              style={{ width: "auto" }}
+              animate={{ x: ["calc(-150px)", "calc(100% + 150px)"] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "linear", repeatDelay: 0.5 }}
+            />
+          </div>
+
           {(mode === "login" || mode === "swipe") && (
             <div className="flex p-0.5 bg-pink-50 border border-pink-200 rounded-xl mb-5 relative">
               <button
