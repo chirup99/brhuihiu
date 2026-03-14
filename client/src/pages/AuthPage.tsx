@@ -1449,7 +1449,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
       form.reset({
         email: "",
         name: "",
-        role: "mla",
+        role: "people",
         bio: "",
         instagram: "",
         linkedin: "",
@@ -2065,7 +2065,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
     defaultValues: {
       password: "",
       name: user?.name || "",
-      role: user?.role || "mla",
+      role: user?.role || "people",
       bio: user?.bio || "Meet People & Build Real Connections",
       instagram: user?.instagram || "",
       linkedin: user?.linkedin || "",
@@ -3376,7 +3376,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         form.reset({
                           password: "",
                           name: user?.name || "",
-                          role: user?.role || "mla",
+                          role: user?.role || "people",
                           bio: user?.bio || "",
                           instagram: user?.instagram || "",
                           linkedin: user?.linkedin || "",
@@ -3845,7 +3845,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         form.reset({
                           password: "",
                           name: "",
-                          role: "mla",
+                          role: "people",
                           bio: "",
                           instagram: "",
                           linkedin: "",
@@ -4014,7 +4014,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     form.reset({
                       password: "",
                       name: "",
-                      role: "mla",
+                      role: "people",
                       bio: "",
                       instagram: "",
                       linkedin: "",
@@ -4650,7 +4650,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           form.reset({
                             email: userData.email || "",
                             name: userData.name || "",
-                            role: userData.role || "mla",
+                            role: userData.role || "people",
                             bio: userData.bio || "",
                             instagram: userData.instagram || "",
                             linkedin: userData.linkedin || "",
