@@ -160,6 +160,7 @@ const ROLE_GROUPS: { group: string | null; items: { value: string; label: string
   {
     group: "State Level",
     items: [
+      { value: "cm", label: "CM – Chief Minister" },
       { value: "mla", label: "MLA – Member of Legislative Assembly" },
       { value: "mlc", label: "MLC – Member of Legislative Council" },
       { value: "state-president", label: "State Party President" },
