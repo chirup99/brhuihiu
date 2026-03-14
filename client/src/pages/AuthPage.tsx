@@ -3031,9 +3031,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
           {/* Pink car animation strip */}
           {(() => {
             const pauseMessages = [
-              { text: "అసహాయులకు మేము అండగా ఉంటాం", sub: "వేగంగా కలుపుతాం · We connect people with speed" },
-              { text: "बेसहारों के साथ हम खड़े हैं", sub: "तेज़ी से जोड़ते हैं · We connect with speed" },
-              { text: "بے بسوں کے ساتھ ہم ہیں", sub: "تیزی سے جوڑتے ہیں · We connect with speed" },
+              { text: "జనం గొంతు — BRS స్పందన!", sub: "ప్రతి సమస్యకు వేగమైన పరిష్కారం · People First" },
+              { text: "जनता की आवाज़ — BRS की ताकत!", sub: "हर समस्या का तेज़ समाधान · Speed. Action. Change." },
+              { text: "عوام کی آواز — BRS کا عزم!", sub: "ہر مسئلے کا فوری حل · Connect. Rise. Deliver." },
             ];
             const SpeedLines = () => (
               <div className="flex flex-col gap-[3px] mr-1.5">
