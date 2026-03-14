@@ -1360,30 +1360,27 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const { toast } = useToast();
   const [mode, setMode] = useState<AuthMode>("login");
 
-  type CarPhase = "ltr" | "rtl" | "pause";
+  type CarPhase = "ltr" | "pause";
   const [carPhase, setCarPhase] = useState<CarPhase>("ltr");
   const [msgIndex, setMsgIndex] = useState(0);
 
   useEffect(() => {
     let t: ReturnType<typeof setTimeout>;
     if (carPhase === "ltr") {
-      t = setTimeout(() => setCarPhase("rtl"), 2200);
-    } else if (carPhase === "rtl") {
       t = setTimeout(() => setCarPhase("pause"), 2200);
     } else {
-      t = setTimeout(() => { setCarPhase("ltr"); setMsgIndex(0); }, 4000);
+      t = setTimeout(() => { setCarPhase("ltr"); setMsgIndex(0); }, 5000);
     }
     return () => clearTimeout(t);
   }, [carPhase]);
 
   useEffect(() => {
     if (carPhase !== "pause") return;
-    const msgs = [0, 1, 2];
     let i = 0;
     const iv = setInterval(() => {
-      i = (i + 1) % msgs.length;
+      i = (i + 1) % 3;
       setMsgIndex(i);
-    }, 1300);
+    }, 1600);
     return () => clearInterval(iv);
   }, [carPhase]);
 
@@ -3034,26 +3031,26 @@ export default function AuthPage({ slug }: { slug?: string }) {
           {/* Pink car animation strip */}
           {(() => {
             const pauseMessages = [
-              { lang: "Telugu", text: "వేగంగా కలుపుతాం" },
-              { lang: "Hindi",  text: "तेज़ी से जोड़ते हैं" },
-              { lang: "Urdu",   text: "تیزی سے جوڑتے ہیں" },
+              { text: "సమస్యలు వేగంగా పరిష్కరిద్దాం", sub: "Telugu · Solving issues at speed" },
+              { text: "समस्याएं तेज़ी से हल करें", sub: "Hindi · Fast resolution for all" },
+              { text: "مسائل تیزی سے حل کریں", sub: "Urdu · Connect. Act. Resolve." },
             ];
-            const SpeedLines = ({ side }: { side: "left" | "right" }) => (
-              <div className={clsx("flex flex-col gap-[3px]", side === "left" ? "mr-1" : "ml-1")}>
+            const SpeedLines = () => (
+              <div className="flex flex-col gap-[3px] mr-1.5">
                 <div className="h-px bg-pink-400 opacity-80" style={{ width: 20 }} />
                 <div className="h-px bg-pink-300 opacity-55" style={{ width: 13 }} />
                 <div className="h-px bg-pink-400 opacity-80" style={{ width: 17 }} />
               </div>
             );
-            const CarImg = ({ flip }: { flip?: boolean }) => (
+            const CarImg = ({ small }: { small?: boolean }) => (
               <img
                 src={pinkCarSrc}
                 alt="pink car"
-                className="object-contain"
+                className="object-contain flex-shrink-0"
                 style={{
-                  height: 22,
+                  height: small ? 18 : 22,
                   width: "auto",
-                  transform: `scaleX(${flip ? -1.08 : 1.08}) scaleY(0.92)`,
+                  transform: "scaleX(1.08) scaleY(0.92)",
                   filter: "drop-shadow(2px 0 3px rgba(236,72,153,0.4))",
                 }}
               />
@@ -3065,38 +3062,32 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     className="absolute top-0 h-full flex items-center"
                     style={{ animation: "carDriveRight 2.2s linear forwards" }}
                   >
-                    <SpeedLines side="left" />
+                    <SpeedLines />
                     <CarImg />
                   </div>
                 )}
-                {carPhase === "rtl" && (
-                  <div
-                    className="absolute top-0 h-full flex items-center"
-                    style={{ animation: "carDriveLeft 2.2s linear forwards" }}
-                  >
-                    <CarImg flip />
-                    <SpeedLines side="right" />
-                  </div>
-                )}
                 {carPhase === "pause" && (
-                  <div className="absolute inset-0 flex items-center justify-center gap-2 px-3 animate-fadeIn">
+                  <div className="absolute inset-0 flex items-center gap-2.5 px-3 animate-fadeIn">
                     <img
                       src={brsLogoSlider}
                       alt="BRS"
                       className="object-contain flex-shrink-0"
-                      style={{ height: 28, width: 28 }}
+                      style={{ height: 30, width: 30 }}
                     />
-                    <CarImg />
-                    <div className="flex flex-col items-start leading-tight overflow-hidden">
+                    <CarImg small />
+                    <div className="flex flex-col justify-center leading-none min-w-0 flex-1">
                       <span
                         key={msgIndex}
-                        className="text-[10px] font-bold text-pink-600 whitespace-nowrap animate-fadeIn"
+                        className="text-[11px] font-bold text-pink-700 whitespace-nowrap animate-fadeIn truncate"
                         style={{ direction: msgIndex === 2 ? "rtl" : "ltr" }}
                       >
                         {pauseMessages[msgIndex].text}
                       </span>
-                      <span className="text-[8px] text-pink-400 uppercase tracking-wider">
-                        We Connect People · Speed
+                      <span
+                        key={`sub-${msgIndex}`}
+                        className="text-[8px] text-pink-400 tracking-wide animate-fadeIn truncate"
+                      >
+                        {pauseMessages[msgIndex].sub}
                       </span>
                     </div>
                   </div>
