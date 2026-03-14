@@ -2253,9 +2253,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   className="w-full flex items-center justify-between px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all group shrink-0"
                 >
                   <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-purple-400" />
+                    <User className="w-4 h-4 text-pink-400" />
                     <span className="font-bold text-[10px] tracking-widest uppercase">
-                      Persona
+                      BRS
                     </span>
                   </div>
                   {isPersonaExpanded ? (
@@ -2681,9 +2681,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
               }}
               className="flex items-center gap-2 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all group ml-auto"
             >
-              <User className="w-4 h-4 text-purple-400" />
+              <User className="w-4 h-4 text-pink-400" />
               <span className="font-bold text-[10px] tracking-widest uppercase">
-                My Persona
+                My BRS
               </span>
             </button>
           )}
@@ -2979,21 +2979,24 @@ export default function AuthPage({ slug }: { slug?: string }) {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md text-center mb-6 z-10"
         >
-          <h1 className="text-2xl font-display font-bold tracking-widest uppercase text-white">
-            PERSONA
-          </h1>
-          <p className="text-[10px] tracking-[0.3em] text-white/50 font-medium mb-6 flex items-center justify-center gap-2">
-            MEET . VIBE . CONNECT{" "}
-            <InfinityIcon
-              className="w-3.5 h-3.5 text-pink-500/60"
-              strokeWidth={2.5}
+          <div className="flex items-center justify-center gap-3 mb-1">
+            <img
+              src="/brs-logo.png"
+              alt="BRS Logo"
+              className="w-12 h-12 object-contain drop-shadow-lg"
             />
+            <h1 className="text-4xl font-display font-black tracking-widest uppercase text-white">
+              BRS
+            </h1>
+          </div>
+          <p className="text-[11px] tracking-[0.25em] text-pink-300/80 font-semibold mb-6 flex items-center justify-center gap-2">
+            Bharat Rashtra Samithi
           </p>
           <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
             People Party
           </h2>
           <p className="text-white/70 text-base mb-6 max-w-sm mx-auto">
-            Persona: Where People Meet, Vibe & Understand Each Other.
+            BRS: Where People Meet, Vibe & Understand Each Other.
           </p>
 
           <div className="flex items-center justify-center gap-6 mb-4">
@@ -3029,7 +3032,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     : "text-white/50",
                 )}
               >
-                Persona
+                BRS
               </button>
               <button
                 onClick={() => setMode("swipe")}
