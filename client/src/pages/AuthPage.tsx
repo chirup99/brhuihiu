@@ -3672,6 +3672,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
           ref={personaCardRef}
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
+          style={{ touchAction: "auto" }}
           className="w-full max-w-md bg-white border border-pink-200 rounded-2xl shadow-2xl p-5 sm:p-6 z-10 relative overflow-hidden"
         >
           {/* Pink car animation strip */}
@@ -3775,6 +3776,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
             <motion.div
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
+              style={{ touchAction: "auto" }}
               className="space-y-3"
             >
               {mode === "login" ? (
@@ -4697,21 +4699,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 <span>← Left Swipe</span>
                 <span>Right Swipe →</span>
               </div>
-            )}
-
-            {(isOtherPersona || (slug && !loggedInUser)) && (
-              <button
-                type="button"
-                onClick={handleVoiceReplay}
-                className="w-full rounded-lg py-3 font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg mt-2 active:scale-95"
-                style={{ background: isVoicePlaying ? "#be185d" : "linear-gradient(135deg, #ec4899, #be185d)", color: "white" }}
-              >
-                {isVoicePlaying ? (
-                  <><Mic className="w-4 h-4 animate-pulse" /> Stop Voice Replay</>
-                ) : (
-                  <><Volume2 className="w-4 h-4" /> Voice Replay</>
-                )}
-              </button>
             )}
 
             {isOtherPersona ? (
