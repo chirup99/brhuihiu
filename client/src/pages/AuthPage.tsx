@@ -83,9 +83,9 @@ const COUNTRY_CODES = [
 const CARD_TYPES = [
   {
     type: "reel",
-    label: "Reel / Short",
+    label: "Reel",
     icon: Video,
-    color: "from-purple-500 to-purple-600",
+    color: "from-zinc-950 to-black",
   },
   {
     type: "image",
@@ -938,7 +938,7 @@ const MiniCard = ({
       layoutId={`card-${idx}`}
       className={clsx(
         "h-full rounded-2xl relative overflow-hidden flex flex-col justify-between shadow-xl bg-gradient-to-b",
-        (isPlaying && card.type === "reel") || card.type === "image" ? "p-0" : "p-4",
+        card.type === "reel" || card.type === "image" ? "p-0" : "p-4",
         cardTypeInfo?.color || "from-gray-700 to-gray-800",
       )}
     >
@@ -951,7 +951,7 @@ const MiniCard = ({
           <X className="w-4 h-4" />
         </button>
       )}
-      {(!isPlaying || card.type !== "reel") && card.type !== "image" && (
+      {card.type !== "reel" && card.type !== "image" && (
         <div className="space-y-2">
           <h5 className="text-white font-bold text-lg leading-tight">
             {card.type === "post" ? "Post" : card.title}
@@ -965,8 +965,13 @@ const MiniCard = ({
         )}
       >
         {isEditing ? (
-          <div className="w-full space-y-2 bg-black/40 p-3 rounded-xl backdrop-blur-sm z-10">
-            {card.type !== "image" && card.type !== "post" && (
+          <div className={clsx(
+            "w-full space-y-2 z-10",
+            card.type === "reel" || card.type === "image"
+              ? "absolute inset-0 flex flex-col justify-center p-4 bg-black/70 backdrop-blur-md"
+              : "bg-black/40 p-3 rounded-xl backdrop-blur-sm",
+          )}>
+            {card.type !== "image" && card.type !== "post" && card.type !== "reel" && (
               <input
                 className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-xs text-white"
                 placeholder="Title"
@@ -989,14 +994,22 @@ const MiniCard = ({
               />
             )}
             {card.type === "reel" && (
-              <input
-                className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-xs text-white"
-                placeholder="Reel/Short URL"
-                defaultValue={(card as any).url}
-                onBlur={(e) => {
-                  onUpdate(JSON.stringify({ ...card, url: e.target.value }));
-                }}
-              />
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: "rgba(236,72,153,0.25)", border: "1px solid rgba(236,72,153,0.4)" }}>
+                    <Video className="w-3 h-3 text-pink-400" />
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-pink-300/70">Add Reel URL</span>
+                </div>
+                <input
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-pink-400/40"
+                  placeholder="YouTube / Instagram URL"
+                  defaultValue={(card as any).url}
+                  onBlur={(e) => {
+                    onUpdate(JSON.stringify({ ...card, url: e.target.value }));
+                  }}
+                />
+              </div>
             )}
             {card.type === "post" && (
               <textarea
@@ -1110,63 +1123,81 @@ const MiniCard = ({
                 />
               </div>
             ) : (
-              <div className="text-white text-xs p-4 text-center">
-                Invalid Video URL
+              <div className="w-full h-full flex items-center justify-center">
+                <p className="text-pink-300/50 text-xs font-medium">Invalid video URL</p>
               </div>
             )}
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsPlaying(false);
-              }}
-              className="absolute top-4 right-4 p-2 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity z-30"
+              onClick={(e) => { e.stopPropagation(); setIsPlaying(false); }}
+              className="absolute top-3 right-3 p-1.5 bg-black/60 backdrop-blur-sm rounded-full border border-white/10 text-white/70 hover:text-white transition-colors z-30"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
-            <div className="absolute bottom-4 left-4 right-4 z-40 pointer-events-none"></div>
           </div>
         ) : card.type === "reel" && !isEditing && !isPlaying ? (
           <div
-            className="w-full h-full cursor-pointer group relative overflow-hidden rounded-xl"
-            onClick={() => {
-              if ((card as any).url) {
-                setIsPlaying(true);
-              } else {
-                setIsEditing(true);
-              }
-            }}
+            className="w-full h-full cursor-pointer group relative overflow-hidden"
+            onClick={() => { if ((card as any).url) { setIsPlaying(true); } else { setIsEditing(true); } }}
           >
             {thumbnailUrl ? (
-              <img
-                src={thumbnailUrl}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                alt="Video thumbnail"
-                onError={(e) => {
-                  // Fallback to hqdefault if maxres isn't available
-                  (e.target as HTMLImageElement).src = thumbnailUrl.replace(
-                    "maxresdefault",
-                    "hqdefault",
-                  );
-                }}
-              />
+              <>
+                <img
+                  src={thumbnailUrl}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  alt="Video thumbnail"
+                  onError={(e) => { (e.target as HTMLImageElement).src = thumbnailUrl.replace("maxresdefault", "hqdefault"); }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
+                <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: "rgba(236,72,153,0.25)", border: "1px solid rgba(236,72,153,0.4)" }}>
+                    <Video className="w-2.5 h-2.5 text-pink-400" />
+                  </div>
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-pink-300/70">Reel</span>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20 bg-black/30 group-hover:scale-110 transition-transform shadow-xl">
+                    <Play className="w-6 h-6 text-white fill-current ml-0.5" />
+                  </div>
+                </div>
+                <div className="absolute bottom-3 left-3 right-3">
+                  <p className="text-white text-xs font-semibold leading-tight line-clamp-2 drop-shadow">
+                    {card.title || "Reel"}
+                  </p>
+                </div>
+              </>
+            ) : (card as any).url ? (
+              <>
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center border border-pink-400/30 bg-pink-400/10 group-hover:border-pink-400/60 group-hover:bg-pink-400/20 transition-all">
+                    <Play className="w-6 h-6 text-pink-400 fill-current ml-0.5" />
+                  </div>
+                  <span className="text-pink-300/50 text-[9px] font-bold uppercase tracking-widest">Tap to play</span>
+                </div>
+                <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: "rgba(236,72,153,0.25)", border: "1px solid rgba(236,72,153,0.4)" }}>
+                    <Video className="w-2.5 h-2.5 text-pink-400" />
+                  </div>
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-pink-300/70">Reel</span>
+                </div>
+              </>
             ) : (
-              <div className="w-full h-full bg-white/10 flex items-center justify-center">
-                {(card as any).url ? (
-                  <Video className="w-12 h-12 text-white/40" />
-                ) : (
-                  <Plus className="w-12 h-12 text-white/40 group-hover:scale-110 transition-transform" />
-                )}
-              </div>
+              <>
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 group">
+                  <div className="w-16 h-16 rounded-full border-2 border-dashed border-pink-400/30 flex items-center justify-center group-hover:border-pink-400/60 transition-colors">
+                    <Video className="w-7 h-7 text-pink-400/50 group-hover:text-pink-400 transition-colors" />
+                  </div>
+                  <span className="text-pink-300/40 text-[9px] font-bold uppercase tracking-widest group-hover:text-pink-300/70 transition-colors">
+                    Add reel URL
+                  </span>
+                </div>
+                <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: "rgba(236,72,153,0.2)", border: "1px solid rgba(236,72,153,0.3)" }}>
+                    <Video className="w-2.5 h-2.5 text-pink-400" />
+                  </div>
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-pink-300/60">Reel</span>
+                </div>
+              </>
             )}
-            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm group-hover:scale-110 transition-transform">
-                {(card as any).url ? (
-                  <Play className="w-8 h-8 text-white fill-current" />
-                ) : (
-                  <Plus className="w-8 h-8 text-white" />
-                )}
-              </div>
-            </div>
           </div>
         ) : card.type === "pitch" ? (
           <div className="w-full h-full flex flex-col items-center justify-center p-2 overflow-hidden">
