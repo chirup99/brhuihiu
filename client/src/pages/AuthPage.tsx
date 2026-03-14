@@ -394,7 +394,7 @@ const CARDS = [
   },
   {
     id: 5,
-    title: "Persona Hub",
+    title: "Voice Hub",
     name: "Digital",
     subname: "Identity",
     color: "from-rose-500 to-rose-600",
@@ -3062,7 +3062,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 <div className="flex flex-col items-start">
                   <div className="flex items-center gap-1">
                     <span className="font-bold text-xs tracking-tight">
-                      {loggedInUser.name || "Persona User"}
+                      {loggedInUser.name || "Voice User"}
                     </span>
                     <div className="w-3 h-3 bg-yellow-400 rounded-full flex items-center justify-center">
                       <Check className="w-2 h-2 text-black" strokeWidth={4} />
@@ -5004,7 +5004,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 onClick={() => { setLocation(`/${loggedInUser.uniqueSlug}`); }}
                 className="w-full bg-pink-500 text-white hover:bg-pink-600 rounded-lg py-3 font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg mt-2"
               >
-                Back to My Persona
+                Back to My Voice
               </button>
             ) : null}
 
