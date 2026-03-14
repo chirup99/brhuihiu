@@ -1360,7 +1360,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const { toast } = useToast();
   const [mode, setMode] = useState<AuthMode>("login");
 
-  type CarPhase = "ltr" | "pause";
+  type CarPhase = "ltr" | "pause" | "empty";
   const [carPhase, setCarPhase] = useState<CarPhase>("ltr");
   const [msgIndex, setMsgIndex] = useState(0);
 
@@ -1368,8 +1368,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
     let t: ReturnType<typeof setTimeout>;
     if (carPhase === "ltr") {
       t = setTimeout(() => setCarPhase("pause"), 2200);
+    } else if (carPhase === "pause") {
+      t = setTimeout(() => setCarPhase("empty"), 5000);
     } else {
-      t = setTimeout(() => { setCarPhase("ltr"); setMsgIndex(0); }, 5000);
+      t = setTimeout(() => { setCarPhase("ltr"); setMsgIndex(0); }, 120000);
     }
     return () => clearTimeout(t);
   }, [carPhase]);
