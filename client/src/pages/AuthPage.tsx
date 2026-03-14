@@ -1728,7 +1728,26 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const professionalAvatars = [avatarKcr, avatarKtr, avatarFist, avatarBrsCar];
 
   const [avatarUrl, setAvatarUrl] = useState(professionalAvatars[0]);
+  const [avatarDataUrl, setAvatarDataUrl] = useState<string>("");
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
+
+  // Convert avatar to base64 data URL whenever it changes so html-to-image can embed it
+  useEffect(() => {
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth || 200;
+      canvas.height = img.naturalHeight || 200;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        setAvatarDataUrl(canvas.toDataURL("image/png"));
+      }
+    };
+    img.onerror = () => setAvatarDataUrl(avatarUrl);
+    img.src = avatarUrl;
+  }, [avatarUrl]);
 
   const [currentTime, setCurrentTime] = useState(
     new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
@@ -4381,7 +4400,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       >
                         <div className="w-18 h-18 rounded-full p-[3px] shadow-lg" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)", width: 72, height: 72 }}>
                           <div className="w-full h-full rounded-full overflow-hidden bg-white">
-                            <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                            <img src={avatarDataUrl || avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                           </div>
                         </div>
                         <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center shadow-md border-2 border-white" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}>
