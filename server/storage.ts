@@ -13,6 +13,7 @@ export interface BRSEvent {
 }
 
 const EVENTS_RECORD_ID = "brs_system_events";
+const FEATURED_SLUGS_RECORD_ID = "brs_system_featured_slugs";
 
 const client = new DynamoDBClient({
   region: process.env.AWS_REGION || "ap-south-1",
@@ -33,6 +34,8 @@ export interface IStorage {
   updateUser(id: string, user: Partial<InsertUser>): Promise<User>;
   getEvents(): Promise<BRSEvent[]>;
   saveEvents(events: BRSEvent[]): Promise<void>;
+  getFeaturedSlugs(): Promise<string[]>;
+  saveFeaturedSlugs(slugs: string[]): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -101,6 +104,16 @@ export class MemStorage implements IStorage {
 
   async saveEvents(events: BRSEvent[]): Promise<void> {
     this.events = events;
+  }
+
+  private featuredSlugs: string[] = [];
+
+  async getFeaturedSlugs(): Promise<string[]> {
+    return this.featuredSlugs;
+  }
+
+  async saveFeaturedSlugs(slugs: string[]): Promise<void> {
+    this.featuredSlugs = slugs;
   }
 }
 
@@ -258,6 +271,31 @@ export class DynamoDBStorage implements IStorage {
       }));
     } catch (e) {
       console.error("DynamoDB saveEvents error:", e);
+      throw e;
+    }
+  }
+
+  async getFeaturedSlugs(): Promise<string[]> {
+    try {
+      const { Item } = await ddbDocClient.send(new GetCommand({
+        TableName: TABLE_NAME,
+        Key: { id: FEATURED_SLUGS_RECORD_ID },
+      }));
+      return (Item?.slugs as string[]) || [];
+    } catch (e) {
+      console.error("DynamoDB getFeaturedSlugs error:", e);
+      return [];
+    }
+  }
+
+  async saveFeaturedSlugs(slugs: string[]): Promise<void> {
+    try {
+      await ddbDocClient.send(new PutCommand({
+        TableName: TABLE_NAME,
+        Item: { id: FEATURED_SLUGS_RECORD_ID, slugs },
+      }));
+    } catch (e) {
+      console.error("DynamoDB saveFeaturedSlugs error:", e);
       throw e;
     }
   }

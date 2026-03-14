@@ -2279,9 +2279,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [isTradersExpanded, setIsTradersExpanded] = useState(false);
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
   const [showTradersModal, setShowTradersModal] = useState(false);
-  const [adminFeaturedSlugs, setAdminFeaturedSlugs] = useState<string[]>(() => {
-    try { return JSON.parse(localStorage.getItem("ktrbrs_featured_slugs") || "[]"); } catch { return []; }
-  });
+  const [adminFeaturedSlugs, setAdminFeaturedSlugs] = useState<string[]>([]);
   const [featuredProfiles, setFeaturedProfiles] = useState<any[]>([]);
   const [showAddProfileDialog, setShowAddProfileDialog] = useState(false);
   const [addProfileSearch, setAddProfileSearch] = useState("");
@@ -2302,6 +2300,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
   }, []);
 
   useEffect(() => {
+    fetch("/api/featured-slugs")
+      .then((r) => r.ok ? r.json() : { slugs: [] })
+      .then(({ slugs }) => setAdminFeaturedSlugs(slugs || []))
+      .catch(() => setAdminFeaturedSlugs([]));
+  }, []);
+
+  useEffect(() => {
     if (adminFeaturedSlugs.length === 0) { setFeaturedProfiles([]); return; }
     Promise.all(
       adminFeaturedSlugs.map((s) =>
@@ -2310,11 +2315,23 @@ export default function AuthPage({ slug }: { slug?: string }) {
     ).then((profiles) => setFeaturedProfiles(profiles.filter(Boolean)));
   }, [adminFeaturedSlugs]);
 
+  const saveFeaturedSlugsToServer = async (slugs: string[]) => {
+    try {
+      await fetch("/api/featured-slugs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slugs }),
+      });
+    } catch (e) {
+      console.error("Failed to save featured slugs", e);
+    }
+  };
+
   const addFeaturedSlug = (slug: string) => {
     if (adminFeaturedSlugs.includes(slug)) return;
     const updated = [...adminFeaturedSlugs, slug];
     setAdminFeaturedSlugs(updated);
-    localStorage.setItem("ktrbrs_featured_slugs", JSON.stringify(updated));
+    saveFeaturedSlugsToServer(updated);
     setShowAddProfileDialog(false);
     setAddProfileSearch("");
     setAddProfileResult(null);
@@ -2323,7 +2340,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const removeFeaturedSlug = (slug: string) => {
     const updated = adminFeaturedSlugs.filter((s) => s !== slug);
     setAdminFeaturedSlugs(updated);
-    localStorage.setItem("ktrbrs_featured_slugs", JSON.stringify(updated));
+    saveFeaturedSlugsToServer(updated);
   };
 
   const searchAdminProfile = async () => {

@@ -48,6 +48,25 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/featured-slugs", async (req, res) => {
+    try {
+      const slugs = await storage.getFeaturedSlugs();
+      res.json({ slugs });
+    } catch (e) {
+      res.status(500).json({ message: "Failed to fetch featured slugs" });
+    }
+  });
+
+  app.post("/api/featured-slugs", async (req, res) => {
+    try {
+      const { slugs } = z.object({ slugs: z.array(z.string()) }).parse(req.body);
+      await storage.saveFeaturedSlugs(slugs);
+      res.json({ slugs });
+    } catch (e) {
+      res.status(500).json({ message: "Failed to save featured slugs" });
+    }
+  });
+
   app.get("/api/livekit/token", async (req, res) => {
     const roomName = "pitch-room";
     const participantName = "user-" + Math.floor(Math.random() * 1000);
