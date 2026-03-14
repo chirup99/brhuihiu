@@ -4098,23 +4098,46 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setShowScannerDialog(false)}
-                className="absolute inset-0 bg-black/95 backdrop-blur-xl"
+                className="absolute inset-0 backdrop-blur-md"
+                style={{ background: "rgba(190,24,93,0.55)" }}
               />
               <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                initial={{ opacity: 0, scale: 0.92, y: 24 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="relative w-full max-w-sm bg-[#0a0a0a] border border-white/10 rounded-[32px] overflow-hidden shadow-2xl"
+                exit={{ opacity: 0, scale: 0.92, y: 24 }}
+                transition={{ type: "spring", damping: 28, stiffness: 320 }}
+                className="relative w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl"
+                style={{ background: "linear-gradient(160deg, #ec4899 0%, #be185d 60%, #9d174d 100%)" }}
               >
+                {/* Decorative blobs */}
+                <div className="absolute top-0 right-0 w-40 h-40 rounded-full opacity-25 blur-2xl pointer-events-none" style={{ background: "radial-gradient(circle, #f9a8d4, transparent)" }} />
+                <div className="absolute bottom-0 left-0 w-40 h-40 rounded-full opacity-20 blur-2xl pointer-events-none" style={{ background: "radial-gradient(circle, #fce7f3, transparent)" }} />
+
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 pt-6 pb-3 relative z-10">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-white overflow-hidden shadow">
+                      <img src="/brs-logo.png" alt="BRS" className="w-full h-full object-cover" />
+                    </div>
+                    <p className="text-white font-black text-sm tracking-tight">BRS Connect</p>
+                  </div>
+                  <button
+                    onClick={() => setShowScannerDialog(false)}
+                    className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center active:scale-90 transition-all"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+
                 {/* Tabs */}
-                <div className="flex p-2 bg-white/5 border-b border-white/10">
+                <div className="flex mx-5 mb-1 relative z-10 bg-white/15 rounded-2xl p-1 gap-1">
                   <button
                     onClick={() => setScannerTab("scan")}
                     className={clsx(
-                      "flex-1 py-2.5 text-xs font-bold rounded-xl transition-all",
+                      "flex-1 py-2 text-xs font-black rounded-xl transition-all",
                       scannerTab === "scan"
-                        ? "bg-white/10 text-white shadow-lg"
-                        : "text-white/40 hover:text-white/60",
+                        ? "bg-white text-pink-600 shadow"
+                        : "text-white/70 hover:text-white",
                     )}
                   >
                     Scan QR
@@ -4122,61 +4145,61 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   <button
                     onClick={() => setScannerTab("code")}
                     className={clsx(
-                      "flex-1 py-2.5 text-xs font-bold rounded-xl transition-all",
+                      "flex-1 py-2 text-xs font-black rounded-xl transition-all",
                       scannerTab === "code"
-                        ? "bg-white/10 text-white shadow-lg"
-                        : "text-white/40 hover:text-white/60",
+                        ? "bg-white text-pink-600 shadow"
+                        : "text-white/70 hover:text-white",
                     )}
                   >
-                    Persona Code
+                    Voice Code
                   </button>
                 </div>
 
-                <div className="p-8 space-y-6">
+                <div className="p-5 pt-4 relative z-10">
                   {scannerTab === "scan" ? (
-                    <div className="space-y-6 text-center">
-                      <div className="relative aspect-square max-w-[200px] mx-auto bg-white/5 rounded-3xl border border-white/10 flex items-center justify-center group overflow-hidden">
+                    <div className="space-y-5 text-center">
+                      {/* Camera viewfinder */}
+                      <div className="relative aspect-square max-w-[210px] mx-auto rounded-3xl overflow-hidden shadow-lg" style={{ background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.3)" }}>
                         <video
                           ref={videoRef}
                           className="absolute inset-0 w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <QrCode className="w-12 h-12 text-white/20 relative z-10" />
-                        <div className="absolute bottom-4 left-0 right-0">
-                          <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-bold">
-                            Scanner Active
-                          </p>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <QrCode className="w-12 h-12 text-white/30" />
                         </div>
-                        {/* Scanning Corners */}
-                        <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-white/20 rounded-tl-lg" />
-                        <div className="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 border-white/20 rounded-tr-lg" />
-                        <div className="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 border-white/20 rounded-bl-lg" />
-                        <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-white/20 rounded-br-lg" />
+                        <div className="absolute bottom-3 left-0 right-0 text-center">
+                          <p className="text-[9px] text-white/60 uppercase tracking-[0.25em] font-bold">Scanner Active</p>
+                        </div>
+                        {/* Pink scanning corners */}
+                        <div className="absolute top-3 left-3 w-5 h-5 border-t-[3px] border-l-[3px] border-white rounded-tl-lg" />
+                        <div className="absolute top-3 right-3 w-5 h-5 border-t-[3px] border-r-[3px] border-white rounded-tr-lg" />
+                        <div className="absolute bottom-3 left-3 w-5 h-5 border-b-[3px] border-l-[3px] border-white rounded-bl-lg" />
+                        <div className="absolute bottom-3 right-3 w-5 h-5 border-b-[3px] border-r-[3px] border-white rounded-br-lg" />
                       </div>
-                      <div className="space-y-2">
-                        <h3 className="text-xl font-bold text-white tracking-tight">
+                      <div className="space-y-1 pb-1">
+                        <h3 className="text-lg font-black text-white tracking-tight">
                           Scan to Connect
                         </h3>
-                        <p className="text-white/40 text-xs">
-                          Point your camera at a Persona QR code
+                        <p className="text-white/70 text-xs">
+                          Point your camera at a BRS Connect QR code
                         </p>
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-6 text-center">
-                      <div className="space-y-2">
-                        <h3 className="text-xl font-bold text-white tracking-tight uppercase tracking-widest">
-                          Enter Code
+                    <div className="space-y-5">
+                      <div className="text-center space-y-1">
+                        <h3 className="text-lg font-black text-white tracking-tight">
+                          Enter Voice Code
                         </h3>
-                        <p className="text-white/40 text-[10px] uppercase tracking-widest font-bold">
-                          Connect with a unique persona code
+                        <p className="text-white/70 text-xs">
+                          Connect using a unique voice code
                         </p>
                       </div>
 
-                      <div className="space-y-4 text-left">
-                        <div className="space-y-2">
-                          <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold ml-1">
-                            Persona Code
+                      <div className="space-y-3">
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] text-white/70 uppercase tracking-widest font-bold ml-1">
+                            Voice Code
                           </label>
                           <input
                             type="text"
@@ -4185,26 +4208,29 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             onChange={(e) =>
                               setPersonaSlug(e.target.value.toLowerCase())
                             }
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/20 transition-all font-mono"
+                            className="w-full rounded-2xl px-4 py-3 text-pink-800 font-mono font-bold placeholder:text-pink-300 focus:outline-none transition-all shadow-inner"
+                            style={{ background: "rgba(255,255,255,0.92)", border: "1.5px solid rgba(255,255,255,0.5)" }}
                           />
                         </div>
                         <button
                           onClick={handleVerifyPersona}
-                          className="w-full bg-white text-black rounded-xl py-4 font-bold text-sm flex items-center justify-center gap-2 hover:bg-white/90 transition-all active:scale-95"
+                          className="w-full bg-white text-pink-600 rounded-2xl py-3.5 font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg hover:bg-pink-50"
                         >
-                          Preview Persona <ArrowRight className="w-4 h-4" />
+                          Connect <ArrowRight className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
                   )}
                 </div>
 
-                <button
-                  onClick={() => setShowScannerDialog(false)}
-                  className="w-full py-4 text-[10px] text-white/20 hover:text-white/40 uppercase tracking-[0.3em] font-bold border-t border-white/5 transition-colors"
-                >
-                  Close Scanner
-                </button>
+                <div className="px-5 pb-6 relative z-10">
+                  <button
+                    onClick={() => setShowScannerDialog(false)}
+                    className="w-full py-3 text-[10px] text-white/60 hover:text-white uppercase tracking-[0.3em] font-bold transition-colors"
+                  >
+                    Dismiss
+                  </button>
+                </div>
               </motion.div>
             </div>
           )}
