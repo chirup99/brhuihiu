@@ -3003,16 +3003,30 @@ export default function AuthPage({ slug }: { slug?: string }) {
           className="w-full max-w-md bg-white border border-pink-200 rounded-2xl shadow-2xl p-5 sm:p-6 z-10 relative overflow-hidden"
         >
           {/* Pink car animation strip */}
-          <div className="relative overflow-hidden h-10 -mx-5 sm:-mx-6 -mt-5 sm:-mt-6 mb-4 bg-pink-50 border-b border-pink-100">
-            <img
-              src={pinkCarSrc}
-              alt="pink car"
-              className="absolute h-8 top-1 object-contain drop-shadow-sm"
-              style={{
-                width: "auto",
-                animation: "carDrive 3.5s linear infinite",
-              }}
-            />
+          <div className="relative overflow-hidden h-7 -mx-5 sm:-mx-6 -mt-5 sm:-mt-6 mb-4 bg-pink-50 border-b border-pink-100">
+            <div
+              className="absolute top-0 h-full flex items-center"
+              style={{ animation: "carDrive 2s linear infinite" }}
+            >
+              <div className="flex items-center gap-0">
+                <div className="flex flex-col gap-[3px] mr-1">
+                  <div className="h-px bg-pink-300 opacity-70" style={{ width: 18 }} />
+                  <div className="h-px bg-pink-200 opacity-50" style={{ width: 12 }} />
+                  <div className="h-px bg-pink-300 opacity-70" style={{ width: 16 }} />
+                </div>
+                <img
+                  src={pinkCarSrc}
+                  alt="pink car"
+                  className="object-contain"
+                  style={{
+                    height: 22,
+                    width: "auto",
+                    transform: "scaleX(1.08) scaleY(0.92)",
+                    filter: "drop-shadow(2px 0 3px rgba(236,72,153,0.35))",
+                  }}
+                />
+              </div>
+            </div>
           </div>
 
           {(mode === "login" || mode === "swipe") && (
