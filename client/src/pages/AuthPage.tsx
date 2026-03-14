@@ -22,8 +22,8 @@ import {
   Trash2,
   TrendingUp,
   Video,
-  Package,
-  FileText,
+  ImageIcon,
+  PenLine,
   User,
   Pencil,
   Palette,
@@ -89,14 +89,14 @@ const CARD_TYPES = [
   },
   {
     type: "image",
-    label: "Image Card",
-    icon: Package,
+    label: "Image",
+    icon: ImageIcon,
     color: "from-orange-500 to-orange-600",
   },
   {
     type: "post",
-    label: "Post Card",
-    icon: FileText,
+    label: "Post",
+    icon: PenLine,
     color: "from-blue-500 to-blue-600",
   },
 ];
@@ -951,10 +951,10 @@ const MiniCard = ({
           <X className="w-4 h-4" />
         </button>
       )}
-      {(!isPlaying || card.type !== "reel") && (
+      {(!isPlaying || card.type !== "reel") && card.type !== "image" && (
         <div className="space-y-2">
           <h5 className="text-white font-bold text-lg leading-tight">
-            {card.title}
+            {card.type === "post" ? "Post" : card.title}
           </h5>
         </div>
       )}
@@ -966,14 +966,16 @@ const MiniCard = ({
       >
         {isEditing ? (
           <div className="w-full space-y-2 bg-black/40 p-3 rounded-xl backdrop-blur-sm z-10">
-            <input
-              className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-xs text-white"
-              placeholder="Title"
-              defaultValue={card.title}
-              onBlur={(e) => {
-                onUpdate(JSON.stringify({ ...card, title: e.target.value }));
-              }}
-            />
+            {card.type !== "image" && card.type !== "post" && (
+              <input
+                className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-xs text-white"
+                placeholder="Title"
+                defaultValue={card.title}
+                onBlur={(e) => {
+                  onUpdate(JSON.stringify({ ...card, title: e.target.value }));
+                }}
+              />
+            )}
             {card.type === "pitch" && (
               <textarea
                 className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-xs text-white h-20"
