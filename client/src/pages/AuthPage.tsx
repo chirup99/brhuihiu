@@ -2726,8 +2726,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
             </div>
           ) : (
             <div className="flex flex-col gap-1.5 items-end">
-              <div className="w-8 h-1 bg-pink-700 rounded-full transition-all group-hover:w-6"></div>
-              <div className="w-5 h-1 bg-pink-700 rounded-full transition-all group-hover:w-8"></div>
+              <div className="w-8 h-1 bg-white rounded-full transition-all group-hover:w-6"></div>
+              <div className="w-5 h-1 bg-white rounded-full transition-all group-hover:w-8"></div>
             </div>
           )}
         </button>
@@ -2950,27 +2950,27 @@ export default function AuthPage({ slug }: { slug?: string }) {
               />
             </div>
             <div className="text-left">
-              <h1 className="text-xl font-display font-black tracking-widest uppercase text-pink-900 leading-none">
+              <h1 className="text-xl font-display font-black tracking-widest uppercase text-white leading-none">
                 BRS
               </h1>
-              <p className="text-[9px] tracking-[0.18em] text-pink-500 font-medium mt-0.5 whitespace-nowrap">
+              <p className="text-[9px] tracking-[0.18em] text-white/70 font-medium mt-0.5 whitespace-nowrap">
                 Bharat Rashtra Samithi
               </p>
             </div>
           </div>
 
-          <h2 className="text-xl md:text-2xl font-display font-bold text-pink-900 mb-1">
+          <h2 className="text-xl md:text-2xl font-display font-bold text-white mb-1">
             People Party
           </h2>
-          <p className="text-gray-500 text-xs mb-3 max-w-xs mx-auto leading-relaxed">
+          <p className="text-white/70 text-xs mb-3 max-w-xs mx-auto leading-relaxed">
             Where people meet, vibe & understand each other.
           </p>
 
           <div className="flex items-center justify-center gap-3 mb-3">
-            <span className="text-[9px] font-semibold text-pink-600 bg-pink-50 border border-pink-300 px-2.5 py-0.5 rounded-full">
+            <span className="text-[9px] font-semibold text-white bg-white/20 border border-white/30 px-2.5 py-0.5 rounded-full">
               Real Connections
             </span>
-            <span className="text-[9px] font-semibold text-pink-600 bg-pink-50 border border-pink-300 px-2.5 py-0.5 rounded-full">
+            <span className="text-[9px] font-semibold text-white bg-white/20 border border-white/30 px-2.5 py-0.5 rounded-full">
               People First
             </span>
           </div>
@@ -2980,17 +2980,17 @@ export default function AuthPage({ slug }: { slug?: string }) {
           ref={personaCardRef}
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-md bg-gray-950 border border-pink-500/20 rounded-2xl shadow-2xl p-5 sm:p-6 z-10 relative overflow-hidden"
+          className="w-full max-w-md bg-white border border-pink-200 rounded-2xl shadow-2xl p-5 sm:p-6 z-10 relative overflow-hidden"
         >
           {(mode === "login" || mode === "swipe") && (
-            <div className="flex p-0.5 bg-white/6 border border-white/8 rounded-xl mb-5 relative">
+            <div className="flex p-0.5 bg-pink-50 border border-pink-200 rounded-xl mb-5 relative">
               <button
                 onClick={() => setMode("login")}
                 className={clsx(
                   "flex-1 py-2 text-xs font-bold rounded-[10px] z-10 transition-all",
                   mode === "login" || mode === "register"
-                    ? "text-white"
-                    : "text-white/35",
+                    ? "text-pink-700"
+                    : "text-pink-300",
                 )}
               >
                 BRS
@@ -2999,14 +2999,14 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 onClick={() => setMode("swipe")}
                 className={clsx(
                   "flex-1 py-2 text-xs font-bold rounded-[10px] z-10 transition-all",
-                  mode === "swipe" ? "text-white" : "text-white/35",
+                  mode === "swipe" ? "text-pink-700" : "text-pink-300",
                 )}
               >
                 Mini-Cards
               </button>
               <motion.div
                 layoutId="activeTab"
-                className="absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] bg-white/12 border border-white/10 rounded-[10px] shadow-sm pointer-events-none"
+                className="absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] bg-white border border-pink-200 rounded-[10px] shadow-sm pointer-events-none"
                 animate={{ left: mode === "swipe" ? "calc(50%)" : "2px" }}
               />
             </div>
@@ -3027,7 +3027,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     <button
                       type="button"
                       onClick={() => setShowQRDialog(true)}
-                      className="absolute top-0 right-0 p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-all z-10"
+                      className="absolute top-0 right-0 p-2 bg-pink-50 hover:bg-pink-100 rounded-lg text-pink-400 hover:text-pink-600 transition-all z-10"
                       title="View QR Code"
                     >
                       <QrCode className="w-4 h-4" />
@@ -3035,17 +3035,17 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     <div className="w-16 h-16 rounded-full bg-pink-500 mx-auto flex items-center justify-center text-white text-2xl font-bold shadow-lg">
                       {form.watch("name")?.[0] || "P"}
                     </div>
-                    <h3 className="text-xl font-bold text-white tracking-tight">
+                    <h3 className="text-xl font-bold text-gray-900 tracking-tight">
                       {form.watch("name") || "Networking Profile"}
                     </h3>
-                    <p className="text-white/40 text-xs">
+                    <p className="text-gray-500 text-xs">
                       {ROLES.find((r) => r.value === form.watch("role"))
                         ?.label || "Founder"}
                     </p>
-                    <p className="text-white/40 text-[10px]">
+                    <p className="text-gray-400 text-[10px]">
                       {form.watch("industry") || ""}
                     </p>
-                    <p className="text-white/40 text-[10px] italic">
+                    <p className="text-gray-400 text-[10px] italic">
                       {form.watch("bio") || ""}
                     </p>
                     <div className="flex items-center justify-center gap-3 w-full pt-1">
@@ -3070,8 +3070,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             className={clsx(
                               "p-2.5 rounded-lg transition-all",
                               hasLinkedin
-                                ? "bg-pink-500/10 text-pink-400 hover:bg-pink-500/20 hover:text-pink-300 shadow-[0_0_10px_rgba(236,72,153,0.2)]"
-                                : "bg-white/5 text-white/20 cursor-not-allowed",
+                                ? "bg-pink-50 text-pink-500 hover:bg-pink-100 hover:text-pink-600 shadow-[0_0_10px_rgba(236,72,153,0.15)]"
+                                : "bg-gray-100 text-gray-300 cursor-not-allowed",
                             )}
                             title={
                               hasLinkedin
@@ -3104,8 +3104,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             className={clsx(
                               "p-2.5 rounded-lg transition-all",
                               hasInstagram
-                                ? "bg-pink-500/10 text-pink-400 hover:bg-pink-500/20 hover:text-pink-300 shadow-[0_0_10px_rgba(236,72,153,0.2)]"
-                                : "bg-white/5 text-white/20 cursor-not-allowed",
+                                ? "bg-pink-50 text-pink-500 hover:bg-pink-100 hover:text-pink-600 shadow-[0_0_10px_rgba(236,72,153,0.15)]"
+                                : "bg-gray-100 text-gray-300 cursor-not-allowed",
                             )}
                             title={
                               hasInstagram
@@ -3144,8 +3144,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             className={clsx(
                               "p-2.5 rounded-lg transition-all",
                               hasWhatsapp
-                                ? "bg-pink-500/10 text-pink-400 hover:bg-pink-500/20 hover:text-pink-300 shadow-[0_0_10px_rgba(236,72,153,0.2)]"
-                                : "bg-white/5 text-white/20 cursor-not-allowed",
+                                ? "bg-pink-50 text-pink-500 hover:bg-pink-100 hover:text-pink-600 shadow-[0_0_10px_rgba(236,72,153,0.15)]"
+                                : "bg-gray-100 text-gray-300 cursor-not-allowed",
                             )}
                             title={
                               hasWhatsapp
@@ -3175,8 +3175,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             className={clsx(
                               "p-2.5 rounded-lg transition-all",
                               hasEmail
-                                ? "bg-pink-500/10 text-pink-400 hover:bg-pink-500/20 hover:text-pink-300 shadow-[0_0_10px_rgba(236,72,153,0.2)]"
-                                : "bg-white/5 text-white/20 cursor-not-allowed",
+                                ? "bg-pink-50 text-pink-500 hover:bg-pink-100 hover:text-pink-600 shadow-[0_0_10px_rgba(236,72,153,0.15)]"
+                                : "bg-gray-100 text-gray-300 cursor-not-allowed",
                             )}
                             title={hasEmail ? "Email" : "Email (Not Available)"}
                           >
@@ -3208,7 +3208,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           "w-full rounded-lg py-3 font-semibold text-sm flex items-center justify-center gap-2 group no-underline transition-all",
                           hasWebsite
                             ? "bg-primary text-white hover:opacity-90 shadow-lg cursor-pointer"
-                            : "bg-white/5 text-white/20 cursor-not-allowed border border-white/5",
+                            : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200",
                         )}
                       >
                         {hasWebsite ? "View Website" : "No Website Available"}
@@ -3245,23 +3245,23 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         });
                         setSelectedCards(user?.cards || []);
                       }}
-                      className="w-full bg-white text-black hover:bg-white/90 rounded-lg py-3 font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg mb-4"
+                      className="w-full bg-pink-500 text-white hover:bg-pink-600 rounded-lg py-3 font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg mb-4"
                     >
                       <Pencil className="w-4 h-4" /> Edit Persona
                     </button>
                   )}
                   {loggedInUser && user && loggedInUser.id === user.id && (
-                    <div className="pt-4 border-t border-white/10">
+                    <div className="pt-4 border-t border-pink-100">
                       {/* Tabs Navigation */}
-                      <div className="flex p-1 bg-white/5 border border-white/10 rounded-xl mb-4">
+                      <div className="flex p-1 bg-pink-50 border border-pink-200 rounded-xl mb-4">
                         <button
                           type="button"
                           onClick={() => setActiveTab("notes")}
                           className={clsx(
                             "flex-1 py-2 text-[10px] font-bold rounded-lg transition-all uppercase tracking-wider",
                             activeTab === "notes"
-                              ? "bg-white/10 text-white shadow-lg"
-                              : "text-white/40 hover:text-white/60",
+                              ? "bg-white text-pink-700 shadow-sm"
+                              : "text-pink-400 hover:text-pink-600",
                           )}
                         >
                           Notes
@@ -3272,8 +3272,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           className={clsx(
                             "flex-1 py-2 text-[10px] font-bold rounded-lg transition-all uppercase tracking-wider",
                             activeTab === "events"
-                              ? "bg-white/10 text-white shadow-lg"
-                              : "text-white/40 hover:text-white/60",
+                              ? "bg-white text-pink-700 shadow-sm"
+                              : "text-pink-400 hover:text-pink-600",
                           )}
                         >
                           Upcoming Events
@@ -3284,8 +3284,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           className={clsx(
                             "flex-1 py-2 text-[10px] font-bold rounded-lg transition-all uppercase tracking-wider flex items-center justify-center gap-1.5",
                             activeTab === "connect"
-                              ? "bg-white/10 text-white shadow-lg"
-                              : "text-white/40 hover:text-white/60",
+                              ? "bg-white text-pink-700 shadow-sm"
+                              : "text-pink-400 hover:text-pink-600",
                           )}
                         >
                           <div className="w-3 h-3 rounded-full bg-pink-500/20 flex items-center justify-center border border-pink-500/40">
@@ -3319,13 +3319,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                     : "Add a quick note..."
                                 }
                                 disabled={notes.length >= 5}
-                                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex-1 bg-pink-50 border border-pink-200 rounded-lg px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-pink-400 disabled:opacity-50 disabled:cursor-not-allowed"
                               />
                               <button
                                 type="button"
                                 onClick={addNote}
                                 disabled={notes.length >= 5}
-                                className="bg-white/10 hover:bg-white/20 text-white p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="bg-pink-100 hover:bg-pink-200 text-pink-700 p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <Plus className="w-4 h-4" />
                               </button>
@@ -3355,8 +3355,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                       className={clsx(
                                         "text-xs transition-all",
                                         note.completed
-                                          ? "text-white/20 line-through"
-                                          : "text-white/70",
+                                          ? "text-gray-300 line-through"
+                                          : "text-gray-700",
                                       )}
                                     >
                                       {note.text}
@@ -3386,13 +3386,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="h-[120px] flex items-center justify-center border border-dashed border-white/10 rounded-2xl"
+                            className="h-[120px] flex items-center justify-center border border-dashed border-pink-200 rounded-2xl bg-pink-50"
                           >
                             <div className="text-center space-y-2">
-                              <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold">
+                              <p className="text-[10px] text-pink-400 uppercase tracking-[0.2em] font-bold">
                                 Upcoming Events
                               </p>
-                              <p className="text-xs text-white/20 font-medium">
+                              <p className="text-xs text-gray-400 font-medium">
                                 Coming Soon
                               </p>
                             </div>
@@ -3410,31 +3410,31 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                 <div
                                   key={idx}
                                   onClick={() => setLocation(`/${conn.slug}`)}
-                                  className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all cursor-pointer group"
+                                  className="flex items-center justify-between p-2 rounded-lg bg-pink-50 border border-pink-100 hover:bg-pink-100 transition-all cursor-pointer group"
                                 >
                                   <div className="flex flex-col">
-                                    <span className="text-xs font-bold text-white group-hover:text-pink-400 transition-colors">
+                                    <span className="text-xs font-bold text-gray-900 group-hover:text-pink-500 transition-colors">
                                       {conn.name}
                                     </span>
-                                    <span className="text-[8px] uppercase tracking-widest text-white/40">
+                                    <span className="text-[8px] uppercase tracking-widest text-gray-400">
                                       {conn.industry}
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-3">
-                                    <span className="text-[10px] font-bold text-pink-400/80 bg-pink-400/10 px-1.5 py-0.5 rounded border border-pink-400/20">
+                                    <span className="text-[10px] font-bold text-pink-500 bg-pink-100 px-1.5 py-0.5 rounded border border-pink-200">
                                       {getRemainingTime(conn.expiresAt)}
                                     </span>
-                                    <ArrowRight className="w-3 h-3 text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
+                                    <ArrowRight className="w-3 h-3 text-pink-300 group-hover:text-pink-500 group-hover:translate-x-0.5 transition-all" />
                                   </div>
                                 </div>
                               ))}
                               {connections.length === 0 && (
-                                <div className="h-[100px] flex items-center justify-center border border-dashed border-white/10 rounded-2xl bg-pink-500/5">
+                                <div className="h-[100px] flex items-center justify-center border border-dashed border-pink-200 rounded-2xl bg-pink-50">
                                   <div className="text-center space-y-2">
-                                    <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold">
+                                    <p className="text-[10px] text-pink-400 uppercase tracking-[0.2em] font-bold">
                                       Exclusive Connect
                                     </p>
-                                    <p className="text-xs text-white/20 font-medium">
+                                    <p className="text-xs text-gray-400 font-medium">
                                       No connections yet
                                     </p>
                                   </div>
@@ -3453,23 +3453,23 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   className="space-y-3 pr-2"
                 >
                   <div className="space-y-1">
-                    <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
                       Name
                     </label>
                     <input
                       {...form.register("name")}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-pink-500/50"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400"
                       placeholder="Your Name"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
                       Role
                     </label>
                     <div className="relative">
                       <select
                         {...form.register("role")}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white appearance-none"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 appearance-none"
                       >
                         {ROLES.map((r) => (
                           <option
@@ -3481,17 +3481,17 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
                       Industry
                     </label>
                     <div className="relative">
                       <select
                         {...form.register("industry")}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white appearance-none"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 appearance-none"
                       >
                         <option value="" className="bg-[#1a1a1a]">
                           Select Industry
@@ -3522,44 +3522,44 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
                       Bio
                     </label>
                     <input
                       {...form.register("bio")}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900"
                       placeholder="Startup / Business"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">
-                      <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                      <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
                         Instagram
                       </label>
                       <input
                         {...form.register("instagram")}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900"
                         placeholder="URL"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                      <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
                         LinkedIn
                       </label>
                       <input
                         {...form.register("linkedin")}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-900"
                         placeholder="URL"
                       />
                     </div>
                   </div>
                   <div className="space-y-3">
                     <div className="space-y-1">
-                      <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                      <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
                         WhatsApp
                       </label>
                       <div className="relative">
@@ -3585,7 +3585,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                   onClick={() =>
                                     setShowCountryDropdown(!showCountryDropdown)
                                   }
-                                  className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white flex items-center gap-2 hover:bg-white/10 transition-colors"
+                                  className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 flex items-center gap-2 hover:bg-gray-100 transition-colors"
                                 >
                                   {
                                     COUNTRY_CODES.find(
@@ -3595,13 +3595,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                   <span className="text-xs font-semibold">
                                     {whatsappCountryCode}
                                   </span>
-                                  <ChevronDown className="w-3 h-3 text-white/40" />
+                                  <ChevronDown className="w-3 h-3 text-gray-400" />
                                 </button>
                                 {showCountryDropdown && (
                                   <motion.div
                                     initial={{ opacity: 0, y: -4 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="absolute top-full mt-2 left-0 bg-black/95 border border-white/10 rounded-lg shadow-2xl z-20 max-h-48 overflow-y-auto w-48"
+                                    className="absolute top-full mt-2 left-0 bg-white border border-gray-200 rounded-lg shadow-2xl z-20 max-h-48 overflow-y-auto w-48"
                                   >
                                     {COUNTRY_CODES.map((country) => (
                                       <button
@@ -3614,8 +3614,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                         className={clsx(
                                           "w-full text-left px-4 py-2.5 text-xs flex items-center gap-2 transition-colors",
                                           whatsappCountryCode === country.code
-                                            ? "bg-white/10 text-white"
-                                            : "text-white/70 hover:bg-white/5 hover:text-white",
+                                            ? "bg-pink-50 text-pink-700"
+                                            : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
                                         )}
                                       >
                                         <span className="text-sm">
@@ -3624,7 +3624,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                         <span className="font-semibold">
                                           {country.code}
                                         </span>
-                                        <span className="text-white/40 text-[10px]">
+                                        <span className="text-gray-400 text-[10px]">
                                           {country.country}
                                         </span>
                                       </button>
@@ -3636,7 +3636,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           })()}
                           <input
                             {...form.register("whatsapp")}
-                            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30"
+                            className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400"
                             placeholder="Phone number / WB community URL"
                             onChange={(e) => {
                               const value = e.target.value;
@@ -3665,23 +3665,23 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                      <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
                         Email
                       </label>
                       <input
                         {...form.register("email")}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900"
                         placeholder="Email"
                       />
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
                       Website URL
                     </label>
                     <input
                       {...form.register("website")}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900"
                       placeholder="https://your-website.com"
                     />
                   </div>
@@ -3690,7 +3690,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       type="button"
                       disabled={!form.watch("name") || !form.watch("role")}
                       onClick={() => setMode("customize")}
-                      className="flex-1 bg-white text-black rounded-lg py-3 font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 bg-pink-500 text-white hover:bg-pink-600 rounded-lg py-3 font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
                       Next <ArrowRight className="w-4 h-4" />
                     </button>
@@ -3712,7 +3712,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         setSelectedCards([]);
                         setMode("login");
                       }}
-                      className="bg-white/10 hover:bg-white/20 text-white rounded-lg py-3 px-3 font-bold text-sm flex items-center justify-center transition-all border border-white/20"
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg py-3 px-3 font-bold text-sm flex items-center justify-center transition-all border border-gray-200"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -3721,7 +3721,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
               ) : mode === "customize" ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                    <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
                       Your Mini-Cards ({selectedCards.length}
                       /4)
                     </h4>
@@ -3748,7 +3748,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             }}
                           />
                         ) : (
-                          <div className="h-full border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center p-4">
+                          <div className="h-full border-2 border-dashed border-pink-200 rounded-2xl flex flex-col items-center justify-center p-4">
                             <div className="grid grid-cols-2 gap-2 w-full">
                               {CARD_TYPES.map((t) => {
                                 const productCount = selectedCards.filter((c) => {
@@ -3804,12 +3804,12 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                     className={clsx(
                                       "flex flex-col items-center gap-1 p-2 rounded-xl transition-all",
                                       isProductDisabled
-                                        ? "bg-white/5 opacity-20 cursor-not-allowed"
-                                        : "bg-white/5 hover:bg-white/10",
+                                        ? "bg-pink-50 opacity-30 cursor-not-allowed"
+                                        : "bg-pink-50 hover:bg-pink-100",
                                     )}
                                   >
-                                    <t.icon className="w-5 h-5 text-white/60" />
-                                    <span className="text-[8px] text-white/40 uppercase font-bold">
+                                    <t.icon className="w-5 h-5 text-pink-400" />
+                                    <span className="text-[8px] text-pink-500 uppercase font-bold">
                                       {t.label}
                                     </span>
                                   </button>
@@ -3825,7 +3825,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     type="button"
                     disabled={updateProfileMutation.isPending}
                     onClick={() => form.handleSubmit(onSubmit)()}
-                    className="w-full bg-white text-black rounded-lg py-3 font-bold text-sm flex items-center justify-center gap-2 hover:bg-white/90 transition-all"
+                    className="w-full bg-pink-500 text-white hover:bg-pink-600 rounded-lg py-3 font-bold text-sm flex items-center justify-center gap-2 transition-all"
                   >
                     {updateProfileMutation.isPending ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -3843,10 +3843,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
             <div className="relative py-2">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-white/10"></span>
+                <span className="w-full border-t border-pink-100"></span>
               </div>
               <div className="relative flex justify-center text-[10px] uppercase">
-                <span className="bg-card px-2 text-white/40 font-bold">
+                <span className="bg-white px-2 text-pink-400 font-bold">
                   {mode === "customize"
                     ? "EDITING"
                     : mode === "login"
@@ -3857,7 +3857,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
             </div>
 
             {mode === "swipe" && (
-              <div className="flex items-center justify-between text-white/40 text-[10px] uppercase tracking-wider font-bold px-4 mt-3">
+              <div className="flex items-center justify-between text-gray-400 text-[10px] uppercase tracking-wider font-bold px-4 mt-3">
                 <span>← Left Swipe</span>
                 <span>Right Swipe →</span>
               </div>
@@ -3867,7 +3867,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
               <button
                 type="button"
                 onClick={() => setLocation(`/${loggedInUser.uniqueSlug}`)}
-                className="w-full bg-white text-black hover:bg-white/90 rounded-lg py-3 font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg mt-2"
+                className="w-full bg-pink-500 text-white hover:bg-pink-600 rounded-lg py-3 font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg mt-2"
               >
                 Back to My Persona
               </button>
@@ -3899,7 +3899,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     setMode("login");
                   }
                 }}
-                className="w-full bg-white text-black hover:bg-white/90 rounded-lg py-3 font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg mt-2"
+                className="w-full bg-pink-500 text-white hover:bg-pink-600 rounded-lg py-3 font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg mt-2"
               >
                 create your persona
               </button>
