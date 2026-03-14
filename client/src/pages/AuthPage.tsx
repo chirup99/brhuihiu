@@ -680,7 +680,7 @@ const SwipeCard = ({
           className={clsx("absolute inset-0 rounded-[24px] bg-gradient-to-b overflow-hidden shadow-md", bkCard.color)}
           style={{ y: backY, scale: backScale, zIndex: 10 }}
         >
-          <div className="absolute inset-0 bg-black/50 rounded-[24px]" />
+          <div className="absolute inset-0 bg-white/15 rounded-[24px]" />
         </motion.div>
       )}
 
@@ -690,7 +690,7 @@ const SwipeCard = ({
           className={clsx("absolute inset-0 rounded-[24px] bg-gradient-to-b overflow-hidden shadow-lg", midCard.color)}
           style={{ y: midY, scale: midScale, zIndex: 20 }}
         >
-          <div className="absolute inset-0 bg-black/28 rounded-[24px]" />
+          <div className="absolute inset-0 bg-white/8 rounded-[24px]" />
         </motion.div>
       )}
 
