@@ -330,13 +330,87 @@ export async function registerRoutes(
       if (!variants.length) return res.status(404).json({ error: "No MP4 video variants found" });
 
       res.json({
-        videoUrl: variants[0].url,
+        videoUrl: `/api/tweet-video-proxy/${tweetId}`,
         thumbnailUrl: videoMedia.media_url_https || videoMedia.media_url || null,
         allVariants: variants.map((v: any) => ({ url: v.url, bitrate: v.bitrate }))
       });
     } catch (err) {
       console.error("Tweet video error:", err);
       res.status(500).json({ error: "Failed to extract video" });
+    }
+  });
+
+  app.get("/api/tweet-video-proxy/:tweetId", async (req, res) => {
+    try {
+      const { tweetId } = req.params;
+      if (!/^\d+$/.test(tweetId)) return res.status(400).send("Invalid tweet ID");
+
+      const token = Math.floor(Number(tweetId) / 1e15 * Math.PI).toString();
+      const metaUrl = `https://cdn.syndication.twimg.com/tweet-result?id=${tweetId}&lang=en&token=${token}`;
+
+      const metaRes = await fetch(metaUrl, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Accept": "application/json",
+          "Referer": "https://platform.twitter.com/",
+          "Origin": "https://platform.twitter.com"
+        }
+      });
+
+      if (!metaRes.ok) return res.status(404).send("Tweet not found");
+
+      const data = await metaRes.json() as any;
+      const mediaDetails = data.mediaDetails || data.extended_entities?.media || [];
+      const videoMedia = mediaDetails.find((m: any) => m.type === "video" || m.type === "animated_gif");
+      if (!videoMedia) return res.status(404).send("No video found");
+
+      const variants: any[] = (videoMedia.video_info?.variants || [])
+        .filter((v: any) => v.content_type === "video/mp4" && v.url)
+        .sort((a: any, b: any) => (b.bitrate || 0) - (a.bitrate || 0));
+
+      if (!variants.length) return res.status(404).send("No MP4 variants found");
+
+      const videoUrl = variants[0].url;
+      const range = req.headers.range;
+
+      const fetchHeaders: Record<string, string> = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Referer": "https://twitter.com/",
+        "Origin": "https://twitter.com",
+      };
+      if (range) fetchHeaders["Range"] = range;
+
+      const videoRes = await fetch(videoUrl, { headers: fetchHeaders });
+
+      res.setHeader("Content-Type", videoRes.headers.get("content-type") || "video/mp4");
+      res.setHeader("Accept-Ranges", "bytes");
+      res.setHeader("Cache-Control", "public, max-age=3600");
+      const contentLength = videoRes.headers.get("content-length");
+      if (contentLength) res.setHeader("Content-Length", contentLength);
+      const contentRange = videoRes.headers.get("content-range");
+      if (contentRange) res.setHeader("Content-Range", contentRange);
+
+      res.status(videoRes.status);
+      const body = videoRes.body as any;
+      if (body && body.pipe) {
+        body.pipe(res);
+      } else if (body) {
+        const reader = body.getReader();
+        const pump = async () => {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) { res.end(); break; }
+            res.write(Buffer.from(value));
+          }
+        };
+        pump().catch(() => res.end());
+      } else {
+        const buf = await videoRes.arrayBuffer();
+        res.end(Buffer.from(buf));
+      }
+    } catch (err) {
+      console.error("Tweet video proxy error:", err);
+      res.status(500).send("Failed to proxy video");
     }
   });
 
