@@ -637,17 +637,19 @@ const SwipeCardContent = forwardRef(
           </div>
         ) : (
           <div className="flex flex-col h-full items-center justify-between relative z-10">
-            <div className="flex items-center gap-1.5">
-              <span className="text-white/90 text-[9px] font-bold tracking-[0.2em] uppercase">
-                {card.title}
-              </span>
-              {card.type !== "product" && card.type !== "post" && (
-                <Mic className="w-3.5 h-3.5 text-white/90" />
-              )}
-            </div>
+            {!(card as any).empty && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-white/90 text-[9px] font-bold tracking-[0.2em] uppercase">
+                  {card.title}
+                </span>
+                {card.type !== "product" && card.type !== "post" && (
+                  <Mic className="w-3.5 h-3.5 text-white/90" />
+                )}
+              </div>
+            )}
 
             <div className="flex-1 flex flex-col items-center justify-center w-full space-y-3">
-              {card.type === "reel" ? (
+              {(card as any).empty ? null : card.type === "reel" ? (
                 thumbnailUrl ? (
                   <div
                     className="w-full aspect-video rounded-xl overflow-hidden shadow-lg border border-white/10 cursor-pointer group/thumb relative"
@@ -794,37 +796,6 @@ const SwipeCardContent = forwardRef(
               )}
             </div>
 
-            {card.type !== "product" &&
-              card.type !== "image" &&
-              card.type !== "xpost" &&
-              card.type !== "post" && (
-                <div className="w-full">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if ((card.type === "pitch" || card.type === "post") && (card as any).content) {
-                        handleSpeak((card as any).content);
-                      } else {
-                        setIsPlaying(true);
-                      }
-                    }}
-                    className="w-full bg-white text-black rounded-full py-3 flex items-center justify-center gap-2 font-bold shadow-xl hover:scale-105 transition-transform text-sm"
-                  >
-                    {isSpeaking ? (
-                      <>
-                        <Mic className="w-3.5 h-3.5 animate-pulse text-red-500" />
-                        Speaking...
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                        Play Now
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
           </div>
         )}
         <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
@@ -1077,7 +1048,7 @@ const SwipeCard = ({
       return cards.map((c) => parseCardJson(c) || (voiceMode ? parseCardJson(VOICE_DEMO_CARDS[0])! : CARDS[0]));
     }
     if (voiceMode) {
-      return [{ title: "NO CARDS", name: "NO VOICE CARDS", subname: "Add cards to get started", color: "from-pink-400 to-pink-600", empty: true }];
+      return [{ title: "", name: "", subname: "", color: "from-pink-300 to-pink-400", empty: true }];
     }
     if (propsUser || (cards.length === 0 && window.location.pathname !== "/")) {
       return [{ title: "NO CARDS", name: "EMPTY", subname: "PERSONA", color: "from-gray-800 to-gray-900" }];
