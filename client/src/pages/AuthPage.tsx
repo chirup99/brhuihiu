@@ -953,9 +953,6 @@ const MiniCard = ({
       )}
       {(!isPlaying || card.type !== "reel") && (
         <div className="space-y-2">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-white/80">
-            {card.type}
-          </p>
           <h5 className="text-white font-bold text-lg leading-tight">
             {card.title}
           </h5>
@@ -3971,7 +3968,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                      Your Mini-Cards ({selectedCards.length}
+                      Choose Your Voice ({selectedCards.length}
                       /4)
                     </h4>
                   </div>
