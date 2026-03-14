@@ -1364,13 +1364,18 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [msgIndex, setMsgIndex] = useState(0);
 
   useEffect(() => {
+    const img = new Image();
+    img.src = brsLogoSlider;
+  }, []);
+
+  useEffect(() => {
     let t: ReturnType<typeof setTimeout>;
     if (carPhase === "ltr") {
       t = setTimeout(() => setCarPhase("pause"), 2200);
     } else if (carPhase === "pause") {
       t = setTimeout(() => setCarPhase("empty"), 5000);
     } else {
-      t = setTimeout(() => { setCarPhase("ltr"); setMsgIndex(0); }, 120000);
+      t = setTimeout(() => { setCarPhase("ltr"); setMsgIndex(0); }, 20000);
     }
     return () => clearTimeout(t);
   }, [carPhase]);
