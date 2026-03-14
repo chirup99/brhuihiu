@@ -4394,21 +4394,27 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     <div className="flex flex-col items-center px-6 pt-6 pb-5 gap-3">
 
                       {/* Avatar */}
-                      <button
-                        onClick={() => setShowAvatarDialog(true)}
-                        className="relative focus:outline-none"
-                      >
-                        <div className="w-18 h-18 rounded-full p-[3px] shadow-lg" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)", width: 72, height: 72 }}>
-                          <div className="w-full h-full rounded-full overflow-hidden bg-white">
-                            <img src={avatarDataUrl || avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                      {isCapturing ? (
+                        <div className="rounded-full overflow-hidden shadow-md" style={{ width: 72, height: 72 }}>
+                          <img src={avatarDataUrl || avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setShowAvatarDialog(true)}
+                          className="relative focus:outline-none"
+                        >
+                          <div className="w-18 h-18 rounded-full p-[3px] shadow-lg" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)", width: 72, height: 72 }}>
+                            <div className="w-full h-full rounded-full overflow-hidden bg-white">
+                              <img src={avatarDataUrl || avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                            </div>
                           </div>
-                        </div>
-                        <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center shadow-md border-2 border-white" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}>
-                          <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                          </svg>
-                        </div>
-                      </button>
+                          <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center shadow-md border-2 border-white" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                          </div>
+                        </button>
+                      )}
 
                       {/* Name + role */}
                       <div className="text-center space-y-1">
