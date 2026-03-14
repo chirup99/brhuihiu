@@ -3011,15 +3011,15 @@ export default function AuthPage({ slug }: { slug?: string }) {
             People Party
           </h2>
           <p className="text-white/70 text-xs mb-3 max-w-xs mx-auto leading-relaxed">
-            Where people meet, vibe & understand each other.
+            Voice of the people. Strength of the nation.
           </p>
 
           <div className="flex items-center justify-center gap-3 mb-3">
             <span className="text-[9px] font-semibold text-white bg-white/20 border border-white/30 px-2.5 py-0.5 rounded-full">
-              Real Connections
+              People's Voice
             </span>
             <span className="text-[9px] font-semibold text-white bg-white/20 border border-white/30 px-2.5 py-0.5 rounded-full">
-              People First
+              Speed. Action. Change.
             </span>
           </div>
         </motion.div>
