@@ -97,7 +97,7 @@ async function step(label, fn) {
       Tier: { Name: "WebServer", Type: "Standard" },
       OptionSettings: [
         { Namespace: "aws:elasticbeanstalk:application:environment", OptionName: "NODE_ENV",              Value: "production" },
-        { Namespace: "aws:elasticbeanstalk:application:environment", OptionName: "PORT",                  Value: "8081" },
+        { Namespace: "aws:elasticbeanstalk:application:environment", OptionName: "PORT",                  Value: "8080" },
         { Namespace: "aws:elasticbeanstalk:application:environment", OptionName: "AWS_REGION",            Value: "ap-south-1" },
         { Namespace: "aws:elasticbeanstalk:application:environment", OptionName: "DYNAMODB_TABLE_NAME",   Value: process.env.DYNAMODB_TABLE_NAME || "Users" },
         { Namespace: "aws:elasticbeanstalk:application:environment", OptionName: "AWS_ACCESS_KEY_ID",     Value: process.env.AWS_ACCESS_KEY_ID.trim() },
