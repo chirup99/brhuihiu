@@ -3455,7 +3455,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         </div>
                         <div className="text-right">
                           <p className="text-[8px] text-white/30 uppercase tracking-widest font-bold mb-0.5">Profile Views</p>
-                          <p className="text-sm font-bold text-pink-400">{history.length} snapshots</p>
+                          <p className="text-sm font-bold text-pink-400">{history.length}</p>
                         </div>
                       </div>
 
