@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "UFWH6okMy4FkECoe2Eb7k"
+uri = "file://persona-eb-deployment.zip"
+type = "unspecified"
+title = "persona-eb-deployment.zip — AWS Elastic Beanstalk Package"
