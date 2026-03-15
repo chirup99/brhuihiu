@@ -2049,6 +2049,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [mode, setMode] = useState<AuthMode>("login");
+  const tabDirectionRef = useRef<1 | -1>(1);
 
   type CarPhase = "ltr" | "pause" | "empty";
   const [carPhase, setCarPhase] = useState<CarPhase>("ltr");
@@ -4117,7 +4118,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
           {(mode === "login" || mode === "swipe") && (
             <div className="flex p-0.5 bg-pink-50 border border-pink-200 rounded-xl mb-5 relative">
               <button
-                onClick={() => setMode("login")}
+                onClick={() => { tabDirectionRef.current = -1; setMode("login"); }}
                 className={clsx(
                   "flex-1 py-2 text-xs font-bold rounded-[10px] z-10 transition-all",
                   mode === "login" || mode === "register"
@@ -4128,7 +4129,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 BRS
               </button>
               <button
-                onClick={() => setMode("swipe")}
+                onClick={() => { tabDirectionRef.current = 1; setMode("swipe"); }}
                 className={clsx(
                   "flex-1 py-2 text-xs font-bold rounded-[10px] z-10 transition-all",
                   mode === "swipe" ? "text-pink-700" : "text-pink-300",
@@ -4145,9 +4146,14 @@ export default function AuthPage({ slug }: { slug?: string }) {
           )}
 
           <div className="space-y-4">
+            <AnimatePresence mode="wait" initial={false} custom={tabDirectionRef.current}>
             <motion.div
-              initial={{ opacity: 0, x: 10 }}
+              key={mode}
+              custom={tabDirectionRef.current}
+              initial={(dir: number) => ({ opacity: 0, x: dir * 60 })}
               animate={{ opacity: 1, x: 0 }}
+              exit={(dir: number) => ({ opacity: 0, x: -dir * 60 })}
+              transition={{ duration: 0.22, ease: "easeInOut" }}
               style={{ touchAction: "auto" }}
               className="space-y-3"
             >
@@ -5077,6 +5083,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 </div>
               )}
             </motion.div>
+            </AnimatePresence>
 
             {mode === "swipe" && (
               <div className="flex items-center justify-between text-gray-400 text-[10px] uppercase tracking-wider font-bold px-4 mt-3">
