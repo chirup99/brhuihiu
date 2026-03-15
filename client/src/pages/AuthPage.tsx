@@ -829,6 +829,7 @@ const XVideoCard = ({ tweetId, xUrl, onEditClick, onPlayStateChange }: { tweetId
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLandscape, setIsLandscape] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   const togglePlay = () => {
     const v = videoRef.current;
@@ -882,12 +883,25 @@ const XVideoCard = ({ tweetId, xUrl, onEditClick, onPlayStateChange }: { tweetId
           <button
             type="button"
             onClick={handlePlay}
-            onPointerDown={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
-            onPointerUp={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
-            onTouchStart={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
-            onTouchEnd={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); e.preventDefault(); togglePlay(); }}
+            onTouchStart={(e) => {
+              const t = e.touches[0];
+              touchStartRef.current = { x: t.clientX, y: t.clientY };
+            }}
+            onTouchEnd={(e) => {
+              const start = touchStartRef.current;
+              if (!start) return;
+              const t = e.changedTouches[0];
+              const dx = Math.abs(t.clientX - start.x);
+              const dy = Math.abs(t.clientY - start.y);
+              touchStartRef.current = null;
+              if (dx < 10 && dy < 10) {
+                e.stopPropagation();
+                e.preventDefault();
+                togglePlay();
+              }
+            }}
             className={`absolute inset-0 flex items-center justify-center z-10 transition-opacity ${isPlaying ? "opacity-0 active:opacity-100" : "opacity-100"}`}
-            style={{ background: isPlaying ? "transparent" : "rgba(0,0,0,0.35)", touchAction: "manipulation" }}
+            style={{ background: isPlaying ? "transparent" : "rgba(0,0,0,0.35)", touchAction: "pan-y" }}
           >
             {!isPlaying && (
               <div className="w-16 h-16 rounded-full bg-white/25 backdrop-blur-md border-2 border-white/40 flex items-center justify-center shadow-2xl active:scale-95 transition-transform">
@@ -934,6 +948,7 @@ const InstaVideoCard = ({ reelId, reelUrl, onEditClick, onPlayStateChange }: { r
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLandscape, setIsLandscape] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   const togglePlay = () => {
     const v = videoRef.current;
@@ -984,12 +999,25 @@ const InstaVideoCard = ({ reelId, reelUrl, onEditClick, onPlayStateChange }: { r
           <button
             type="button"
             onClick={handlePlay}
-            onPointerDown={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
-            onPointerUp={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
-            onTouchStart={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
-            onTouchEnd={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); e.preventDefault(); togglePlay(); }}
+            onTouchStart={(e) => {
+              const t = e.touches[0];
+              touchStartRef.current = { x: t.clientX, y: t.clientY };
+            }}
+            onTouchEnd={(e) => {
+              const start = touchStartRef.current;
+              if (!start) return;
+              const t = e.changedTouches[0];
+              const dx = Math.abs(t.clientX - start.x);
+              const dy = Math.abs(t.clientY - start.y);
+              touchStartRef.current = null;
+              if (dx < 10 && dy < 10) {
+                e.stopPropagation();
+                e.preventDefault();
+                togglePlay();
+              }
+            }}
             className={`absolute inset-0 flex items-center justify-center z-10 transition-opacity ${isPlaying ? "opacity-0 active:opacity-100" : "opacity-100"}`}
-            style={{ background: isPlaying ? "transparent" : "rgba(0,0,0,0.35)", touchAction: "manipulation" }}
+            style={{ background: isPlaying ? "transparent" : "rgba(0,0,0,0.35)", touchAction: "pan-y" }}
           >
             {!isPlaying && (
               <div className="w-16 h-16 rounded-full bg-white/25 backdrop-blur-md border-2 border-white/40 flex items-center justify-center shadow-2xl active:scale-95 transition-transform">
