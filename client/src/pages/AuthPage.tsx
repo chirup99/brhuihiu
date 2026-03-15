@@ -692,6 +692,8 @@ const SwipeCardContent = forwardRef(
                       src={thumbnailUrl}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover/thumb:scale-110"
                       alt="Thumbnail"
+                      loading="eager"
+                      fetchPriority="high"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src =
                           thumbnailUrl.replace("maxresdefault", "hqdefault");
@@ -728,6 +730,8 @@ const SwipeCardContent = forwardRef(
                       src={(card as any).imageUrl}
                       className="w-full h-full object-cover"
                       alt={card.name}
+                      loading="eager"
+                      fetchPriority="high"
                     />
                   </div>
                 ) : (
@@ -5410,29 +5414,53 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     <div className="flex flex-col items-center px-6 pt-6 pb-5 gap-3">
 
                       {/* Avatar */}
-                      {isCapturing ? (
-                        <div style={{ width: 72, height: 72, borderRadius: "50%", padding: 3, background: "linear-gradient(135deg, #ec4899, #be185d)", flexShrink: 0 }}>
-                          <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#ffffff" }}>
-                            <img src={avatarDataUrl || avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                          </div>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setShowAvatarDialog(true)}
-                          className="relative focus:outline-none"
-                        >
-                          <div className="w-18 h-18 rounded-full p-[3px] shadow-lg" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)", width: 72, height: 72 }}>
-                            <div className="w-full h-full rounded-full overflow-hidden bg-white">
-                              <img src={avatarDataUrl || avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                      {(() => {
+                        const displayAvatarSrc = normalizeAvatarUrl(user?.avatarUrl || loggedInUser?.avatarUrl) || avatarUrl;
+                        const displayName = user?.name || loggedInUser?.name || "P";
+                        return isCapturing ? (
+                          <div style={{ width: 72, height: 72, borderRadius: "50%", padding: 3, background: "linear-gradient(135deg, #ec4899, #be185d)", flexShrink: 0 }}>
+                            <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#ffffff" }}>
+                              <img src={avatarDataUrl || displayAvatarSrc} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                             </div>
                           </div>
-                          <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center shadow-md border-2 border-white" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}>
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                            </svg>
-                          </div>
-                        </button>
-                      )}
+                        ) : (
+                          <button
+                            onClick={() => setShowAvatarDialog(true)}
+                            className="relative focus:outline-none"
+                          >
+                            <div className="w-18 h-18 rounded-full p-[3px] shadow-lg" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)", width: 72, height: 72 }}>
+                              <div className="w-full h-full rounded-full overflow-hidden bg-pink-100 flex items-center justify-center">
+                                {displayAvatarSrc ? (
+                                  <img
+                                    src={displayAvatarSrc}
+                                    alt="Avatar"
+                                    className="w-full h-full object-cover"
+                                    loading="eager"
+                                    fetchPriority="high"
+                                    onError={(e) => {
+                                      const t = e.currentTarget;
+                                      t.style.display = "none";
+                                      const fallback = t.nextElementSibling as HTMLElement | null;
+                                      if (fallback) fallback.style.display = "flex";
+                                    }}
+                                  />
+                                ) : null}
+                                <div
+                                  className="w-full h-full bg-pink-500 items-center justify-center text-white text-2xl font-bold"
+                                  style={{ display: displayAvatarSrc ? "none" : "flex" }}
+                                >
+                                  {displayName[0]?.toUpperCase() || "P"}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center shadow-md border-2 border-white" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}>
+                              <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                              </svg>
+                            </div>
+                          </button>
+                        );
+                      })()}
 
                       {/* Name + role */}
                       <div className="text-center space-y-1">
@@ -5526,14 +5554,28 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
                 {/* Current avatar preview */}
                 <div className="flex flex-col items-center mb-5">
-                  <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-pink-500 shadow-lg">
+                  <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-pink-500 shadow-lg bg-pink-500 flex items-center justify-center">
                     {normalizeAvatarUrl(loggedInUser?.avatarUrl) ? (
-                      <img src={normalizeAvatarUrl(loggedInUser?.avatarUrl)!} alt="Current" className="w-full h-full object-cover" loading="eager" />
-                    ) : (
-                      <div className="w-full h-full bg-pink-500 flex items-center justify-center text-white text-xl font-bold">
-                        {loggedInUser?.name?.[0]?.toUpperCase() || "?"}
-                      </div>
-                    )}
+                      <img
+                        src={normalizeAvatarUrl(loggedInUser?.avatarUrl)!}
+                        alt="Current"
+                        className="w-full h-full object-cover"
+                        loading="eager"
+                        fetchPriority="high"
+                        onError={(e) => {
+                          const t = e.currentTarget;
+                          t.style.display = "none";
+                          const fallback = t.nextElementSibling as HTMLElement | null;
+                          if (fallback) fallback.style.display = "flex";
+                        }}
+                      />
+                    ) : null}
+                    <div
+                      className="w-full h-full bg-pink-500 items-center justify-center text-white text-xl font-bold"
+                      style={{ display: normalizeAvatarUrl(loggedInUser?.avatarUrl) ? "none" : "flex" }}
+                    >
+                      {loggedInUser?.name?.[0]?.toUpperCase() || "?"}
+                    </div>
                   </div>
                   <p className="text-[9px] text-pink-300/50 mt-1.5 uppercase tracking-widest font-bold">Current</p>
                 </div>
