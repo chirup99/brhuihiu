@@ -58,7 +58,7 @@ export default function Dashboard() {
               <Settings className="w-6 h-6 text-white/70" />
             </div>
             <div>
-              <h4 className="font-semibold text-sm">Configure Persona</h4>
+              <h4 className="font-semibold text-sm">Configure Voice</h4>
               <p className="text-xs text-white/40 mt-1">Connect your data sources</p>
             </div>
           </div>

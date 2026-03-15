@@ -1030,7 +1030,7 @@ const SwipeCard = ({
       if (card.type === "reel") subname = card.url || "";
       else if (card.type === "post") subname = card.content || "";
       else if (card.type === "xpost") subname = card.url || "";
-      else subname = card.url || "Persona";
+      else subname = card.url || "Voice";
       return {
         ...card,
         type: card.type,
@@ -1894,7 +1894,7 @@ const CustomSwipeCard = ({ cards }: { cards: string[] }) => {
           return {
             title: card.title,
             name: card.type.toUpperCase(),
-            subname: card.value || card.url || "Persona",
+            subname: card.value || card.url || "Voice",
             color: typeInfo?.color || "from-gray-700 to-gray-800",
             bgStack1: "bg-black/20",
             bgStack2: "bg-black/10",
