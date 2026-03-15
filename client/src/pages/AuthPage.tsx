@@ -4168,14 +4168,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
           )}
 
           <div className="space-y-4">
-            <AnimatePresence mode="wait" initial={false} custom={tabDirectionRef.current}>
+            <AnimatePresence mode="sync" initial={false}>
             <motion.div
               key={mode}
-              custom={tabDirectionRef.current}
-              initial={(dir: number) => ({ opacity: 0, x: dir * 60 })}
-              animate={{ opacity: 1, x: 0 }}
-              exit={(dir: number) => ({ opacity: 0, x: -dir * 60 })}
-              transition={{ duration: 0.22, ease: "easeInOut" }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15, ease: "easeInOut" }}
               style={{ touchAction: "auto" }}
               className="space-y-3"
             >
