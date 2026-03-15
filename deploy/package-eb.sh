@@ -15,13 +15,13 @@
 #   package-lock.json          — lockfile so EB installs exact versions
 #
 # Why we strip @types/* from package.json:
-#   The source package.json contains "@types/bcrypt" (types for the NATIVE
-#   bcrypt C++ addon) inside "dependencies" by mistake. At runtime this is
-#   harmless as a package, BUT some EB Node.js platform versions resolve it
-#   as a peer hint and attempt to compile native bcrypt alongside bcryptjs,
-#   causing deployment failures. All @types/* entries are compile-time only
-#   and have zero runtime value — so we remove them from the ZIP's
-#   package.json. bcryptjs (pure-JS, no native bindings) stays in place.
+#   @types/* packages are compile-time TypeScript definitions — they have zero
+#   runtime value and must never be installed on a production server.
+#   NOTE: native "bcrypt" has been permanently removed from this project.
+#   The app uses only "bcryptjs" (pure-JS, no native bindings, no compilation
+#   required). This stripping step is kept as a permanent safety net to ensure
+#   no @types/* package ever reaches the EB instance regardless of future
+#   package.json changes.
 # ============================================================
 
 set -e
