@@ -3711,11 +3711,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
                               </p>
                             </div>
                           </div>
-                          <div>
-                            <p className="text-white/50 text-[9px] leading-relaxed line-clamp-2 italic">
-                              {profile.bio || profile.industry || "BRS Member"}
-                            </p>
-                          </div>
+                          {(profile.bio || profile.industry) && (
+                            <div>
+                              <p className="text-white/50 text-[9px] leading-relaxed line-clamp-2 italic">
+                                {profile.bio || profile.industry}
+                              </p>
+                            </div>
+                          )}
                         </div>
                         {loggedInUser?.uniqueSlug === ADMIN_SLUG && (
                           <button
