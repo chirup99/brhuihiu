@@ -7,21 +7,23 @@
 #
 # ZIP structure (what EB receives):
 #   .ebextensions/port.config  — routes traffic to PORT 8081 via nginx
-#   Procfile                   — tells EB to run: npm start
-#   dist/                      — compiled frontend + bundled server (dist/index.cjs)
-#   server/                    — source included for any dynamic imports
-#   shared/                    — shared types/schema used at runtime
-#   package.json               — CLEANED: only real runtime deps, no @types/* packages
-#   package-lock.json          — lockfile so EB installs exact versions
+#   Procfile                   — tells EB to run: npm start → node dist/index.cjs
+#   dist/                      — compiled frontend + fully self-contained server bundle
+#   package.json               — MINIMAL: only bufferutil (native addon, can't be bundled)
 #
-# Why we strip @types/* from package.json:
-#   @types/* packages are compile-time TypeScript definitions — they have zero
-#   runtime value and must never be installed on a production server.
-#   NOTE: native "bcrypt" has been permanently removed from this project.
-#   The app uses only "bcryptjs" (pure-JS, no native bindings, no compilation
-#   required). This stripping step is kept as a permanent safety net to ensure
-#   no @types/* package ever reaches the EB instance regardless of future
-#   package.json changes.
+# Why a MINIMAL package.json (not the full one):
+#   dist/index.cjs is a self-contained esbuild bundle that already includes
+#   bcryptjs, the entire AWS SDK, express, and every other JS dependency.
+#   Copying the full package.json causes EB to run "npm install" and download
+#   hundreds of MB of packages that are already in the bundle — this hits the
+#   EB 15-minute command timeout and causes the "None of the instances are
+#   sending data" deployment failure.
+#
+#   Only bufferutil is excluded from the bundle (it is a native C++ addon).
+#   It ships prebuilt binaries, so EB installs it in seconds with no compilation.
+#   If bufferutil is unavailable, ws (WebSocket) falls back gracefully.
+#
+#   Native bcrypt is NOT used. The app uses only bcryptjs (pure-JS, bundled).
 # ============================================================
 
 set -e
@@ -34,11 +36,11 @@ echo "=== BRS Connect — EB Package Builder ==="
 echo ""
 
 # ── 1. Build ────────────────────────────────────────────────
-echo "[1/5] Building application..."
+echo "[1/4] Building application..."
 npm run build
 
 # ── 2. Staging directory ────────────────────────────────────
-echo "[2/5] Assembling package..."
+echo "[2/4] Assembling package..."
 rm -rf "$STAGING_DIR"
 mkdir -p "$STAGING_DIR/.ebextensions"
 
@@ -55,66 +57,44 @@ EOF
 # Procfile: tell EB how to start the app
 echo "web: npm start" > "$STAGING_DIR/Procfile"
 
-# ── 4. Copy required files ──────────────────────────────────
-# dist/   — compiled frontend assets + bundled server (dist/index.cjs)
-cp -r dist          "$STAGING_DIR/"
+# ── 4. Runtime files ─────────────────────────────────────────
+# dist/ is the ONLY folder needed — it contains:
+#   dist/public/    → compiled React frontend
+#   dist/index.cjs  → fully bundled Express server (bcryptjs + AWS SDK + all deps inside)
+cp -r dist "$STAGING_DIR/"
 
-# server/ & shared/ — included so any dynamic require() paths that resolve
-# relative to the project root (e.g. secondary processes) still work.
-cp -r server        "$STAGING_DIR/"
-cp -r shared        "$STAGING_DIR/"
-
-# package-lock.json — ensures EB installs the exact same dep versions
-cp package-lock.json "$STAGING_DIR/"
-
-# ── 5. Generate a CLEAN package.json ────────────────────────
-# We do NOT copy package.json directly.
-# Instead we use Node to strip every "@types/*" entry out of
-# "dependencies" before writing the file into the ZIP.
-#
-# Why: "@types/bcrypt" (native bcrypt types) sits in "dependencies"
-# in the source repo. On EB, npm install sees it and can trigger
-# native bcrypt compilation. bcryptjs (pure-JS) is used by the app
-# and must remain. All other @types/* have no runtime value either.
-echo "  → Stripping @types/* from dependencies for production..."
-node -e "
-const pkg = JSON.parse(require('fs').readFileSync('package.json', 'utf8'));
-
-// Remove all @types/* from dependencies — they are compile-time only.
-// This specifically removes @types/bcrypt which can cause EB to attempt
-// native bcrypt compilation instead of using bcryptjs.
-if (pkg.dependencies) {
-  for (const key of Object.keys(pkg.dependencies)) {
-    if (key.startsWith('@types/')) delete pkg.dependencies[key];
+# Minimal package.json — EB requires this file for the start script.
+# bufferutil is listed as optional so EB installs its prebuilt binary
+# (takes ~2 seconds). Everything else is already inside dist/index.cjs.
+cat > "$STAGING_DIR/package.json" <<'EOF'
+{
+  "name": "brs-connect",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node dist/index.cjs"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.1.0"
   }
 }
+EOF
 
-// devDependencies are never needed on EB — drop them entirely.
-delete pkg.devDependencies;
-
-// Ensure the start script points to the correct bundled output file.
-pkg.scripts = { start: 'node dist/index.cjs' };
-
-require('fs').writeFileSync(
-  '$STAGING_DIR/package.json',
-  JSON.stringify(pkg, null, 2)
-);
-console.log('  → Clean package.json written.');
-"
-
-# ── 6. ZIP ──────────────────────────────────────────────────
-echo "[4/5] Creating ZIP: $ZIP_NAME"
+# ── 5. ZIP ──────────────────────────────────────────────────
+echo "[3/4] Creating ZIP: $ZIP_NAME"
 rm -f "$ZIP_NAME"
 cd "$STAGING_DIR" && zip -r "../$ZIP_NAME" . --quiet && cd ..
 rm -rf "$STAGING_DIR"
 
-# ── 7. Confirm ──────────────────────────────────────────────
+# ── 6. Confirm ──────────────────────────────────────────────
 SIZE=$(du -sh "$ZIP_NAME" | cut -f1)
-echo "[5/5] Done! Package ready: $ZIP_NAME ($SIZE)"
+echo "[4/4] Done! Package ready: $ZIP_NAME ($SIZE)"
 echo ""
-echo "Dependencies bundled in dist/index.cjs : bcryptjs (pure-JS), AWS SDK, etc."
-echo "Dependencies installed by EB npm install: everything in package.json EXCEPT @types/*"
-echo "Native bcrypt : NOT present — bcryptjs is used throughout"
+echo "What EB will do on deploy:"
+echo "  npm install   → installs only bufferutil (~2 seconds, prebuilt binary)"
+echo "  npm start     → node dist/index.cjs  (self-contained, no extra deps needed)"
+echo ""
+echo "Bundled inside dist/index.cjs: bcryptjs, AWS SDK, express, all JS deps"
+echo "Native bcrypt  : NOT present — bcryptjs (pure-JS) is used throughout"
 echo ""
 echo "Next step: Upload $ZIP_NAME to Elastic Beanstalk"
 echo "  EB Console → brs-connect-prod-v2 → Upload and deploy → choose $ZIP_NAME"
