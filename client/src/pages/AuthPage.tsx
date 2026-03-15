@@ -111,7 +111,7 @@ const CARD_TYPES = [
 ];
 
 const VOICE_DEMO_CARDS = [
-  JSON.stringify({ type: "post", title: "Voice Community", content: "" }),
+  JSON.stringify({ type: "post", title: "Voice", content: "Share your voice with the world. Post updates, raise issues, and let your community hear what matters to you." }),
   JSON.stringify({ type: "image", title: "Image Card", imageUrl: "/brs-telangana.png" }),
   JSON.stringify({ type: "xpost", title: "Reel Card", subtype: "video", url: "https://x.com/BRSparty/status/1731318832508404183" }),
 ];
