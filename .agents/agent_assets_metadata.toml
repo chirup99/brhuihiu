@@ -6,3 +6,9 @@ id = "UFWH6okMy4FkECoe2Eb7k"
 uri = "file://persona-eb-deployment.zip"
 type = "unspecified"
 title = "persona-eb-deployment.zip — AWS Elastic Beanstalk Package"
+
+[[outputs]]
+id = "BiQ5AcQHvIhCaTlhX8z44"
+uri = "file://brs-connect-eb-20260315.zip"
+type = "unspecified"
+title = "BRS Connect — AWS Elastic Beanstalk Deployment (Mar 15, 2026)"
