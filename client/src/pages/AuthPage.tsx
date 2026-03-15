@@ -4629,7 +4629,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
               ) : mode === "register" ? (
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-3 pr-2"
+                  className="space-y-3 pr-2 pb-4"
                 >
                   <div className="space-y-1">
                     <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">
