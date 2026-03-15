@@ -5449,29 +5449,48 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       {(() => {
                         const displayAvatarSrc = normalizeAvatarUrl(user?.avatarUrl || loggedInUser?.avatarUrl) || avatarUrl;
                         const displayName = user?.name || loggedInUser?.name || "P";
-                        return (
+                        return isCapturing ? (
                           <div style={{ width: 72, height: 72, borderRadius: "50%", padding: 3, background: "linear-gradient(135deg, #ec4899, #be185d)", flexShrink: 0 }}>
                             <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#ffffff" }}>
-                              {isCapturing ? (
-                                <img src={avatarDataUrl || displayAvatarSrc} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                              ) : displayAvatarSrc ? (
-                                <img
-                                  src={displayAvatarSrc}
-                                  alt="Avatar"
-                                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                                  loading="eager"
-                                  onError={(e) => {
-                                    const t = e.currentTarget;
-                                    t.style.display = "none";
-                                  }}
-                                />
-                              ) : (
-                                <div style={{ width: "100%", height: "100%", background: "#ec4899", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 24, fontWeight: 700 }}>
-                                  {displayName[0]?.toUpperCase() || "P"}
-                                </div>
-                              )}
+                              <img src={avatarDataUrl || displayAvatarSrc} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                             </div>
                           </div>
+                        ) : (
+                          <button
+                            onClick={() => setShowAvatarDialog(true)}
+                            className="relative focus:outline-none"
+                          >
+                            <div className="w-18 h-18 rounded-full p-[3px] shadow-lg" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)", width: 72, height: 72 }}>
+                              <div className="w-full h-full rounded-full overflow-hidden bg-pink-100 flex items-center justify-center">
+                                {displayAvatarSrc ? (
+                                  <img
+                                    src={displayAvatarSrc}
+                                    alt="Avatar"
+                                    className="w-full h-full object-cover"
+                                    loading="eager"
+                                    fetchPriority="high"
+                                    onError={(e) => {
+                                      const t = e.currentTarget;
+                                      t.style.display = "none";
+                                      const fallback = t.nextElementSibling as HTMLElement | null;
+                                      if (fallback) fallback.style.display = "flex";
+                                    }}
+                                  />
+                                ) : null}
+                                <div
+                                  className="w-full h-full bg-pink-500 items-center justify-center text-white text-2xl font-bold"
+                                  style={{ display: displayAvatarSrc ? "none" : "flex" }}
+                                >
+                                  {displayName[0]?.toUpperCase() || "P"}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center shadow-md border-2 border-white" style={{ background: "linear-gradient(135deg, #ec4899, #be185d)" }}>
+                              <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                              </svg>
+                            </div>
+                          </button>
                         );
                       })()}
 
