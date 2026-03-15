@@ -3735,7 +3735,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           <div className="flex-1 flex flex-col items-center justify-center py-2 gap-2">
                             {(() => {
                               const isOwnCard = loggedInUser?.id === profile.id;
-                              const avatarSrc = isOwnCard ? normalizeAvatarUrl(profile.avatarUrl) : null;
+                              const avatarSrc = normalizeAvatarUrl(profile.avatarUrl);
                               return (
                                 <div
                                   className={`w-12 h-12 rounded-full overflow-hidden shadow-lg border-2 border-white/20 bg-pink-500 flex items-center justify-center text-white text-lg font-bold flex-shrink-0 relative ${isOwnCard ? "group cursor-pointer" : ""}`}
@@ -3747,13 +3747,21 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                       alt={profile.name}
                                       className="w-full h-full object-cover"
                                       loading="eager"
-                                      onError={(e) => { e.currentTarget.style.display = "none"; }}
+                                      fetchPriority="high"
+                                      onError={(e) => {
+                                        const t = e.currentTarget;
+                                        t.style.display = "none";
+                                        const fallback = t.nextElementSibling as HTMLElement | null;
+                                        if (fallback) fallback.style.display = "flex";
+                                      }}
                                     />
-                                  ) : (
-                                    <span className="w-full h-full flex items-center justify-center">
-                                      {profile.name?.[0]?.toUpperCase() || "?"}
-                                    </span>
-                                  )}
+                                  ) : null}
+                                  <span
+                                    className="w-full h-full flex items-center justify-center"
+                                    style={{ display: avatarSrc ? "none" : "flex" }}
+                                  >
+                                    {profile.name?.[0]?.toUpperCase() || "?"}
+                                  </span>
                                   {isOwnCard && (
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity flex items-center justify-center rounded-full">
                                       <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
