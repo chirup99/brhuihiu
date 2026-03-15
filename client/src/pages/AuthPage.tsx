@@ -3410,15 +3410,14 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   const isRising = lastEntry.count >= prevEntry.count;
 
                   const getPoints = () => {
-                    if (history.length === 0) return { pathData: "M 0,50 L 100,50", areaData: "M 0,50 L 100,50 L 100,100 L 0,100 Z" };
-                    if (history.length === 1) {
-                      const y = 100 - (history[0].count / maxCount) * 70 - 15;
-                      return { pathData: `M 0,${y} L 100,${y}`, areaData: `M 0,${y} L 100,${y} L 100,100 L 0,100 Z` };
-                    }
-                    const pts = history.map((h, i) => {
-                      const x = (i / (history.length - 1)) * 100;
-                      const y = 100 - ((h.count - minCount) / Math.max(maxCount - minCount, 1)) * 70 - 15;
-                      return { x, y };
+                    const base = { count: 0 };
+                    const allPts = [base, ...history];
+                    const allCounts = allPts.map((h) => h.count);
+                    const aMax = Math.max(...allCounts, 1);
+                    const pts = allPts.map((h, i) => {
+                      const x = (i / (allPts.length - 1)) * 100;
+                      const y = 100 - (h.count / aMax) * 75 - 10;
+                      return { x, y, count: h.count };
                     });
                     const pathData = pts.reduce((acc, p, i) => {
                       if (i === 0) return `M ${p.x},${p.y}`;
@@ -3427,9 +3426,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       return `${acc} C ${cp1x},${prev.y} ${cp1x},${p.y} ${p.x},${p.y}`;
                     }, "");
                     const areaData = `${pathData} L 100,100 L 0,100 Z`;
-                    return { pathData, areaData };
+                    return { pathData, areaData, pts };
                   };
-                  const { pathData, areaData } = getPoints();
+                  const { pathData, areaData, pts } = getPoints();
 
                   return (
                     <div className="rounded-2xl overflow-hidden border border-pink-500/30 shrink-0" style={{ background: "linear-gradient(145deg, rgba(20,4,12,0.95) 0%, rgba(40,6,22,0.95) 100%)" }}>
@@ -3493,19 +3492,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
                               d={areaData}
                               fill="url(#reachGrad)"
                             />
-                            {history.length >= 2 && history.map((h, i) => {
-                              const x = (i / (history.length - 1)) * 100;
-                              const y = 100 - ((h.count - minCount) / Math.max(maxCount - minCount, 1)) * 70 - 15;
-                              return (
-                                <circle key={i} cx={x} cy={y} r="2" fill="#ec4899" opacity={i === history.length - 1 ? 1 : 0.5} />
-                              );
-                            })}
+                            {pts.map((p, i) => (
+                              <circle key={i} cx={p.x} cy={p.y} r={i === pts.length - 1 ? 2.5 : 1.5} fill="#ec4899" opacity={i === pts.length - 1 ? 1 : i === 0 ? 0.2 : 0.5} />
+                            ))}
                           </svg>
                         </div>
                         <div className="flex justify-between px-0.5 pb-2">
-                          <span className="text-[7px] text-white/20 uppercase font-bold">
-                            {history.length > 0 ? new Date(history[0].timestamp).toLocaleDateString("en", { month: "short", day: "numeric" }) : "Start"}
-                          </span>
+                          <span className="text-[7px] text-white/20 uppercase font-bold">Start</span>
                           <span className="text-[7px] text-white/20 uppercase font-bold">Today</span>
                         </div>
                       </div>
