@@ -2334,8 +2334,12 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const persistAvatar = async (newUrl: string) => {
     if (!loggedInUser?.id) return;
     await apiRequest("PATCH", `/api/user/${loggedInUser.id}`, { avatarUrl: newUrl });
-    // Update in-memory cache immediately so profile card re-renders without a round-trip
+    // Update TanStack Query cache for /api/me
     queryClient.setQueryData(["/api/me"], (old: any) => old ? { ...old, avatarUrl: newUrl } : old);
+    // Update publicUser state so the home page card re-renders immediately
+    setPublicUser((old: any) => old ? { ...old, avatarUrl: newUrl } : old);
+    // Update loggedInUser local state
+    setLocalUser((old: any) => old ? { ...old, avatarUrl: newUrl } : old);
     // Also update localStorage-cached user
     try {
       const saved = localStorage.getItem("persona_user");
