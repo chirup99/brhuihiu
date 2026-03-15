@@ -48,7 +48,7 @@ import {
 import { useLogin, useRegister, useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import clsx from "clsx";
-import { SiInstagram, SiWhatsapp, SiX } from "react-icons/si";
+import { SiInstagram, SiWhatsapp, SiX, SiYoutube } from "react-icons/si";
 import avatarKcr from "@assets/kcr.png";
 import avatarKtr from "@assets/ktr.png";
 import avatarFist from "@assets/telangana-fist.png";
@@ -2124,7 +2124,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
       setPublicUser(null);
       setLastLoadedSlug(null);
       form.reset({
-        email: "",
         name: "",
         role: "people",
         bio: "",
@@ -2132,6 +2131,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
         linkedin: "",
         whatsapp: "",
         website: "",
+        youtube: "",
         cards: [],
       });
       setSelectedCards([]);
@@ -3013,9 +3013,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
       linkedin: user?.linkedin || "",
       whatsapp: user?.whatsapp || "",
       website: user?.website || "",
+      youtube: (user as any)?.youtube || "",
       cards: user?.cards || [],
-      email:
-        user?.email && !user.email.endsWith("@persona.local") ? user.email : "",
     },
   });
 
@@ -4359,29 +4358,30 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         );
                       })()}
                       {(() => {
-                        const email = form.watch("email");
-                        const hasEmail =
-                          !!email && email.trim() !== "" && email !== "#";
+                        const youtube = form.watch("youtube" as any);
+                        const hasYoutube =
+                          !!youtube && youtube.trim() !== "" && youtube !== "#";
                         return (
                           <a
-                            href={hasEmail ? `mailto:${email}` : undefined}
-                            target={hasEmail ? "_blank" : undefined}
-                            rel={hasEmail ? "noreferrer" : undefined}
+                            href={hasYoutube ? youtube : undefined}
+                            target={hasYoutube ? "_blank" : undefined}
+                            rel={hasYoutube ? "noreferrer" : undefined}
                             onClick={(e) => {
-                              if (!hasEmail) {
+                              if (!hasYoutube) {
                                 e.preventDefault();
                                 return;
                               }
+                              trackClick("website");
                             }}
                             className={clsx(
                               "p-2.5 rounded-lg transition-all",
-                              hasEmail
+                              hasYoutube
                                 ? "bg-pink-50 text-pink-500 hover:bg-pink-100 hover:text-pink-600 shadow-[0_0_10px_rgba(236,72,153,0.15)]"
                                 : "bg-gray-100 text-gray-300 cursor-not-allowed",
                             )}
-                            title={hasEmail ? "Email" : "Email (Not Available)"}
+                            title={hasYoutube ? "YouTube" : "YouTube (Not Available)"}
                           >
-                            <Mail className="w-4 h-4" />
+                            <SiYoutube className="w-4 h-4" />
                           </a>
                         );
                       })()}
@@ -4438,11 +4438,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           linkedin: user?.linkedin || "",
                           whatsapp: user?.whatsapp || "",
                           website: user?.website || "",
+                          youtube: (user as any)?.youtube || "",
                           cards: user?.cards || [],
-                          email:
-                            user?.email && !user.email.endsWith("@persona.local")
-                              ? user.email
-                              : "",
                         });
                         setSelectedCards(user?.cards || []);
                       }}
@@ -4912,12 +4909,12 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold flex items-center gap-1">
-                        Email <span className="normal-case text-gray-400 font-normal tracking-normal">(optional)</span>
+                        YouTube <span className="normal-case text-gray-400 font-normal tracking-normal">(optional)</span>
                       </label>
                       <input
-                        {...form.register("email")}
+                        {...form.register("youtube" as any)}
                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900"
-                        placeholder="Email"
+                        placeholder="https://youtube.com/@channel"
                         onFocus={() => { setRoleOpen(false); setConstituencyOpen(false); }}
                       />
                     </div>
@@ -4954,8 +4951,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           linkedin: "",
                           whatsapp: "",
                           website: "",
+                          youtube: "",
                           cards: [],
-                          email: "",
                         });
                         setSelectedCards([]);
                         setMode("login");
@@ -5140,8 +5137,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       linkedin: "",
                       whatsapp: "",
                       website: "",
+                      youtube: "",
                       cards: [],
-                      email: "",
                     });
                     setSelectedCards([]);
                     setLocation("/");
@@ -5923,7 +5920,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             setLocalUser(userData);
                             setShowPersonaDialog(false);
                             form.reset({
-                              email: userData.email || "",
                               name: userData.name || "",
                               role: userData.role || "people",
                               bio: userData.bio || "",
@@ -5931,6 +5927,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                               linkedin: userData.linkedin || "",
                               whatsapp: userData.whatsapp || "",
                               website: userData.website || "",
+                              youtube: (userData as any).youtube || "",
                               cards: userData.cards || [],
                             });
                             setSelectedCards(userData.cards || []);

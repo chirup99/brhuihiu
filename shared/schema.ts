@@ -57,6 +57,7 @@ export const users = {
   linkedin: "linkedin",
   whatsapp: "whatsapp",
   website: "website",
+  youtube: "youtube",
   uniqueSlug: "uniqueSlug",
   industry: "industry",
   cards: "cards",
@@ -75,6 +76,7 @@ export type User = {
   linkedin: string | null;
   whatsapp: string | null;
   website: string | null;
+  youtube: string | null;
   uniqueSlug: string | null;
   pin: string | null;
   avatarUrl: string | null;
@@ -101,6 +103,7 @@ export const insertUserSchema = z.object({
   linkedin: z.string().optional().nullable(),
   whatsapp: z.string().optional().nullable(),
   website: z.string().optional().nullable(),
+  youtube: z.string().optional().nullable(),
   cards: z.array(z.string()).optional(),
   connections: z.array(z.object({
     slug: z.string(),
