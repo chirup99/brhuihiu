@@ -824,8 +824,7 @@ const XVideoCard = ({ tweetId, xUrl, onEditClick, onPlayStateChange }: { tweetId
   const [isLandscape, setIsLandscape] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const handlePlay = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const togglePlay = () => {
     const v = videoRef.current;
     if (!v) return;
     if (isPlaying) {
@@ -837,6 +836,11 @@ const XVideoCard = ({ tweetId, xUrl, onEditClick, onPlayStateChange }: { tweetId
       setIsPlaying(true);
       onPlayStateChange?.(true);
     }
+  };
+
+  const handlePlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    togglePlay();
   };
 
   const handleMetadata = () => {
@@ -875,7 +879,7 @@ const XVideoCard = ({ tweetId, xUrl, onEditClick, onPlayStateChange }: { tweetId
             onPointerDown={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
             onPointerUp={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
             onTouchStart={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
-            onTouchEnd={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
+            onTouchEnd={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); e.preventDefault(); togglePlay(); }}
             className={`absolute inset-0 flex items-center justify-center z-10 transition-opacity ${isPlaying ? "opacity-0 active:opacity-100" : "opacity-100"}`}
             style={{ background: isPlaying ? "transparent" : "rgba(0,0,0,0.35)", touchAction: "manipulation" }}
           >
@@ -925,8 +929,7 @@ const InstaVideoCard = ({ reelId, reelUrl, onEditClick, onPlayStateChange }: { r
   const [isLandscape, setIsLandscape] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const handlePlay = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const togglePlay = () => {
     const v = videoRef.current;
     if (!v) return;
     if (isPlaying) {
@@ -938,6 +941,11 @@ const InstaVideoCard = ({ reelId, reelUrl, onEditClick, onPlayStateChange }: { r
       setIsPlaying(true);
       onPlayStateChange?.(true);
     }
+  };
+
+  const handlePlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    togglePlay();
   };
 
   return (
@@ -973,7 +981,7 @@ const InstaVideoCard = ({ reelId, reelUrl, onEditClick, onPlayStateChange }: { r
             onPointerDown={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
             onPointerUp={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
             onTouchStart={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
-            onTouchEnd={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); }}
+            onTouchEnd={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); e.preventDefault(); togglePlay(); }}
             className={`absolute inset-0 flex items-center justify-center z-10 transition-opacity ${isPlaying ? "opacity-0 active:opacity-100" : "opacity-100"}`}
             style={{ background: isPlaying ? "transparent" : "rgba(0,0,0,0.35)", touchAction: "manipulation" }}
           >
