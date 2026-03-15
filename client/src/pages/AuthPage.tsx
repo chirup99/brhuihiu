@@ -2326,6 +2326,26 @@ export default function AuthPage({ slug }: { slug?: string }) {
     return url;
   };
 
+  // Converts any image src (URL or data URL) to a base64 data URL via fetch+FileReader.
+  // This avoids canvas-taint issues on mobile (iOS Safari) that occur with crossOrigin canvas tricks.
+  const toBase64 = async (src: string): Promise<string> => {
+    if (!src) return "";
+    if (src.startsWith("data:")) return src;
+    try {
+      const cacheBust = src.includes("?") ? `&_cb=${Date.now()}` : `?_cb=${Date.now()}`;
+      const resp = await fetch(src + cacheBust);
+      const blob = await resp.blob();
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return src;
+    }
+  };
+
   const [avatarUrl, setAvatarUrl] = useState(professionalAvatars[0]);
   const [avatarDataUrl, setAvatarDataUrl] = useState<string>("");
   const [avatarConverting, setAvatarConverting] = useState(false);
@@ -2410,27 +2430,18 @@ export default function AuthPage({ slug }: { slug?: string }) {
     } catch {}
   };
 
-  // Convert avatar to base64 data URL whenever it changes so html-to-image can embed it
+  // Convert avatar to base64 data URL whenever it changes so html-to-image can embed it.
+  // Uses fetch+FileReader instead of canvas to avoid iOS Safari canvas-taint issues.
   useEffect(() => {
+    let cancelled = false;
     setAvatarConverting(true);
-    const img = new window.Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = img.naturalWidth || 200;
-      canvas.height = img.naturalHeight || 200;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(img, 0, 0);
-        setAvatarDataUrl(canvas.toDataURL("image/png"));
+    toBase64(avatarUrl).then((dataUrl) => {
+      if (!cancelled) {
+        setAvatarDataUrl(dataUrl);
+        setAvatarConverting(false);
       }
-      setAvatarConverting(false);
-    };
-    img.onerror = () => {
-      setAvatarDataUrl(avatarUrl);
-      setAvatarConverting(false);
-    };
-    img.src = avatarUrl;
+    });
+    return () => { cancelled = true; };
   }, [avatarUrl]);
 
   const [currentTime, setCurrentTime] = useState(
@@ -3109,28 +3120,16 @@ export default function AuthPage({ slug }: { slug?: string }) {
       // Use the same avatar source logic as the QR card template
       const actualAvatarSrc = normalizeAvatarUrl(user?.avatarUrl || loggedInUser?.avatarUrl) || avatarUrl;
 
-      // Convert the actual displayed avatar to base64 so html-to-image can embed it
-      const freshDataUrl = await new Promise<string>((resolve) => {
-        if (!actualAvatarSrc) { resolve(""); return; }
-        const img = new window.Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.naturalWidth || 200;
-          canvas.height = img.naturalHeight || 200;
-          const ctx = canvas.getContext("2d");
-          if (ctx) ctx.drawImage(img, 0, 0);
-          resolve(canvas.toDataURL("image/png"));
-        };
-        img.onerror = () => resolve(actualAvatarSrc);
-        img.src = actualAvatarSrc;
-      });
+      // Convert the actual displayed avatar to base64 using fetch+FileReader.
+      // This works on mobile (iOS Safari) where canvas-taint prevents toDataURL().
+      const freshDataUrl = await toBase64(actualAvatarSrc);
       setAvatarDataUrl(freshDataUrl);
 
       // Hide UI controls so they don't appear in the wallpaper
       setIsCapturing(true);
-      // Wait for React to re-render with the fresh avatar data
-      await new Promise<void>((resolve) => setTimeout(resolve, 120));
+      // Wait for React to re-render and the browser to paint the new avatar.
+      // 300ms gives mobile devices enough time to fully render the base64 image.
+      await new Promise<void>((resolve) => setTimeout(resolve, 300));
 
       const dataUrl = await htmlToImage.toPng(element, {
         quality: 1,
