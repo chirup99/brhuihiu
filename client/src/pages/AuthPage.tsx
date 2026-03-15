@@ -635,12 +635,12 @@ const SwipeCardContent = forwardRef(
         )}
       >
         {isPlaying && card.type === "reel" ? (
-          <div className="absolute inset-0 z-50 bg-black">
+          <div className="absolute inset-0 z-50 bg-black rounded-[24px] overflow-hidden">
             {embedUrl ? (
               <div className="w-full h-full overflow-hidden flex items-center justify-center">
                 <iframe
                   src={embedUrl}
-                  className="w-full h-[calc(100%+80px)] -mt-[40px] border-0"
+                  className="w-full h-full border-0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
@@ -654,6 +654,7 @@ const SwipeCardContent = forwardRef(
               onClick={(e) => {
                 e.stopPropagation();
                 setIsPlaying(false);
+                onVideoPlayStateChange?.(false);
               }}
               className="absolute top-4 right-4 p-2 bg-black/50 rounded-full text-white z-[60]"
             >
@@ -686,7 +687,7 @@ const SwipeCardContent = forwardRef(
                 thumbnailUrl ? (
                   <div
                     className="w-full aspect-video rounded-xl overflow-hidden shadow-lg border border-white/10 cursor-pointer group/thumb relative"
-                    onClick={() => setIsPlaying(true)}
+                    onClick={() => { setIsPlaying(true); onVideoPlayStateChange?.(true); }}
                   >
                     <img
                       src={thumbnailUrl}
@@ -708,7 +709,7 @@ const SwipeCardContent = forwardRef(
                 ) : (
                   <div
                     className="flex flex-col items-center justify-center space-y-3 py-4 cursor-pointer"
-                    onClick={() => setIsPlaying(true)}
+                    onClick={() => { setIsPlaying(true); onVideoPlayStateChange?.(true); }}
                   >
                     <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
                       <Video className="w-8 h-8 text-white" />
