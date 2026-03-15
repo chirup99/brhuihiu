@@ -8,6 +8,12 @@ const httpServer = createServer(app);
 
 app.set("trust proxy", 1);
 
+// Health check must be registered before the HTTPS redirect so ELB
+// health checkers (which use plain HTTP) always receive a 200.
+app.get("/health", (_req: Request, res: Response) => {
+  res.status(200).json({ status: "ok" });
+});
+
 if (process.env.NODE_ENV === "production") {
   app.use((req: Request, res: Response, next: NextFunction) => {
     const proto = (req.headers["x-forwarded-proto"] as string | undefined)?.split(",")[0]?.trim();
