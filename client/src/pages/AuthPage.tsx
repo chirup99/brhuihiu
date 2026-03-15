@@ -3397,264 +3397,153 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   )}
                 </AnimatePresence>
 
-                {/* Reach & Click Stats Display */}
-                <div className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-3 shrink-0">
-                  <div className="flex flex-col items-center gap-0.5">
-                    <span className="text-[8px] text-white/40 uppercase tracking-[0.2em] font-bold">
-                      Reach Count
-                    </span>
-                    <span className="text-xl font-display font-bold text-white">
-                      {loggedInUser.reachCount || 0}
-                    </span>
-                  </div>
+                {/* Reach & Analytics Window */}
+                {(() => {
+                  const history = [...(loggedInUser.reachHistory || [])].sort(
+                    (a, b) => a.timestamp.localeCompare(b.timestamp),
+                  );
+                  const counts = history.map((h) => h.count);
+                  const maxCount = Math.max(...counts, 1);
+                  const minCount = Math.min(...counts, 0);
+                  const lastEntry = history.length > 0 ? history[history.length - 1] : { count: 0 };
+                  const prevEntry = history.length > 1 ? history[history.length - 2] : { count: 0 };
+                  const isRising = lastEntry.count >= prevEntry.count;
 
-                  {/* Reach Trend Chart */}
-                  {loggedInUser.reachHistory &&
-                    loggedInUser.reachHistory.length > 0 && (
-                      <div className="h-12 w-full pt-1">
-                        <div className="flex items-end justify-between h-full gap-0.5">
-                          {(() => {
-                            const history = [...loggedInUser.reachHistory].sort(
-                              (a, b) => a.timestamp.localeCompare(b.timestamp),
-                            );
-                            const counts = history.map((h) => h.count);
-                            const maxCount = Math.max(...counts, 1);
+                  const getPoints = () => {
+                    if (history.length === 0) return { pathData: "M 0,50 L 100,50", areaData: "M 0,50 L 100,50 L 100,100 L 0,100 Z" };
+                    if (history.length === 1) {
+                      const y = 100 - (history[0].count / maxCount) * 70 - 15;
+                      return { pathData: `M 0,${y} L 100,${y}`, areaData: `M 0,${y} L 100,${y} L 100,100 L 0,100 Z` };
+                    }
+                    const pts = history.map((h, i) => {
+                      const x = (i / (history.length - 1)) * 100;
+                      const y = 100 - ((h.count - minCount) / Math.max(maxCount - minCount, 1)) * 70 - 15;
+                      return { x, y };
+                    });
+                    const pathData = pts.reduce((acc, p, i) => {
+                      if (i === 0) return `M ${p.x},${p.y}`;
+                      const prev = pts[i - 1];
+                      const cp1x = prev.x + (p.x - prev.x) / 2;
+                      return `${acc} C ${cp1x},${prev.y} ${cp1x},${p.y} ${p.x},${p.y}`;
+                    }, "");
+                    const areaData = `${pathData} L 100,100 L 0,100 Z`;
+                    return { pathData, areaData };
+                  };
+                  const { pathData, areaData } = getPoints();
 
-                            return (
-                              <div className="w-full h-full relative flex items-end">
-                                <svg
-                                  className="w-full h-full overflow-visible"
-                                  viewBox="0 0 100 100"
-                                  preserveAspectRatio="none"
-                                >
-                                  <defs>
-                                    <linearGradient
-                                      id="chartGradient"
-                                      x1="0"
-                                      y1="0"
-                                      x2="0"
-                                      y2="1"
-                                    >
-                                      <stop
-                                        offset="0%"
-                                        stopColor="rgb(236, 72, 153)"
-                                        stopOpacity="0.8"
-                                      />
-                                      <stop
-                                        offset="100%"
-                                        stopColor="rgb(190, 24, 93)"
-                                        stopOpacity="0.1"
-                                      />
-                                    </linearGradient>
-                                  </defs>
-                                  {(() => {
-                                    if (history.length < 2) return null;
-
-                                    const points = history.map((h, i) => {
-                                      const x =
-                                        (i / (history.length - 1)) * 100;
-                                      const y =
-                                        100 - (h.count / maxCount) * 80 - 10; // Margin top/bottom
-                                      return `${x},${y}`;
-                                    });
-
-                                    const pathData = points.reduce(
-                                      (acc, point, i, arr) => {
-                                        if (i === 0) return `M ${point}`;
-                                        // Cubic bezier for smooth curve
-                                        const prev = arr[i - 1].split(",");
-                                        const curr = point.split(",");
-                                        const cp1x =
-                                          Number(prev[0]) +
-                                          (Number(curr[0]) - Number(prev[0])) /
-                                            2;
-                                        return `${acc} C ${cp1x},${prev[1]} ${cp1x},${curr[1]} ${curr[0]},${curr[1]}`;
-                                      },
-                                      "",
-                                    );
-
-                                    const areaData = `${pathData} L 100,100 L 0,100 Z`;
-
-                                    return (
-                                      <>
-                                        <motion.path
-                                          initial={{
-                                            pathLength: 0,
-                                            opacity: 0,
-                                          }}
-                                          animate={{
-                                            pathLength: 1,
-                                            opacity: 1,
-                                          }}
-                                          transition={{
-                                            duration: 1,
-                                            ease: "easeOut",
-                                          }}
-                                          d={pathData}
-                                          fill="none"
-                                          stroke="rgb(236, 72, 153)"
-                                          strokeWidth="2"
-                                          strokeLinecap="round"
-                                        />
-                                        <motion.path
-                                          initial={{ opacity: 0 }}
-                                          animate={{ opacity: 1 }}
-                                          transition={{
-                                            duration: 1.5,
-                                            delay: 0.5,
-                                          }}
-                                          d={areaData}
-                                          fill="url(#chartGradient)"
-                                        />
-                                      </>
-                                    );
-                                  })()}
-                                </svg>
-                                {/* Points for tooltips */}
-                                <div className="absolute inset-0 flex justify-between">
-                                  {history.map((day, i) => (
-                                    <div
-                                      key={i}
-                                      className="flex-1 group relative h-full"
-                                    >
-                                      <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-white text-black text-[7px] font-bold px-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                                        {day.count}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            );
-                          })()}
+                  return (
+                    <div className="rounded-2xl overflow-hidden border border-pink-500/30 shrink-0" style={{ background: "linear-gradient(145deg, rgba(20,4,12,0.95) 0%, rgba(40,6,22,0.95) 100%)" }}>
+                      {/* Header strip */}
+                      <div className="px-4 pt-4 pb-3 flex items-center justify-between border-b border-white/5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-pink-500 animate-pulse shadow-[0_0_6px_#ec4899]" />
+                          <span className="text-[9px] text-pink-400 uppercase tracking-[0.22em] font-black">Voice Reach</span>
                         </div>
-                        <div className="flex justify-between mt-1 px-0.5">
-                          <span className="text-[5px] text-white/20 uppercase font-bold">
-                            7d ago
-                          </span>
-                          <span className="text-[5px] text-white/20 uppercase font-bold">
-                            Today
-                          </span>
+                        <span className={`text-[9px] font-bold flex items-center gap-0.5 px-1.5 py-0.5 rounded-full ${isRising ? "text-emerald-400 bg-emerald-400/10" : "text-red-400 bg-red-400/10"}`}>
+                          {isRising ? <TrendingUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />}
+                          {isRising ? "Rising" : "Slowing"}
+                        </span>
+                      </div>
+
+                      {/* Reach count hero */}
+                      <div className="px-4 pt-3 pb-1 flex items-end justify-between">
+                        <div>
+                          <p className="text-[8px] text-white/30 uppercase tracking-[0.18em] font-bold mb-0.5">Total Reach</p>
+                          <p className="text-3xl font-black text-white leading-none" style={{ fontVariantNumeric: "tabular-nums" }}>
+                            {(loggedInUser.reachCount || 0).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[8px] text-white/30 uppercase tracking-widest font-bold mb-0.5">Profile Views</p>
+                          <p className="text-sm font-bold text-pink-400">{history.length} snapshots</p>
                         </div>
                       </div>
-                    )}
 
-                  <div className="grid grid-cols-2 gap-2 pt-3 border-t border-white/10">
-                    <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-[7px] text-white/30 uppercase tracking-widest font-bold">
-                        Insta
-                      </span>
-                      <span className="text-xs font-bold text-white/80">
-                        {loggedInUser.instaClicks || 0}
-                      </span>
-                    </div>
-                    <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-[7px] text-white/30 uppercase tracking-widest font-bold">
-                        X
-                      </span>
-                      <span className="text-xs font-bold text-white/80">
-                        {loggedInUser.linkedinClicks || 0}
-                      </span>
-                    </div>
-                    <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-[7px] text-white/30 uppercase tracking-widest font-bold">
-                        WhatsApp
-                      </span>
-                      <span className="text-xs font-bold text-white/80">
-                        {loggedInUser.whatsappClicks || 0}
-                      </span>
-                    </div>
-                    <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-[7px] text-white/30 uppercase tracking-widest font-bold">
-                        Website
-                      </span>
-                      <span className="text-xs font-bold text-white/80">
-                        {loggedInUser.websiteClicks || 0}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                      {/* Chart */}
+                      <div className="px-3 pt-2 pb-0">
+                        <div className="h-16 w-full relative">
+                          <svg
+                            className="w-full h-full"
+                            viewBox="0 0 100 100"
+                            preserveAspectRatio="none"
+                          >
+                            <defs>
+                              <linearGradient id="reachGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#ec4899" stopOpacity="0.5" />
+                                <stop offset="100%" stopColor="#ec4899" stopOpacity="0.02" />
+                              </linearGradient>
+                            </defs>
+                            <motion.path
+                              key={pathData}
+                              initial={{ pathLength: 0, opacity: 0 }}
+                              animate={{ pathLength: 1, opacity: 1 }}
+                              transition={{ duration: 1.2, ease: "easeOut" }}
+                              d={pathData}
+                              fill="none"
+                              stroke="#ec4899"
+                              strokeWidth="2.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                            <motion.path
+                              key={`area-${areaData}`}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ duration: 1.4, delay: 0.3 }}
+                              d={areaData}
+                              fill="url(#reachGrad)"
+                            />
+                            {history.length >= 2 && history.map((h, i) => {
+                              const x = (i / (history.length - 1)) * 100;
+                              const y = 100 - ((h.count - minCount) / Math.max(maxCount - minCount, 1)) * 70 - 15;
+                              return (
+                                <circle key={i} cx={x} cy={y} r="2" fill="#ec4899" opacity={i === history.length - 1 ? 1 : 0.5} />
+                              );
+                            })}
+                          </svg>
+                        </div>
+                        <div className="flex justify-between px-0.5 pb-2">
+                          <span className="text-[7px] text-white/20 uppercase font-bold">
+                            {history.length > 0 ? new Date(history[0].timestamp).toLocaleDateString("en", { month: "short", day: "numeric" }) : "Start"}
+                          </span>
+                          <span className="text-[7px] text-white/20 uppercase font-bold">Today</span>
+                        </div>
+                      </div>
 
-                {/* People's Reach Window */}
-                <div className="p-4 bg-gradient-to-br from-pink-500/10 to-rose-500/10 border border-pink-500/20 rounded-xl space-y-3 backdrop-blur-md relative overflow-hidden group shrink-0">
-                  <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <User className="w-6 h-6 text-pink-400" />
-                  </div>
+                      {/* Social stats */}
+                      <div className="grid grid-cols-4 gap-px border-t border-white/5">
+                        {[
+                          { label: "Insta", value: loggedInUser.instaClicks || 0, color: "text-pink-400" },
+                          { label: "X", value: loggedInUser.linkedinClicks || 0, color: "text-white" },
+                          { label: "WA", value: loggedInUser.whatsappClicks || 0, color: "text-emerald-400" },
+                          { label: "Web", value: loggedInUser.websiteClicks || 0, color: "text-sky-400" },
+                        ].map((stat) => (
+                          <div key={stat.label} className="flex flex-col items-center gap-0.5 py-2.5 bg-white/2">
+                            <span className={`text-sm font-black ${stat.color}`}>{stat.value}</span>
+                            <span className="text-[7px] text-white/25 uppercase tracking-widest font-bold">{stat.label}</span>
+                          </div>
+                        ))}
+                      </div>
 
-                  <div className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" />
-                      <span className="text-[8px] text-pink-400 uppercase tracking-[0.2em] font-bold">
-                        People's Reach
-                      </span>
-                    </div>
-                    <h4 className="text-white font-bold text-xs">
-                      Connect Insights
-                    </h4>
-                  </div>
-
-                  <div className="space-y-2 relative z-10">
-                    {(() => {
-                      const history = loggedInUser.reachHistory || [];
-                      const lastEntry =
-                        history.length > 0
-                          ? history[history.length - 1]
-                          : { count: 0 };
-                      const prevEntry =
-                        history.length > 1
-                          ? history[history.length - 2]
-                          : { count: 0 };
-                      const isDecreasing = lastEntry.count < prevEntry.count;
-
-                      return (
-                        <>
-                          <div className="p-2 bg-white/5 rounded-lg border border-white/5 space-y-1.5">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[8px] text-white/40 uppercase font-bold tracking-tight">
-                                Reach Status
-                              </span>
-                              {isDecreasing ? (
-                                <span className="text-[8px] text-red-400 font-bold flex items-center gap-1">
-                                  <ChevronDown className="w-2 h-2" /> Slowing
-                                </span>
-                              ) : (
-                                <span className="text-[8px] text-green-400 font-bold flex items-center gap-1">
-                                  <TrendingUp className="w-2 h-2" /> Rising
-                                </span>
-                              )}
+                      {/* Tips section */}
+                      <div className="px-4 py-3 border-t border-white/5 space-y-2">
+                        <p className="text-[8px] text-pink-400/70 uppercase tracking-[0.18em] font-black">Grow Your Reach</p>
+                        <div className="space-y-1.5">
+                          {[
+                            "Share your QR at local BRS events.",
+                            "Connect with leaders & party workers.",
+                            "Post your voice card to spread your message.",
+                          ].map((tip, i) => (
+                            <div key={i} className="flex items-start gap-2">
+                              <div className="w-1 h-1 rounded-full bg-pink-500 mt-1.5 shrink-0 shadow-[0_0_4px_#ec4899]" />
+                              <p className="text-[9px] text-white/50 leading-relaxed">{tip}</p>
                             </div>
-                            <p className="text-[9px] text-white/70 leading-tight">
-                              {isDecreasing
-                                ? "Keep connecting — every voice matters for BRS."
-                                : "Your profile is reaching more people. Keep it up!"}
-                            </p>
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <span className="text-[8px] text-white/40 uppercase font-bold tracking-[0.1em]">
-                              Tips to Grow
-                            </span>
-                            <ul className="space-y-1.5">
-                              {[
-                                "Share your QR at local BRS events.",
-                                "Connect with leaders & party workers.",
-                                "Post your voice card to spread your message.",
-                                "Set QR as wallpaper for easy networking.",
-                              ].map((s, i) => (
-                                <li
-                                  key={i}
-                                  className="flex items-start gap-1.5 text-[9px] text-white/60"
-                                >
-                                  <div className="w-0.5 h-0.5 rounded-full bg-pink-500 mt-1.5 shrink-0" />
-                                  {s}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           ) : (
