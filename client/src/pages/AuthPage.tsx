@@ -3765,8 +3765,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                               const avatarSrc = normalizeAvatarUrl(profile.avatarUrl);
                               return (
                                 <div
-                                  className={`w-12 h-12 rounded-full overflow-hidden shadow-lg border-2 border-white/20 bg-pink-500 flex items-center justify-center text-white text-lg font-bold flex-shrink-0 relative ${isOwnCard ? "group cursor-pointer" : ""}`}
-                                  onClick={isOwnCard ? (e) => { e.stopPropagation(); setShowTradersModal(false); setShowAvatarDialog(true); } : undefined}
+                                  className="w-12 h-12 rounded-full overflow-hidden shadow-lg border-2 border-white/20 bg-pink-500 flex items-center justify-center text-white text-lg font-bold flex-shrink-0 relative"
                                 >
                                   {avatarSrc ? (
                                     <img
