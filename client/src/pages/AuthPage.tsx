@@ -111,7 +111,7 @@ const CARD_TYPES = [
 ];
 
 const VOICE_DEMO_CARDS = [
-  JSON.stringify({ type: "post", title: "Voice Community", content: "Roads need repair in Ward 4 — potholes are causing accidents daily. We demand immediate action from the local authorities. Rise your voice. Be heard!" }),
+  JSON.stringify({ type: "post", title: "Voice Community", content: "" }),
   JSON.stringify({ type: "image", title: "Image Card", imageUrl: "/brs-telangana.png" }),
   JSON.stringify({ type: "xpost", title: "Reel Card", subtype: "video", url: "https://x.com/BRSparty/status/1731318832508404183" }),
 ];
