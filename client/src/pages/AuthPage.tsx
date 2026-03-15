@@ -2301,6 +2301,16 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [qrBgColor, setQrBgColor] = useState("#ffffff");
   const professionalAvatars = [avatarKcr, avatarKtr, avatarFist, avatarBrsCar];
 
+  const normalizeAvatarUrl = (url: string | null | undefined): string | null => {
+    if (!url) return null;
+    if (url.startsWith("data:")) return url;
+    if (url.includes("kcr")) return avatarKcr;
+    if (url.includes("ktr")) return avatarKtr;
+    if (url.includes("telangana-fist") || url.includes("fist")) return avatarFist;
+    if (url.includes("brs-car") || url.includes("brsCar")) return avatarBrsCar;
+    return url;
+  };
+
   const [avatarUrl, setAvatarUrl] = useState(professionalAvatars[0]);
   const [avatarDataUrl, setAvatarDataUrl] = useState<string>("");
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
@@ -2309,7 +2319,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   // Sync avatarUrl with the logged-in user's stored avatar when user data loads
   useEffect(() => {
     if (loggedInUser?.avatarUrl) {
-      setAvatarUrl(loggedInUser.avatarUrl);
+      setAvatarUrl(normalizeAvatarUrl(loggedInUser.avatarUrl) || professionalAvatars[0]);
     }
   }, [loggedInUser?.id]);
 
@@ -3215,12 +3225,12 @@ export default function AuthPage({ slug }: { slug?: string }) {
           <img key={i} src={src} alt="" loading="eager" />
         ))}
         {featuredProfiles.map((p, i) =>
-          p.avatarUrl ? (
-            <img key={`fp-${i}`} src={p.avatarUrl} alt="" loading="eager" />
+          normalizeAvatarUrl(p.avatarUrl) ? (
+            <img key={`fp-${i}`} src={normalizeAvatarUrl(p.avatarUrl)!} alt="" loading="eager" />
           ) : null
         )}
-        {loggedInUser?.avatarUrl && (
-          <img src={loggedInUser.avatarUrl} alt="" loading="eager" />
+        {loggedInUser?.avatarUrl && normalizeAvatarUrl(loggedInUser.avatarUrl) && (
+          <img src={normalizeAvatarUrl(loggedInUser.avatarUrl)!} alt="" loading="eager" />
         )}
       </div>
       <div className="absolute inset-0 flex flex-col justify-start items-end p-12 pt-24 pointer-events-none">
@@ -3719,9 +3729,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none" />
                           <div className="flex-1 flex flex-col items-center justify-center py-2 gap-2">
                             <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg border-2 border-white/20 bg-pink-500 flex items-center justify-center text-white text-lg font-bold flex-shrink-0">
-                              {profile.avatarUrl ? (
+                              {normalizeAvatarUrl(profile.avatarUrl) ? (
                                 <img
-                                  src={profile.avatarUrl}
+                                  src={normalizeAvatarUrl(profile.avatarUrl)!}
                                   alt={profile.name}
                                   className="w-full h-full object-cover"
                                   loading="eager"
@@ -3734,7 +3744,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                   }}
                                 />
                               ) : null}
-                              <span style={{ display: profile.avatarUrl ? "none" : "flex" }} className="w-full h-full items-center justify-center">
+                              <span style={{ display: normalizeAvatarUrl(profile.avatarUrl) ? "none" : "flex" }} className="w-full h-full items-center justify-center">
                                 {profile.name?.[0]?.toUpperCase() || "?"}
                               </span>
                             </div>
@@ -4146,7 +4156,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     </button>
                     {(() => {
                       const isOwnProfile = loggedInUser?.id === user?.id;
-                      const displayAvatar = user?.avatarUrl;
+                      const displayAvatar = normalizeAvatarUrl(user?.avatarUrl);
                       return (
                         <button
                           type="button"
@@ -5499,8 +5509,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 {/* Current avatar preview */}
                 <div className="flex flex-col items-center mb-5">
                   <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-pink-500 shadow-lg">
-                    {loggedInUser?.avatarUrl ? (
-                      <img src={loggedInUser.avatarUrl} alt="Current" className="w-full h-full object-cover" loading="eager" />
+                    {normalizeAvatarUrl(loggedInUser?.avatarUrl) ? (
+                      <img src={normalizeAvatarUrl(loggedInUser?.avatarUrl)!} alt="Current" className="w-full h-full object-cover" loading="eager" />
                     ) : (
                       <div className="w-full h-full bg-pink-500 flex items-center justify-center text-white text-xl font-bold">
                         {loggedInUser?.name?.[0]?.toUpperCase() || "?"}
