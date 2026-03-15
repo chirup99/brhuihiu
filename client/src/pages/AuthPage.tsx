@@ -113,7 +113,7 @@ const CARD_TYPES = [
 const VOICE_DEMO_CARDS = [
   JSON.stringify({ type: "post", title: "Voice Community", content: "This is a Voice Post card. Share your thoughts, announcements, and messages with your community. Rise and be heard!" }),
   JSON.stringify({ type: "image", title: "Image Card", imageUrl: "/brs-telangana.png" }),
-  JSON.stringify({ type: "reel", title: "Reel Card", url: "" }),
+  JSON.stringify({ type: "xpost", title: "Reel Card", subtype: "video", url: "https://x.com/BRSparty/status/1731318832508404183" }),
 ];
 
 const ROLE_GROUPS: { group: string | null; items: { value: string; label: string }[] }[] = [
