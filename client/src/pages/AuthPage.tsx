@@ -4142,8 +4142,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         </button>
                       );
                     })()}
-                    <h3 className="text-xl font-bold text-gray-900 tracking-tight">
+                    <h3 className="text-xl font-bold text-gray-900 tracking-tight flex items-center justify-center gap-1.5">
                       {form.watch("name") || "Your Name"}
+                      {loggedInUser?.uniqueSlug === ADMIN_SLUG && (
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-pink-500 shadow-[0_0_8px_rgba(236,72,153,0.5)] flex-shrink-0">
+                          <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                        </span>
+                      )}
                     </h3>
                     <p className="text-gray-500 text-xs">
                       {ROLES.find((r) => r.value === form.watch("role"))
