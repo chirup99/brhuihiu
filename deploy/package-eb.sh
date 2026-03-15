@@ -4,49 +4,29 @@
 # Usage: bash deploy/package-eb.sh [optional-zip-name]
 # Output: brs-connect-eb.zip  (or the name you pass in)
 # ============================================================
-#
-# ZIP structure (what EB receives):
-#   .ebextensions/port.config  — routes traffic to PORT 8081 via nginx
-#   Procfile                   — tells EB to run: npm start → node dist/index.cjs
-#   dist/                      — compiled frontend + fully self-contained server bundle
-#   package.json               — MINIMAL: only bufferutil (native addon, can't be bundled)
-#
-# Why a MINIMAL package.json (not the full one):
-#   dist/index.cjs is a self-contained esbuild bundle that already includes
-#   bcryptjs, the entire AWS SDK, express, and every other JS dependency.
-#   Copying the full package.json causes EB to run "npm install" and download
-#   hundreds of MB of packages that are already in the bundle — this hits the
-#   EB 15-minute command timeout and causes the "None of the instances are
-#   sending data" deployment failure.
-#
-#   Only bufferutil is excluded from the bundle (it is a native C++ addon).
-#   It ships prebuilt binaries, so EB installs it in seconds with no compilation.
-#   If bufferutil is unavailable, ws (WebSocket) falls back gracefully.
-#
-#   Native bcrypt is NOT used. The app uses only bcryptjs (pure-JS, bundled).
-# ============================================================
 
 set -e
 
 ZIP_NAME="${1:-brs-connect-eb.zip}"
-STAGING_DIR="eb_deploy"
 
 echo ""
 echo "=== BRS Connect — EB Package Builder ==="
 echo ""
 
-# ── 1. Build ────────────────────────────────────────────────
-echo "[1/4] Building application..."
+# 1. Build the project
+# Runs Vite to build the frontend and esbuild to bundle the server into dist/index.cjs
+echo "[1/8] Building project..."
 npm run build
 
-# ── 2. Staging directory ────────────────────────────────────
-echo "[2/4] Assembling package..."
-rm -rf "$STAGING_DIR"
-mkdir -p "$STAGING_DIR/.ebextensions"
+# 2. Create a temporary staging directory
+echo "[2/8] Creating staging directory..."
+rm -rf eb_deploy
+mkdir -p eb_deploy/.ebextensions
 
-# ── 3. Config files ─────────────────────────────────────────
-# Port config: route EB traffic → port 8081 via nginx
-cat > "$STAGING_DIR/.ebextensions/port.config" <<EOF
+# 3. Create the AWS Port Configuration
+# This tells AWS to route traffic to port 8081
+echo "[3/8] Creating port config..."
+cat > eb_deploy/.ebextensions/port.config <<EOF
 option_settings:
   aws:elasticbeanstalk:application:environment:
     PORT: 8081
@@ -54,19 +34,37 @@ option_settings:
     ProxyServer: nginx
 EOF
 
-# Procfile: tell EB how to start the app
-echo "web: npm start" > "$STAGING_DIR/Procfile"
+# 4. Create the Procfile
+# This tells AWS exactly how to start the application
+echo "[4/8] Creating Procfile..."
+echo "web: npm start" > eb_deploy/Procfile
 
-# ── 4. Runtime files ─────────────────────────────────────────
-# dist/ is the ONLY folder needed — it contains:
-#   dist/public/    → compiled React frontend
-#   dist/index.cjs  → fully bundled Express server (bcryptjs + AWS SDK + all deps inside)
-cp -r dist "$STAGING_DIR/"
+# 5. Create the production .env file
+# Replace the values below with your actual credentials before deploying
+echo "[5/8] Creating .env template..."
+cat > eb_deploy/.env <<EOF
+PORT=8081
+NODE_ENV=production
+AWS_REGION=ap-south-1
+AWS_ACCESS_KEY_ID=your_access_key_here
+AWS_SECRET_ACCESS_KEY=your_secret_key_here
+DYNAMODB_TABLE_NAME=Users
+EOF
 
-# Minimal package.json — EB requires this file for the start script.
-# bufferutil is listed as optional so EB installs its prebuilt binary
-# (takes ~2 seconds). Everything else is already inside dist/index.cjs.
-cat > "$STAGING_DIR/package.json" <<'EOF'
+# 6. Copy all required files into the staging area
+# dist/ contains the compiled frontend and the fully bundled server (dist/index.cjs).
+# server/ and shared/ are included so any runtime path resolutions stay intact.
+# package.json is written as a minimal file — the full package.json must NOT be
+# copied because EB would run "npm install" on all ~73 packages (AWS SDK, etc.)
+# causing a 15-minute timeout. Everything is already bundled inside dist/index.cjs.
+# Only bufferutil (native addon, cannot be bundled) is listed so EB installs its
+# prebuilt binary in ~2 seconds.
+echo "[6/8] Copying files..."
+cp -r dist          eb_deploy/
+cp -r server        eb_deploy/
+cp -r shared        eb_deploy/
+cp package-lock.json eb_deploy/
+cat > eb_deploy/package.json <<'PKGJSON'
 {
   "name": "brs-connect",
   "version": "1.0.0",
@@ -77,25 +75,23 @@ cat > "$STAGING_DIR/package.json" <<'EOF'
     "bufferutil": "^4.1.0"
   }
 }
-EOF
+PKGJSON
 
-# ── 5. ZIP ──────────────────────────────────────────────────
-echo "[3/4] Creating ZIP: $ZIP_NAME"
+# 7. Generate the ZIP file
+# Move into the folder so the ZIP has no top-level wrapper folder
+echo "[7/8] Generating ZIP: $ZIP_NAME"
 rm -f "$ZIP_NAME"
-cd "$STAGING_DIR" && zip -r "../$ZIP_NAME" . --quiet && cd ..
-rm -rf "$STAGING_DIR"
+cd eb_deploy && zip -r "../$ZIP_NAME" . --quiet && cd ..
 
-# ── 6. Confirm ──────────────────────────────────────────────
+# 8. Clean up
+echo "[8/8] Cleaning up..."
+rm -rf eb_deploy
+
 SIZE=$(du -sh "$ZIP_NAME" | cut -f1)
-echo "[4/4] Done! Package ready: $ZIP_NAME ($SIZE)"
 echo ""
-echo "What EB will do on deploy:"
-echo "  npm install   → installs only bufferutil (~2 seconds, prebuilt binary)"
-echo "  npm start     → node dist/index.cjs  (self-contained, no extra deps needed)"
+echo "Done! Package ready: $ZIP_NAME ($SIZE)"
 echo ""
-echo "Bundled inside dist/index.cjs: bcryptjs, AWS SDK, express, all JS deps"
-echo "Native bcrypt  : NOT present — bcryptjs (pure-JS) is used throughout"
-echo ""
+echo "IMPORTANT: Edit the .env values inside the ZIP before uploading."
 echo "Next step: Upload $ZIP_NAME to Elastic Beanstalk"
 echo "  EB Console → brs-connect-prod-v2 → Upload and deploy → choose $ZIP_NAME"
 echo ""
