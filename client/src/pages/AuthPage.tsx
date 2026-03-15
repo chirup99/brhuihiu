@@ -3728,26 +3728,37 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         >
                           <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none" />
                           <div className="flex-1 flex flex-col items-center justify-center py-2 gap-2">
-                            <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg border-2 border-white/20 bg-pink-500 flex items-center justify-center text-white text-lg font-bold flex-shrink-0">
-                              {normalizeAvatarUrl(profile.avatarUrl) ? (
-                                <img
-                                  src={normalizeAvatarUrl(profile.avatarUrl)!}
-                                  alt={profile.name}
-                                  className="w-full h-full object-cover"
-                                  loading="eager"
-                                 
-                                  onError={(e) => {
-                                    const t = e.currentTarget;
-                                    t.style.display = "none";
-                                    const fallback = t.nextElementSibling as HTMLElement | null;
-                                    if (fallback) fallback.style.display = "flex";
-                                  }}
-                                />
-                              ) : null}
-                              <span style={{ display: normalizeAvatarUrl(profile.avatarUrl) ? "none" : "flex" }} className="w-full h-full items-center justify-center">
-                                {profile.name?.[0]?.toUpperCase() || "?"}
-                              </span>
-                            </div>
+                            {(() => {
+                              const isOwnCard = loggedInUser?.id === profile.id;
+                              const avatarSrc = isOwnCard ? normalizeAvatarUrl(profile.avatarUrl) : null;
+                              return (
+                                <div
+                                  className={`w-12 h-12 rounded-full overflow-hidden shadow-lg border-2 border-white/20 bg-pink-500 flex items-center justify-center text-white text-lg font-bold flex-shrink-0 relative ${isOwnCard ? "group cursor-pointer" : ""}`}
+                                  onClick={isOwnCard ? (e) => { e.stopPropagation(); setShowTradersModal(false); setShowAvatarDialog(true); } : undefined}
+                                >
+                                  {avatarSrc ? (
+                                    <img
+                                      src={avatarSrc}
+                                      alt={profile.name}
+                                      className="w-full h-full object-cover"
+                                      loading="eager"
+                                      onError={(e) => { e.currentTarget.style.display = "none"; }}
+                                    />
+                                  ) : (
+                                    <span className="w-full h-full flex items-center justify-center">
+                                      {profile.name?.[0]?.toUpperCase() || "?"}
+                                    </span>
+                                  )}
+                                  {isOwnCard && (
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+                                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                      </svg>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                             <div className="text-center">
                               <p className="text-white text-xs font-semibold leading-tight line-clamp-1">{profile.name}</p>
                               <p className="text-white/50 text-[9px] mt-0.5 uppercase tracking-wider line-clamp-1">
