@@ -24,3 +24,9 @@ id = "K2Fy3V791ldwhsHBjsxor"
 uri = "file://connect_aws.zip"
 type = "unspecified"
 title = "connect_aws.zip"
+
+[[outputs]]
+id = "gh5egkSJQn-OfZvVLNjac"
+uri = "file://AWS_DEPLOYMENT_GUIDE.md"
+type = "text"
+title = "Complete AWS Deployment Guide — Step by Step"
