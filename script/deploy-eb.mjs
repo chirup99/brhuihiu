@@ -4,7 +4,7 @@ import { readFileSync, existsSync } from "fs";
 const REGION = "ap-south-1";
 const APP_NAME = "brs-connect";
 const ENV_NAME = "brs-connect-prod";
-const ZIP_PATH = "./persona-eb-deployment.zip";
+const ZIP_PATH = "./brs-connect-prod.zip";
 const S3_BUCKET = `brs-connect-eb-deploy-${Date.now()}`.slice(0, 63).toLowerCase();
 const VERSION_LABEL = `v${new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19)}`;
 
@@ -81,7 +81,11 @@ async function step(label, fn) {
     }).promise();
     const active = Environments.filter(e => e.Status !== "Terminated");
     if (active.length > 0) {
-      process.stdout.write("(already exists) ");
+      process.stdout.write("(exists — updating to new version) ");
+      await eb.updateEnvironment({
+        EnvironmentName: ENV_NAME,
+        VersionLabel: VERSION_LABEL,
+      }).promise();
       return;
     }
 
