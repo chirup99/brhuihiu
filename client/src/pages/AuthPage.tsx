@@ -490,7 +490,7 @@ const TrendLine = () => (
 );
 
 const SwipeCardContent = forwardRef(
-  ({ card, currentIndex, onSwipeLeft, onSwipeRight, onVideoPlayStateChange, isVideoPlaying }: SwipeCardProps, ref) => {
+  ({ card, currentIndex, totalCards, onSwipeLeft, onSwipeRight, onVideoPlayStateChange, isVideoPlaying }: SwipeCardProps, ref) => {
     const x = useMotionValue(0);
     const rotate = useTransform(x, [-200, 200], [-30, 30]);
     const opacity = useTransform(x, [-200, -150, 0, 150, 200], [0, 1, 1, 1, 0]);
@@ -637,6 +637,12 @@ const SwipeCardContent = forwardRef(
           </div>
         ) : (
           <div className="flex flex-col h-full items-center justify-between relative z-10">
+            {/* Card counter badge — top-right */}
+            {totalCards > 1 && (
+              <div className="absolute top-0 right-0 px-2 py-0.5 rounded-full text-white/90 font-bold text-[9px] tracking-widest select-none" style={{ background: "rgba(0,0,0,0.28)" }}>
+                {currentIndex + 1}/{totalCards}
+              </div>
+            )}
             {!(card as any).empty && (
               <div className="flex items-center gap-1.5">
                 <span className="text-white/90 text-[9px] font-bold tracking-[0.2em] uppercase">
