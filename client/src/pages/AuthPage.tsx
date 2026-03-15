@@ -3210,10 +3210,18 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
   return (
     <div className="min-h-[100dvh] bg-mesh overflow-hidden relative">
-      <div className="hidden">
+      <div className="hidden" aria-hidden="true">
         {professionalAvatars.map((src, i) => (
-          <img key={i} src={src} alt="" aria-hidden="true" />
+          <img key={i} src={src} alt="" loading="eager" />
         ))}
+        {featuredProfiles.map((p, i) =>
+          p.avatarUrl ? (
+            <img key={`fp-${i}`} src={p.avatarUrl} alt="" loading="eager" />
+          ) : null
+        )}
+        {loggedInUser?.avatarUrl && (
+          <img src={loggedInUser.avatarUrl} alt="" loading="eager" />
+        )}
       </div>
       <div className="absolute inset-0 flex flex-col justify-start items-end p-12 pt-24 pointer-events-none">
         <motion.div
@@ -3712,10 +3720,23 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           <div className="flex-1 flex flex-col items-center justify-center py-2 gap-2">
                             <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg border-2 border-white/20 bg-pink-500 flex items-center justify-center text-white text-lg font-bold flex-shrink-0">
                               {profile.avatarUrl ? (
-                                <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
-                              ) : (
-                                <span>{profile.name?.[0]?.toUpperCase() || "?"}</span>
-                              )}
+                                <img
+                                  src={profile.avatarUrl}
+                                  alt={profile.name}
+                                  className="w-full h-full object-cover"
+                                  loading="eager"
+                                 
+                                  onError={(e) => {
+                                    const t = e.currentTarget;
+                                    t.style.display = "none";
+                                    const fallback = t.nextElementSibling as HTMLElement | null;
+                                    if (fallback) fallback.style.display = "flex";
+                                  }}
+                                />
+                              ) : null}
+                              <span style={{ display: profile.avatarUrl ? "none" : "flex" }} className="w-full h-full items-center justify-center">
+                                {profile.name?.[0]?.toUpperCase() || "?"}
+                              </span>
                             </div>
                             <div className="text-center">
                               <p className="text-white text-xs font-semibold leading-tight line-clamp-1">{profile.name}</p>
@@ -4133,8 +4154,21 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           className={`relative w-16 h-16 rounded-full mx-auto shadow-lg focus:outline-none ${isOwnProfile ? "group cursor-pointer" : "cursor-default"}`}
                         >
                           {displayAvatar ? (
-                            <img src={displayAvatar} alt="Avatar" className="w-full h-full rounded-full object-cover" />
-                          ) : (
+                            <img
+                              src={displayAvatar}
+                              alt="Avatar"
+                              className="w-full h-full rounded-full object-cover"
+                              loading="eager"
+                             
+                              onError={(e) => {
+                                const t = e.currentTarget;
+                                t.style.display = "none";
+                                const fallback = t.nextElementSibling as HTMLElement | null;
+                                if (fallback) fallback.style.display = "flex";
+                              }}
+                            />
+                          ) : null}
+                          {(!displayAvatar) && (
                             <div className="w-full h-full rounded-full bg-pink-500 flex items-center justify-center text-white text-2xl font-bold">
                               {form.watch("name")?.[0] || "P"}
                             </div>
@@ -5466,7 +5500,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 <div className="flex flex-col items-center mb-5">
                   <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-pink-500 shadow-lg">
                     {loggedInUser?.avatarUrl ? (
-                      <img src={loggedInUser.avatarUrl} alt="Current" className="w-full h-full object-cover" />
+                      <img src={loggedInUser.avatarUrl} alt="Current" className="w-full h-full object-cover" loading="eager" />
                     ) : (
                       <div className="w-full h-full bg-pink-500 flex items-center justify-center text-white text-xl font-bold">
                         {loggedInUser?.name?.[0]?.toUpperCase() || "?"}
@@ -5524,7 +5558,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       onClick={() => selectPresetAvatar(src)}
                       className={`relative rounded-full overflow-hidden aspect-square transition-all active:scale-95 ${avatarUrl === src ? "ring-2 ring-pink-500 ring-offset-2 ring-offset-[#120008]" : "opacity-70 hover:opacity-100"}`}
                     >
-                      <img src={src} alt={`Avatar ${i + 1}`} className="w-full h-full object-cover" />
+                      <img src={src} alt={`Avatar ${i + 1}`} className="w-full h-full object-cover" loading="eager" />
                       {avatarUrl === src && (
                         <div className="absolute inset-0 bg-pink-500/20 flex items-center justify-center">
                           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
