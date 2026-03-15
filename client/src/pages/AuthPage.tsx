@@ -2278,26 +2278,34 @@ export default function AuthPage({ slug }: { slug?: string }) {
       reader.readAsDataURL(file);
     });
 
+  const persistAvatar = async (newUrl: string) => {
+    if (!loggedInUser?.id) return;
+    await apiRequest("PATCH", `/api/user/${loggedInUser.id}`, { avatarUrl: newUrl });
+    // Update in-memory cache immediately so profile card re-renders without a round-trip
+    queryClient.setQueryData(["/api/me"], (old: any) => old ? { ...old, avatarUrl: newUrl } : old);
+    // Also update localStorage-cached user
+    try {
+      const saved = localStorage.getItem("persona_user");
+      if (saved) {
+        localStorage.setItem("persona_user", JSON.stringify({ ...JSON.parse(saved), avatarUrl: newUrl }));
+      }
+    } catch {}
+  };
+
   const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const dataUrl = await compressImageToDataUrl(file);
     setAvatarUrl(dataUrl);
     setShowAvatarDialog(false);
-    if (loggedInUser?.id) {
-      await apiRequest("PATCH", `/api/user/${loggedInUser.id}`, { avatarUrl: dataUrl });
-      queryClient.invalidateQueries({ queryKey: ["/api/me"] });
-    }
+    await persistAvatar(dataUrl);
     e.target.value = "";
   };
 
   const selectPresetAvatar = async (src: string) => {
     setAvatarUrl(src);
     setShowAvatarDialog(false);
-    if (loggedInUser?.id) {
-      await apiRequest("PATCH", `/api/user/${loggedInUser.id}`, { avatarUrl: src });
-      queryClient.invalidateQueries({ queryKey: ["/api/me"] });
-    }
+    await persistAvatar(src);
   };
 
   // Convert avatar to base64 data URL whenever it changes so html-to-image can embed it
@@ -4165,24 +4173,32 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     >
                       <QrCode className="w-4 h-4" />
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowAvatarDialog(true)}
-                      className="relative w-16 h-16 rounded-full mx-auto shadow-lg focus:outline-none group"
-                    >
-                      {avatarUrl ? (
-                        <img src={avatarUrl} alt="Avatar" className="w-full h-full rounded-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full rounded-full bg-pink-500 flex items-center justify-center text-white text-2xl font-bold">
-                          {form.watch("name")?.[0] || "P"}
-                        </div>
-                      )}
-                      <div className="absolute inset-0 rounded-full bg-black/30 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                      </div>
-                    </button>
+                    {(() => {
+                      const isOwnProfile = loggedInUser?.id === user?.id;
+                      const displayAvatar = user?.avatarUrl;
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => isOwnProfile && setShowAvatarDialog(true)}
+                          className={`relative w-16 h-16 rounded-full mx-auto shadow-lg focus:outline-none ${isOwnProfile ? "group cursor-pointer" : "cursor-default"}`}
+                        >
+                          {displayAvatar ? (
+                            <img src={displayAvatar} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full rounded-full bg-pink-500 flex items-center justify-center text-white text-2xl font-bold">
+                              {form.watch("name")?.[0] || "P"}
+                            </div>
+                          )}
+                          {isOwnProfile && (
+                            <div className="absolute inset-0 rounded-full bg-black/30 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity flex items-center justify-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                              </svg>
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })()}
                     <h3 className="text-xl font-bold text-gray-900 tracking-tight">
                       {form.watch("name") || "Your Name"}
                     </h3>
@@ -5490,8 +5506,23 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 className="relative w-full max-w-sm bg-[#120008] border border-pink-500/20 rounded-t-[28px] p-6 pb-8 shadow-2xl"
               >
                 <div className="w-8 h-1 bg-white/20 rounded-full mx-auto mb-5" />
+
+                {/* Current avatar preview */}
+                <div className="flex flex-col items-center mb-5">
+                  <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-pink-500 shadow-lg">
+                    {loggedInUser?.avatarUrl ? (
+                      <img src={loggedInUser.avatarUrl} alt="Current" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-pink-500 flex items-center justify-center text-white text-xl font-bold">
+                        {loggedInUser?.name?.[0]?.toUpperCase() || "?"}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[9px] text-pink-300/50 mt-1.5 uppercase tracking-widest font-bold">Current</p>
+                </div>
+
                 <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-pink-300/60 text-center mb-4">
-                  Choose Avatar
+                  Change Avatar
                 </p>
 
                 {/* Hidden file input */}
