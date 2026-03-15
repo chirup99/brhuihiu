@@ -3095,9 +3095,12 @@ export default function AuthPage({ slug }: { slug?: string }) {
     }
 
     try {
-      // Always freshly convert the currently selected avatar to base64 before
-      // capturing so the download reflects the chosen avatar, not a cached default.
+      // Use the same avatar source logic as the QR card template
+      const actualAvatarSrc = normalizeAvatarUrl(user?.avatarUrl || loggedInUser?.avatarUrl) || avatarUrl;
+
+      // Convert the actual displayed avatar to base64 so html-to-image can embed it
       const freshDataUrl = await new Promise<string>((resolve) => {
+        if (!actualAvatarSrc) { resolve(""); return; }
         const img = new window.Image();
         img.crossOrigin = "anonymous";
         img.onload = () => {
@@ -3108,15 +3111,15 @@ export default function AuthPage({ slug }: { slug?: string }) {
           if (ctx) ctx.drawImage(img, 0, 0);
           resolve(canvas.toDataURL("image/png"));
         };
-        img.onerror = () => resolve(avatarUrl);
-        img.src = avatarUrl;
+        img.onerror = () => resolve(actualAvatarSrc);
+        img.src = actualAvatarSrc;
       });
       setAvatarDataUrl(freshDataUrl);
 
       // Hide UI controls so they don't appear in the wallpaper
       setIsCapturing(true);
-      // Wait two frames for React to re-render with the fresh avatar data
-      await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+      // Wait for React to re-render with the fresh avatar data
+      await new Promise<void>((resolve) => setTimeout(resolve, 120));
 
       const dataUrl = await htmlToImage.toPng(element, {
         quality: 1,
@@ -5492,8 +5495,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           {user?.name || form.watch("name") || "Your Name"}
                         </h5>
                         {(user?.role || form.watch("role")) && (
-                          <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-3 py-0.5 rounded-full text-pink-600" style={{ background: "rgba(236,72,153,0.12)", border: "1px solid rgba(236,72,153,0.25)" }}>
-                            {(user?.role || form.watch("role") || "").replace(/_/g, " ")}
+                          <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-3 py-0.5 rounded-full text-pink-600 whitespace-nowrap" style={{ background: "rgba(236,72,153,0.12)", border: "1px solid rgba(236,72,153,0.25)" }}>
+                            {ROLES.find((r) => r.value === (user?.role || form.watch("role")))?.label || (user?.role || form.watch("role") || "").replace(/[_-]/g, " ")}
                           </span>
                         )}
                       </div>
