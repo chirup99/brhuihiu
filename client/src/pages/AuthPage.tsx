@@ -4382,7 +4382,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                 e.preventDefault();
                                 return;
                               }
-                              trackClick("website");
+                              trackClick("youtube");
                             }}
                             className={clsx(
                               "p-2.5 rounded-lg transition-all",
@@ -4540,7 +4540,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                       "w-4 h-4 rounded-full border transition-all flex items-center justify-center",
                                       note.completed
                                         ? "bg-pink-500 border-pink-500"
-                                        : "border-white/20 hover:border-white/40",
+                                        : "border-gray-300 hover:border-pink-400",
                                     )}
                                   >
                                     {note.completed && (
@@ -4571,7 +4571,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                 </div>
                               ))}
                               {notes.length === 0 && (
-                                <p className="text-[10px] text-white/20 uppercase tracking-widest text-center py-4">
+                                <p className="text-[10px] text-gray-400 uppercase tracking-widest text-center py-4">
                                   No notes yet
                                 </p>
                               )}
