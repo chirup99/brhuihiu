@@ -10,9 +10,10 @@ app.set("trust proxy", 1);
 
 if (process.env.NODE_ENV === "production") {
   app.use((req: Request, res: Response, next: NextFunction) => {
-    const proto = req.headers["x-forwarded-proto"];
-    if (proto && proto !== "https") {
-      return res.redirect(301, `https://${req.headers.host}${req.url}`);
+    const proto = (req.headers["x-forwarded-proto"] as string | undefined)?.split(",")[0]?.trim();
+    if (proto === "http") {
+      const host = (req.headers["host"] || "").replace(/:\d+$/, "");
+      return res.redirect(301, `https://${host}${req.url}`);
     }
     next();
   });
