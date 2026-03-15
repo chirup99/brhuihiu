@@ -4077,7 +4077,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           style={{ touchAction: "auto" }}
-          className="w-full max-w-md bg-white border border-pink-200 rounded-2xl shadow-2xl p-5 sm:p-6 z-10 relative overflow-hidden"
+          className="w-full max-w-md bg-white border border-pink-200 rounded-2xl shadow-2xl p-5 sm:p-6 z-10 relative overflow-hidden mt-[30px] mb-[30px] pt-[20px] pb-[20px]"
         >
           {/* Pink car animation strip */}
           {(() => {
