@@ -30,3 +30,9 @@ id = "gh5egkSJQn-OfZvVLNjac"
 uri = "file://AWS_DEPLOYMENT_GUIDE.md"
 type = "text"
 title = "Complete AWS Deployment Guide — Step by Step"
+
+[[outputs]]
+id = "qQJLeBtPZdjVto8cZO4K0"
+uri = "file://brs-connect-latest.zip"
+type = "unspecified"
+title = "brs-connect-latest.zip — AWS EB Deployment Package"
