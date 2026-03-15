@@ -111,9 +111,9 @@ const CARD_TYPES = [
 ];
 
 const VOICE_DEMO_CARDS = [
-  JSON.stringify({ type: "post", title: "Your Voice", content: "Speak up for your community. Your voice matters. Rise and be heard." }),
-  JSON.stringify({ type: "reel", title: "Share Your Reel", url: "" }),
-  JSON.stringify({ type: "image", title: "Your Image", imageUrl: "" }),
+  JSON.stringify({ type: "post", title: "Voice Community", content: "This is a Voice Post card. Share your thoughts, announcements, and messages with your community. Rise and be heard!" }),
+  JSON.stringify({ type: "image", title: "Image Card", imageUrl: "/brs-telangana.png" }),
+  JSON.stringify({ type: "reel", title: "Reel Card", url: "https://www.youtube.com/watch?v=5qap5aO4i9A" }),
 ];
 
 const ROLE_GROUPS: { group: string | null; items: { value: string; label: string }[] }[] = [
@@ -1117,6 +1117,9 @@ const SwipeCard = ({
       return cards.map((c) => parseCardJson(c) || (voiceMode ? parseCardJson(VOICE_DEMO_CARDS[0])! : CARDS[0]));
     }
     if (voiceMode) {
+      if (!propsUser && window.location.pathname === "/") {
+        return VOICE_DEMO_CARDS.map((c) => parseCardJson(c)!).filter(Boolean);
+      }
       return [{ title: "", name: "", subname: "", color: "from-pink-300 to-pink-400", empty: true }];
     }
     if (propsUser || (cards.length === 0 && window.location.pathname !== "/")) {
