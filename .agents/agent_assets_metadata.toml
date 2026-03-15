@@ -12,3 +12,9 @@ id = "BiQ5AcQHvIhCaTlhX8z44"
 uri = "file://brs-connect-eb-20260315.zip"
 type = "unspecified"
 title = "BRS Connect - AWS Elastic Beanstalk Deployment ZIP"
+
+[[outputs]]
+id = "PT-p93UtJ0Jojwbt5O-Yn"
+uri = "file://brs-connect-eb-deploy.zip"
+type = "unspecified"
+title = "BRS Connect - AWS Elastic Beanstalk Deploy"
