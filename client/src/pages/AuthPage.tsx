@@ -2308,6 +2308,22 @@ export default function AuthPage({ slug }: { slug?: string }) {
     await persistAvatar(src);
   };
 
+  const removeAvatar = async () => {
+    setAvatarUrl(professionalAvatars[0]);
+    setShowAvatarDialog(false);
+    if (!loggedInUser?.id) return;
+    await apiRequest("PATCH", `/api/user/${loggedInUser.id}`, { avatarUrl: null });
+    queryClient.setQueryData(["/api/me"], (old: any) => old ? { ...old, avatarUrl: null } : old);
+    try {
+      const saved = localStorage.getItem("persona_user");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        delete parsed.avatarUrl;
+        localStorage.setItem("persona_user", JSON.stringify(parsed));
+      }
+    } catch {}
+  };
+
   // Convert avatar to base64 data URL whenever it changes so html-to-image can embed it
   useEffect(() => {
     const img = new window.Image();
@@ -5534,18 +5550,31 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   onChange={handleAvatarFileChange}
                 />
 
-                {/* Upload custom photo */}
-                <button
-                  onClick={() => avatarFileInputRef.current?.click()}
-                  className="w-full mb-4 flex items-center justify-center gap-2 py-2.5 rounded-2xl border border-pink-500/40 bg-pink-500/10 text-pink-300 text-xs font-bold tracking-wide active:scale-95 transition-all hover:bg-pink-500/20"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="17 8 12 3 7 8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
-                  </svg>
-                  Upload Photo
-                </button>
+                {/* Upload + Remove row */}
+                <div className="flex gap-2 mb-4">
+                  <button
+                    onClick={() => avatarFileInputRef.current?.click()}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl border border-pink-500/40 bg-pink-500/10 text-pink-300 text-xs font-bold tracking-wide active:scale-95 transition-all hover:bg-pink-500/20"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="17 8 12 3 7 8"/>
+                      <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    Upload
+                  </button>
+                  {loggedInUser?.avatarUrl && (
+                    <button
+                      onClick={removeAvatar}
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl border border-red-500/30 bg-red-500/10 text-red-400 text-xs font-bold tracking-wide active:scale-95 transition-all hover:bg-red-500/20"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                      </svg>
+                      Remove
+                    </button>
+                  )}
+                </div>
 
                 <p className="text-[9px] text-white/30 uppercase tracking-widest text-center mb-3">or choose preset</p>
 
