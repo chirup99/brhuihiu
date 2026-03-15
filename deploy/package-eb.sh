@@ -35,12 +35,29 @@ EOF
 # Create Procfile
 echo "web: npm start" > "$STAGING_DIR/Procfile"
 
-# Copy all required files
-cp -r dist          "$STAGING_DIR/"
-cp -r server        "$STAGING_DIR/"
-cp -r shared        "$STAGING_DIR/"
-cp package.json     "$STAGING_DIR/"
-cp package-lock.json "$STAGING_DIR/"
+# Copy the compiled bundle — this is the ONLY runtime artifact needed.
+# The build (script/build.ts) bundles everything including bcryptjs (pure-JS)
+# into dist/index.cjs. The only external native module is bufferutil, which
+# is optional and handled below.
+cp -r dist "$STAGING_DIR/"
+
+# Create a minimal package.json — EB requires one for the start script.
+# We do NOT copy the full package.json because nearly all dependencies
+# (bcryptjs, AWS SDK, etc.) are already bundled into dist/index.cjs.
+# Only bufferutil is external (native addon) and listed as an optional dep
+# so EB installs it from its prebuilt binaries without needing to compile.
+cat > "$STAGING_DIR/package.json" <<EOF
+{
+  "name": "brs-connect",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node dist/index.cjs"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.1.0"
+  }
+}
+EOF
 
 # 3. Zip
 echo "[3/4] Creating ZIP: $ZIP_NAME"

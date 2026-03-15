@@ -2,9 +2,12 @@ import { build as esbuild } from "esbuild";
 import { build as viteBuild } from "vite";
 import { rm } from "fs/promises";
 
-// Bundle everything — no native modules remain, so the EC2 instance
-// does not need to run npm install at all.
-const nativeModules: string[] = [];
+// Native Node.js addons cannot be bundled by esbuild — they must be
+// listed here as external so esbuild leaves require() calls intact.
+// bufferutil ships a native .node binding (binding.gyp / prebuilds/).
+// bcrypt (native) is NOT used — the project uses bcryptjs (pure-JS),
+// so it does NOT need to be listed here.
+const nativeModules: string[] = ["bufferutil"];
 
 async function buildAll() {
   await rm("dist", { recursive: true, force: true });
