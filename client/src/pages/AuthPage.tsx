@@ -2114,6 +2114,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const isOtherPersona =
     slug && loggedInUser && loggedInUser.uniqueSlug !== slug;
 
+  const fetchingSlugRef = useRef<string | null>(null);
+
   useEffect(() => {
     // If we are switching from viewing a persona to the root path,
     // and we are NOT logged in, we should clear the public user and form
@@ -2134,17 +2136,21 @@ export default function AuthPage({ slug }: { slug?: string }) {
       setSelectedCards([]);
     }
 
-    // Only fetch if the slug changed to a new slug we haven't loaded yet
-    if (slug && lastLoadedSlug !== slug) {
+    // Only fetch if the slug changed to a new slug we haven't loaded yet,
+    // and no concurrent fetch is already in flight for this slug.
+    if (slug && lastLoadedSlug !== slug && fetchingSlugRef.current !== slug) {
+      fetchingSlugRef.current = slug;
       const isSelf = loggedInUser?.uniqueSlug === slug;
       fetch(`/api/user/slug/${slug}${isSelf ? "?self=true" : ""}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.id) {
             setPublicUser(data);
-            setMode("login");
+            // Only switch to BRS tab if the user hasn't manually selected Voice;
+            // use functional form so we read the *current* mode at resolution time.
+            setMode((currentMode) => currentMode === "swipe" ? currentMode : "login");
             setLastLoadedSlug(slug);
-            // If viewing a public profile, update form to show its data
+            // Populate form with the fetched profile data
             Object.entries(data).forEach(([key, value]) => {
               if (value !== null && value !== undefined && key !== "password") {
                 form.setValue(key as any, value);
@@ -2154,6 +2160,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
               setSelectedCards(data.cards);
             }
           }
+        })
+        .finally(() => {
+          fetchingSlugRef.current = null;
         });
     } else if (user && window.location.pathname === "/" && !slug) {
       // If we are logged in but at root, go to our own slug
