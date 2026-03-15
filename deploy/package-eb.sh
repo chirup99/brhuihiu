@@ -8,7 +8,7 @@
 set -e
 
 ZIP_NAME="brs-connect-eb.zip"
-STAGING_DIR="_eb_staging"
+STAGING_DIR="eb_deploy"
 
 echo ""
 echo "=== BRS Connect — EB Package Builder ==="
@@ -23,12 +23,24 @@ echo "[2/4] Assembling package..."
 rm -rf "$STAGING_DIR"
 mkdir -p "$STAGING_DIR/.ebextensions"
 
-# Copy build output
-cp -r dist              "$STAGING_DIR/"
-cp package.json         "$STAGING_DIR/"
-cp package-lock.json    "$STAGING_DIR/"
-cp Procfile             "$STAGING_DIR/"
-cp .ebextensions/nodeport.config "$STAGING_DIR/.ebextensions/nodeport.config"
+# Create port.config (tells EB to use port 8081 + nginx proxy)
+cat > "$STAGING_DIR/.ebextensions/port.config" <<EOF
+option_settings:
+  aws:elasticbeanstalk:application:environment:
+    PORT: 8081
+  aws:elasticbeanstalk:container:nodejs:
+    ProxyServer: nginx
+EOF
+
+# Create Procfile
+echo "web: npm start" > "$STAGING_DIR/Procfile"
+
+# Copy all required files
+cp -r dist          "$STAGING_DIR/"
+cp -r server        "$STAGING_DIR/"
+cp -r shared        "$STAGING_DIR/"
+cp package.json     "$STAGING_DIR/"
+cp package-lock.json "$STAGING_DIR/"
 
 # 3. Zip
 echo "[3/4] Creating ZIP: $ZIP_NAME"
