@@ -3,9 +3,9 @@ import { readFileSync, existsSync } from "fs";
 
 const REGION = "ap-south-1";
 const APP_NAME = "brs-connect";
-const ENV_NAME = "brs-connect-prod";
-const ZIP_PATH = "./brs-connect-prod.zip";
-const S3_BUCKET = `brs-connect-eb-deploy-${Date.now()}`.slice(0, 63).toLowerCase();
+const ENV_NAME = "brs-connect-prod-v2";
+const ZIP_PATH = "./brs-connect-latest.zip";
+const S3_BUCKET = `brs-eb-${Date.now()}`.slice(0, 63).toLowerCase();
 const VERSION_LABEL = `v${new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19)}`;
 
 AWS.config.update({
