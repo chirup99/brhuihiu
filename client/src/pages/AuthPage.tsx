@@ -215,6 +215,31 @@ const ROLE_GROUPS: { group: string | null; items: { value: string; label: string
       { value: "party-member", label: "Party Member" },
     ],
   },
+  {
+    group: "BRS Team",
+    items: [
+      { value: "brs-team-head", label: "BRS Team Head" },
+      { value: "brs-team-lead", label: "BRS Team Lead" },
+      { value: "brs-team-member", label: "BRS Team Member" },
+      { value: "brs-social-media", label: "BRS Social Media Team" },
+      { value: "brs-it-team", label: "BRS IT Team" },
+      { value: "brs-media-team", label: "BRS Media Team" },
+      { value: "brs-research-team", label: "BRS Research Team" },
+      { value: "brs-campaign-team", label: "BRS Campaign Team" },
+      { value: "brs-volunteer", label: "BRS Volunteer" },
+    ],
+  },
+  {
+    group: "Legal Team",
+    items: [
+      { value: "legal-head", label: "Legal Head" },
+      { value: "senior-advocate", label: "Senior Advocate" },
+      { value: "advocate", label: "Advocate" },
+      { value: "legal-advisor", label: "Legal Advisor" },
+      { value: "legal-coordinator", label: "Legal Coordinator" },
+      { value: "legal-team-member", label: "Legal Team Member" },
+    ],
+  },
 ];
 const ROLES = ROLE_GROUPS.flatMap((g) => g.items);
 
