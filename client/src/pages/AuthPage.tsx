@@ -3696,24 +3696,16 @@ export default function AuthPage({ slug }: { slug?: string }) {
           className="absolute top-8-safe right-8 z-50 p-2 group"
         >
           {isMenuOpen ? (
-            <div className="text-white/80 hover:text-white transition-colors">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
+            <div className="flex flex-col gap-[5px] items-end justify-center w-6 h-6">
+              <div className="w-6 h-0.5 bg-white rounded-full transition-all duration-300 rotate-45 translate-y-[7px]"></div>
+              <div className="w-6 h-0.5 bg-white rounded-full transition-all duration-300 opacity-0"></div>
+              <div className="w-6 h-0.5 bg-white rounded-full transition-all duration-300 -rotate-45 -translate-y-[7px]"></div>
             </div>
           ) : (
-            <div className="flex flex-col gap-1.5 items-end">
-              <div className="w-8 h-1 bg-white rounded-full transition-all group-hover:w-6"></div>
-              <div className="w-5 h-1 bg-white rounded-full transition-all group-hover:w-8"></div>
+            <div className="flex flex-col gap-[5px] items-end">
+              <div className="w-6 h-0.5 bg-white rounded-full transition-all duration-300"></div>
+              <div className="w-4 h-0.5 bg-white rounded-full transition-all duration-300 group-hover:w-6"></div>
+              <div className="w-6 h-0.5 bg-white rounded-full transition-all duration-300"></div>
             </div>
           )}
         </button>
