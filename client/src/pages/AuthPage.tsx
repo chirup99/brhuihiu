@@ -2248,6 +2248,57 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [avatarUrl, setAvatarUrl] = useState(professionalAvatars[0]);
   const [avatarDataUrl, setAvatarDataUrl] = useState<string>("");
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
+  const avatarFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync avatarUrl with the logged-in user's stored avatar when user data loads
+  useEffect(() => {
+    if (loggedInUser?.avatarUrl) {
+      setAvatarUrl(loggedInUser.avatarUrl);
+    }
+  }, [loggedInUser?.id]);
+
+  // Compress an uploaded image to ≤200×200 and return a data URL
+  const compressImageToDataUrl = (file: File): Promise<string> =>
+    new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new window.Image();
+        img.onload = () => {
+          const MAX = 200;
+          const scale = Math.min(MAX / img.width, MAX / img.height, 1);
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          const ctx = canvas.getContext("2d");
+          if (ctx) ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/jpeg", 0.82));
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const dataUrl = await compressImageToDataUrl(file);
+    setAvatarUrl(dataUrl);
+    setShowAvatarDialog(false);
+    if (loggedInUser?.id) {
+      await apiRequest("PATCH", `/api/user/${loggedInUser.id}`, { avatarUrl: dataUrl });
+      queryClient.invalidateQueries({ queryKey: ["/api/me"] });
+    }
+    e.target.value = "";
+  };
+
+  const selectPresetAvatar = async (src: string) => {
+    setAvatarUrl(src);
+    setShowAvatarDialog(false);
+    if (loggedInUser?.id) {
+      await apiRequest("PATCH", `/api/user/${loggedInUser.id}`, { avatarUrl: src });
+      queryClient.invalidateQueries({ queryKey: ["/api/me"] });
+    }
+  };
 
   // Convert avatar to base64 data URL whenever it changes so html-to-image can embed it
   useEffect(() => {
@@ -3701,8 +3752,12 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         >
                           <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none" />
                           <div className="flex-1 flex flex-col items-center justify-center py-2 gap-2">
-                            <div className="w-12 h-12 rounded-full bg-pink-500 flex items-center justify-center text-white text-lg font-bold shadow-lg border-2 border-white/20">
-                              {profile.name?.[0]?.toUpperCase() || "?"}
+                            <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg border-2 border-white/20 bg-pink-500 flex items-center justify-center text-white text-lg font-bold flex-shrink-0">
+                              {profile.avatarUrl ? (
+                                <img src={profile.avatarUrl} alt={profile.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <span>{profile.name?.[0]?.toUpperCase() || "?"}</span>
+                              )}
                             </div>
                             <div className="text-center">
                               <p className="text-white text-xs font-semibold leading-tight line-clamp-1">{profile.name}</p>
@@ -4110,9 +4165,24 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     >
                       <QrCode className="w-4 h-4" />
                     </button>
-                    <div className="w-16 h-16 rounded-full bg-pink-500 mx-auto flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                      {form.watch("name")?.[0] || "P"}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowAvatarDialog(true)}
+                      className="relative w-16 h-16 rounded-full mx-auto shadow-lg focus:outline-none group"
+                    >
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full rounded-full bg-pink-500 flex items-center justify-center text-white text-2xl font-bold">
+                          {form.watch("name")?.[0] || "P"}
+                        </div>
+                      )}
+                      <div className="absolute inset-0 rounded-full bg-black/30 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </div>
+                    </button>
                     <h3 className="text-xl font-bold text-gray-900 tracking-tight">
                       {form.watch("name") || "Your Name"}
                     </h3>
@@ -5423,11 +5493,36 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-pink-300/60 text-center mb-4">
                   Choose Avatar
                 </p>
+
+                {/* Hidden file input */}
+                <input
+                  ref={avatarFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarFileChange}
+                />
+
+                {/* Upload custom photo */}
+                <button
+                  onClick={() => avatarFileInputRef.current?.click()}
+                  className="w-full mb-4 flex items-center justify-center gap-2 py-2.5 rounded-2xl border border-pink-500/40 bg-pink-500/10 text-pink-300 text-xs font-bold tracking-wide active:scale-95 transition-all hover:bg-pink-500/20"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  Upload Photo
+                </button>
+
+                <p className="text-[9px] text-white/30 uppercase tracking-widest text-center mb-3">or choose preset</p>
+
                 <div className="grid grid-cols-4 gap-3">
                   {professionalAvatars.map((src, i) => (
                     <button
                       key={i}
-                      onClick={() => { setAvatarUrl(src); setShowAvatarDialog(false); }}
+                      onClick={() => selectPresetAvatar(src)}
                       className={`relative rounded-full overflow-hidden aspect-square transition-all active:scale-95 ${avatarUrl === src ? "ring-2 ring-pink-500 ring-offset-2 ring-offset-[#120008]" : "opacity-70 hover:opacity-100"}`}
                     >
                       <img src={src} alt={`Avatar ${i + 1}`} className="w-full h-full object-cover" />

@@ -77,6 +77,7 @@ export type User = {
   website: string | null;
   uniqueSlug: string | null;
   pin: string | null;
+  avatarUrl: string | null;
   reachCount: number; // Total number of scans/views
   instaClicks: number;
   linkedinClicks: number;
@@ -113,6 +114,7 @@ export const insertUserSchema = z.object({
   })).optional(),
   uniqueSlug: z.string().optional().nullable(),
   pin: z.string().length(5).optional().nullable(),
+  avatarUrl: z.string().optional().nullable(),
   reachCount: z.number().optional(),
   instaClicks: z.number().optional(),
   linkedinClicks: z.number().optional(),
