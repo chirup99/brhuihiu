@@ -73,8 +73,6 @@ Set these in: **Configuration → Environment properties**
 | `DYNAMODB_TABLE_NAME` | `Users` |
 | `AWS_ACCESS_KEY_ID` | *(your IAM key)* |
 | `AWS_SECRET_ACCESS_KEY` | *(your IAM secret)* |
-| `LIVEKIT_API_KEY` | *(your LiveKit key, if using)* |
-| `LIVEKIT_API_SECRET` | *(your LiveKit secret, if using)* |
 
 ---
 

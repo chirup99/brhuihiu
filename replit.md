@@ -1,6 +1,6 @@
 # Project Overview
 
-A persona/profile sharing web app built with React + Express (TypeScript). Users can create profiles with cards (pitch, reel, revenue, product), share via unique slug links, and optionally use LiveKit for real-time features.
+A persona/profile sharing web app built with React + Express (TypeScript). Users can create profiles with cards (pitch, reel, revenue, product), and share via unique slug links.
 
 ## Architecture
 
@@ -8,7 +8,6 @@ A persona/profile sharing web app built with React + Express (TypeScript). Users
 - **Backend**: Express 5, TypeScript via tsx, single server serving both API and frontend (via Vite middleware in dev)
 - **Storage**: DynamoDB when AWS credentials are configured; falls back to in-memory storage automatically
 - **Auth**: bcrypt password hashing, session-based auth via express-session + passport
-- **Real-time**: LiveKit integration (optional, requires LIVEKIT_API_KEY + LIVEKIT_API_SECRET env vars)
 
 ## Key Files
 
@@ -32,8 +31,6 @@ A persona/profile sharing web app built with React + Express (TypeScript). Users
 | AWS_SECRET_ACCESS_KEY | No | AWS credentials for DynamoDB |
 | AWS_REGION | No | AWS region (default: ap-south-1) |
 | DYNAMODB_TABLE_NAME | No | DynamoDB table name (default: Users) |
-| LIVEKIT_API_KEY | No | LiveKit API key for token generation |
-| LIVEKIT_API_SECRET | No | LiveKit API secret |
 
 ## Running the Project
 
