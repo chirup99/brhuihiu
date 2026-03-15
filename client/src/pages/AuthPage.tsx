@@ -1144,7 +1144,9 @@ const SwipeCard = ({
           className={clsx("absolute inset-0 rounded-[24px] bg-gradient-to-b overflow-hidden shadow-md", bkCard.color)}
           style={{ x: backX, scale: backScale, zIndex: 10 }}
         >
-          <div className="absolute inset-0 rounded-[24px]" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.35) 0%, transparent 40%)" }} />
+          {/* Top-right bright tint so the card is clearly visible behind the stack */}
+          <div className="absolute inset-0 rounded-[24px]" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.30) 30%, transparent 60%)" }} />
+          <div className="absolute top-0 right-0 w-3/4 h-1/2 rounded-tr-[24px]" style={{ background: "radial-gradient(ellipse at top right, rgba(255,255,255,0.45) 0%, transparent 70%)" }} />
         </motion.div>
       )}
 
@@ -1154,7 +1156,9 @@ const SwipeCard = ({
           className={clsx("absolute inset-0 rounded-[24px] bg-gradient-to-b overflow-hidden shadow-lg", midCard.color)}
           style={{ x: midX, scale: midScale, zIndex: 20 }}
         >
-          <div className="absolute inset-0 rounded-[24px]" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.22) 0%, transparent 40%)" }} />
+          {/* Top-right bright tint so the card is clearly visible behind the front */}
+          <div className="absolute inset-0 rounded-[24px]" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.58) 0%, rgba(255,255,255,0.20) 30%, transparent 60%)" }} />
+          <div className="absolute top-0 right-0 w-3/4 h-1/2 rounded-tr-[24px]" style={{ background: "radial-gradient(ellipse at top right, rgba(255,255,255,0.35) 0%, transparent 70%)" }} />
         </motion.div>
       )}
 
