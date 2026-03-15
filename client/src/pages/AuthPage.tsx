@@ -4168,7 +4168,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
           )}
 
           <div className="space-y-4">
-            <AnimatePresence mode="sync" initial={false}>
+            <AnimatePresence mode="popLayout" initial={false}>
             <motion.div
               key={mode}
               initial={{ opacity: 0 }}
