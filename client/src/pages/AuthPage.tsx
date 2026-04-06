@@ -112,6 +112,119 @@ const CARD_TYPES = [
   },
 ];
 
+const CAMPAIGN_THEMES = [
+  {
+    id: "brs-classic",
+    label: "BRS Classic",
+    category: "Brand",
+    preview: "linear-gradient(135deg,#be185d,#9d174d)",
+    canvasBg: "#ffffff",
+    headerBg: "linear-gradient(135deg,#be185d,#9d174d)",
+    cardStyle: "light" as const,
+    textColor: "#111",
+    accentColor: "#be185d",
+  },
+  {
+    id: "before-after",
+    label: "Before & After",
+    category: "Development",
+    preview: "linear-gradient(90deg,#2d4a2d 50%,#c2185b 50%)",
+    canvasBg: "linear-gradient(90deg,#1a2e1a 50%,#2d0a1e 50%)",
+    headerBg: "linear-gradient(90deg,#1a3a1a,#4a0e2e)",
+    cardStyle: "dark" as const,
+    textColor: "#fff",
+    accentColor: "#4caf50",
+  },
+  {
+    id: "opposition-expose",
+    label: "Opposition Expose",
+    category: "Opposition",
+    preview: "linear-gradient(135deg,#1a0a0a,#3a0a0a)",
+    canvasBg: "linear-gradient(160deg,#0d0d0d,#2a0808)",
+    headerBg: "#1a0000",
+    cardStyle: "dark" as const,
+    textColor: "#fff",
+    accentColor: "#e53935",
+  },
+  {
+    id: "growth-metrics",
+    label: "Growth Analytics",
+    category: "Analytics",
+    preview: "linear-gradient(135deg,#0a0a1a,#1a1500)",
+    canvasBg: "linear-gradient(160deg,#050510,#0a0f00)",
+    headerBg: "#0a0a20",
+    cardStyle: "dark" as const,
+    textColor: "#fff",
+    accentColor: "#f59e0b",
+  },
+  {
+    id: "farmers",
+    label: "Farmers Rights",
+    category: "Agriculture",
+    preview: "linear-gradient(135deg,#0f2e0f,#1a4a0a)",
+    canvasBg: "linear-gradient(160deg,#091a09,#0f2e0f)",
+    headerBg: "linear-gradient(135deg,#0f2e0f,#1a4a0a)",
+    cardStyle: "dark" as const,
+    textColor: "#fff",
+    accentColor: "#66bb6a",
+  },
+  {
+    id: "public-issues",
+    label: "Public Issues",
+    category: "Issues",
+    preview: "linear-gradient(135deg,#1a0000,#0a0a0a)",
+    canvasBg: "linear-gradient(160deg,#120000,#0a0a0a)",
+    headerBg: "linear-gradient(135deg,#2a0000,#1a0000)",
+    cardStyle: "dark" as const,
+    textColor: "#fff",
+    accentColor: "#f44336",
+  },
+  {
+    id: "telangana-model",
+    label: "Telangana Model",
+    category: "Development",
+    preview: "linear-gradient(135deg,#0a2e1a,#1a4a2a)",
+    canvasBg: "linear-gradient(160deg,#071a0f,#0a2e1a)",
+    headerBg: "linear-gradient(135deg,#0a2e1a,#1a4a2a)",
+    cardStyle: "dark" as const,
+    textColor: "#fff",
+    accentColor: "#26a69a",
+  },
+  {
+    id: "financial",
+    label: "Financial Report",
+    category: "Analytics",
+    preview: "linear-gradient(135deg,#2a1a00,#1a0a0a)",
+    canvasBg: "linear-gradient(160deg,#1a1000,#1a0000)",
+    headerBg: "linear-gradient(135deg,#3a2000,#2a0000)",
+    cardStyle: "dark" as const,
+    textColor: "#fff",
+    accentColor: "#ffd54f",
+  },
+  {
+    id: "infrastructure",
+    label: "Infrastructure",
+    category: "Development",
+    preview: "linear-gradient(135deg,#0a1a3a,#0a2a3a)",
+    canvasBg: "linear-gradient(160deg,#050f20,#020f20)",
+    headerBg: "linear-gradient(135deg,#0a1a3a,#0a2a4a)",
+    cardStyle: "dark" as const,
+    textColor: "#fff",
+    accentColor: "#29b6f6",
+  },
+  {
+    id: "peoples-voice",
+    label: "People's Voice",
+    category: "Brand",
+    preview: "linear-gradient(135deg,#7b1fa2,#c2185b)",
+    canvasBg: "linear-gradient(160deg,#1a0030,#2d0020)",
+    headerBg: "linear-gradient(135deg,#7b1fa2,#c2185b)",
+    cardStyle: "dark" as const,
+    textColor: "#fff",
+    accentColor: "#ce93d8",
+  },
+];
+
 const VOICE_DEMO_CARDS = [
   JSON.stringify({ type: "post", title: "Voice", content: "Share your voice with the world. Post updates, raise issues, and let your community hear what matters to you." }),
   JSON.stringify({ type: "image", title: "Image Card", imageUrl: "/brs-telangana.png" }),
@@ -1206,7 +1319,7 @@ const SwipeCard = ({
   const bkCard = displayCards[(activeIndex + 2) % displayCards.length];
 
   return (
-    <div className="relative w-full max-w-[240px] aspect-[3/4] mx-auto" style={{ perspective: "1200px" }}>
+    <div className="relative w-full max-w-[300px] mx-auto" style={{ perspective: "1200px", aspectRatio: "3/4.5" }}>
       {/* Back card — peeks from the right */}
       {displayCards.length > 2 && (
         <motion.div
@@ -2469,6 +2582,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [showPamphletDialog, setShowPamphletDialog] = useState(false);
   const [isCapturingPamphlet, setIsCapturingPamphlet] = useState(false);
   const [pamphletBgImage, setPamphletBgImage] = useState<string | null>(null);
+  const [pamphletTheme, setPamphletTheme] = useState(CAMPAIGN_THEMES[0]);
   const [pamphletPostImages, setPamphletPostImages] = useState<Record<number, string>>({});
   const [activePamphletPostIdx, setActivePamphletPostIdx] = useState<number | null>(null);
   const [xpostPickerIdx, setXpostPickerIdx] = useState<number | null>(null);
@@ -5701,7 +5815,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
             };
 
             const getYtThumb = (url: string) => {
-              const m = (url || "").match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/))([a-zA-Z0-9_-]{11})/);
+              const m = (url || "").match(/(?:youtu\.be\/|youtube\.com\/(?:shorts\/|watch\?v=|v\/|embed\/|reels\/))([\w-]{11})/);
               return m ? `https://img.youtube.com/vi/${m[1]}/mqdefault.jpg` : null;
             };
 
@@ -5737,10 +5851,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       width: CANVAS_W,
                       height: CANVAS_H,
                       borderRadius: 16,
-                      boxShadow: "0 24px_80px rgba(0,0,0,0.9)",
+                      boxShadow: "0 24px 80px rgba(0,0,0,0.9)",
                       background: pamphletBgImage
                         ? `url(${pamphletBgImage}) center/cover no-repeat`
-                        : "#ffffff",
+                        : pamphletTheme.canvasBg,
                     }}
                   >
                     {/* Bg overlay when image is set */}
@@ -5760,7 +5874,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         padding: "0 12px",
                         background: pamphletBgImage
                           ? "rgba(0,0,0,0.55)"
-                          : "linear-gradient(135deg,#be185d,#9d174d)",
+                          : pamphletTheme.headerBg,
                         backdropFilter: pamphletBgImage ? "blur(10px)" : undefined,
                         zIndex: 20,
                       }}
@@ -5798,11 +5912,12 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       const isXpost = card.type === "xpost";
                       const isImageCard = card.type === "image" || card.type === "product";
                       const hasBgMedia = (isReel && ytThumb) || (isImageCard && card.imageUrl) || (isPost && postImg);
+                      const isDarkTheme = pamphletTheme.cardStyle === "dark";
                       const cardBg = isPost
-                        ? (pamphletBgImage ? "rgba(255,255,255,0.93)" : "#fff")
+                        ? (isDarkTheme ? "rgba(255,255,255,0.93)" : (pamphletBgImage ? "rgba(255,255,255,0.93)" : "#fff"))
                         : isXpost
                           ? "#0a0a0a"
-                          : "#111111";
+                          : isDarkTheme ? "#111111" : "#1a1a2e";
 
                       return (
                         <motion.div
@@ -5987,7 +6102,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             bgColor="transparent"
                           />
                         </div>
-                        <span style={{ color: pamphletBgImage ? "rgba(255,255,255,0.75)" : "#999", fontSize: 8, fontWeight: 700, letterSpacing: "0.1em" }}>
+                        <span style={{ color: pamphletBgImage ? "rgba(255,255,255,0.75)" : (pamphletTheme.cardStyle === "dark" ? "rgba(255,255,255,0.6)" : "#999"), fontSize: 8, fontWeight: 700, letterSpacing: "0.1em" }}>
                           QR స్కాన్ చేయండి
                         </span>
                         {!isCapturingPamphlet && (
@@ -6002,7 +6117,58 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
                 {/* ── BOTTOM TOOLBAR ── */}
                 {!isCapturingPamphlet && (
-                  <div className="flex-shrink-0 px-4 pb-7 pt-2 space-y-2">
+                  <div className="flex-shrink-0 px-4 pb-7 pt-2 space-y-3">
+                    {/* Theme Carousel */}
+                    <div>
+                      <p className="text-[8px] text-white/30 uppercase tracking-[0.18em] font-bold mb-2">Campaign Theme</p>
+                      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide snap-x">
+                        {CAMPAIGN_THEMES.map((theme) => (
+                          <button
+                            key={theme.id}
+                            onClick={() => { setPamphletTheme(theme); setPamphletBgImage(null); }}
+                            className="flex-shrink-0 snap-start flex flex-col items-center gap-1 group"
+                          >
+                            <div
+                              className="relative overflow-hidden transition-all duration-200"
+                              style={{
+                                width: 48,
+                                height: 68,
+                                borderRadius: 8,
+                                background: theme.preview,
+                                border: pamphletTheme.id === theme.id
+                                  ? `2px solid ${theme.accentColor}`
+                                  : "2px solid rgba(255,255,255,0.08)",
+                                boxShadow: pamphletTheme.id === theme.id
+                                  ? `0 0 12px ${theme.accentColor}55`
+                                  : "none",
+                              }}
+                            >
+                              {/* Mini header strip */}
+                              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 12, background: theme.headerBg, opacity: 0.9 }} />
+                              {/* Mini card strips */}
+                              <div style={{ position: "absolute", bottom: 8, left: 4, right: 4, display: "flex", flexDirection: "column", gap: 3 }}>
+                                {[0, 1].map((i) => (
+                                  <div key={i} style={{ height: 10, borderRadius: 3, background: theme.cardStyle === "dark" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.12)" }} />
+                                ))}
+                              </div>
+                              {/* Accent dot */}
+                              <div style={{ position: "absolute", bottom: 4, right: 4, width: 6, height: 6, borderRadius: "50%", background: theme.accentColor }} />
+                              {pamphletTheme.id === theme.id && (
+                                <div style={{ position: "absolute", top: 3, right: 3, width: 10, height: 10, borderRadius: "50%", background: theme.accentColor, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                  <svg viewBox="0 0 12 12" style={{ width: 6, height: 6, fill: "white" }}><path d="M2 6l3 3 5-5"/></svg>
+                                </div>
+                              )}
+                            </div>
+                            <span style={{ fontSize: 7, color: pamphletTheme.id === theme.id ? theme.accentColor : "rgba(255,255,255,0.35)", fontWeight: 700, textAlign: "center", maxWidth: 48, lineHeight: 1.2, letterSpacing: "0.04em" }}>
+                              {theme.label}
+                            </span>
+                            <span style={{ fontSize: 6, color: "rgba(255,255,255,0.2)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                              {theme.category}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => pamphletBgInputRef.current?.click()}
@@ -6010,7 +6176,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         style={{ background: "rgba(255,255,255,0.06)", flex: 1 }}
                       >
                         <ImageIcon className="w-3.5 h-3.5" />
-                        Background
+                        Custom BG
                       </button>
                       {pamphletBgImage && (
                         <button
@@ -6024,7 +6190,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       <button
                         onClick={sharePamphlet}
                         className="flex items-center justify-center gap-1.5 rounded-xl py-3 text-[11px] font-bold text-white active:scale-95 shadow-lg"
-                        style={{ background: "linear-gradient(90deg,#be185d,#9d174d)", flex: 1 }}
+                        style={{ background: pamphletTheme.headerBg, flex: 1 }}
                       >
                         <Download className="w-3.5 h-3.5" />
                         Download
