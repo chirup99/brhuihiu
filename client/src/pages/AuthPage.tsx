@@ -225,6 +225,75 @@ const CAMPAIGN_THEMES = [
   },
 ];
 
+const STICKER_CATEGORIES = [
+  {
+    label: "VS / Politics",
+    items: [
+      { id: "vs", e: "VS", label: "VS", color: "#ef4444", bold: true },
+      { id: "expose", e: "EXPOSE", label: "Expose", color: "#f97316", bold: true },
+      { id: "scam", e: "⚠️", label: "Scam" },
+      { id: "vote", e: "🗳️", label: "Vote" },
+      { id: "mic", e: "📢", label: "Protest" },
+      { id: "corrupt", e: "💰", label: "Corrupt" },
+      { id: "ban", e: "❌", label: "Ban" },
+      { id: "check", e: "✅", label: "Fact" },
+      { id: "news", e: "📰", label: "News" },
+      { id: "mask", e: "🎭", label: "Expose" },
+    ],
+  },
+  {
+    label: "Public Issues",
+    items: [
+      { id: "water", e: "💧", label: "Water" },
+      { id: "power", e: "⚡", label: "Power" },
+      { id: "house", e: "🏚️", label: "Demolish" },
+      { id: "flood", e: "🌊", label: "Musi" },
+      { id: "fire", e: "🔥", label: "Crisis" },
+      { id: "build", e: "🏗️", label: "Construct" },
+      { id: "tap", e: "🚰", label: "Tap" },
+      { id: "land", e: "📋", label: "Land" },
+      { id: "angry", e: "😤", label: "Struggle" },
+      { id: "alert", e: "🚨", label: "Alert" },
+    ],
+  },
+  {
+    label: "Telangana",
+    items: [
+      { id: "ts", e: "🌺", label: "TS" },
+      { id: "hyd", e: "🏙️", label: "Hyd" },
+      { id: "musi", e: "🌉", label: "Musi" },
+      { id: "fist", e: "✊", label: "BRS" },
+      { id: "rose", e: "🌹", label: "BRS" },
+      { id: "map", e: "🗺️", label: "State" },
+      { id: "flag", e: "🏳️", label: "Flag" },
+      { id: "star", e: "⭐", label: "Leader" },
+      { id: "crown", e: "👑", label: "KCR" },
+      { id: "tractor", e: "🚜", label: "Rythu" },
+    ],
+  },
+  {
+    label: "Development",
+    items: [
+      { id: "factory", e: "🏭", label: "Industry" },
+      { id: "worker", e: "👷", label: "Jobs" },
+      { id: "farm", e: "🌾", label: "Agri" },
+      { id: "fish", e: "🐟", label: "Fisher" },
+      { id: "goat", e: "🐐", label: "Goat" },
+      { id: "milk", e: "🥛", label: "Milk" },
+      { id: "palm", e: "🌴", label: "Palm" },
+      { id: "dam", e: "🏞️", label: "Dam" },
+      { id: "bridge", e: "🌉", label: "Bridge" },
+      { id: "road", e: "🛣️", label: "Road" },
+      { id: "flyover", e: "🛤️", label: "Flyover" },
+      { id: "home", e: "🏠", label: "House" },
+      { id: "school", e: "🏫", label: "School" },
+      { id: "hospital", e: "🏥", label: "Medical" },
+      { id: "id", e: "🪪", label: "ID" },
+      { id: "bus", e: "🚌", label: "Transport" },
+    ],
+  },
+];
+
 const VOICE_DEMO_CARDS = [
   JSON.stringify({ type: "post", title: "Voice", content: "Share your voice with the world. Post updates, raise issues, and let your community hear what matters to you." }),
   JSON.stringify({ type: "image", title: "Image Card", imageUrl: "/brs-telangana.png" }),
@@ -2584,6 +2653,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [pamphletBgImage, setPamphletBgImage] = useState<string | null>(null);
   const [pamphletTheme, setPamphletTheme] = useState(CAMPAIGN_THEMES[0]);
   const [pamphletPostImages, setPamphletPostImages] = useState<Record<number, string>>({});
+  const [pamphletCardSizes, setPamphletCardSizes] = useState<Record<number, {w: number; h: number}>>({});
+  const [pamphletStickers, setPamphletStickers] = useState<Array<{id: string; e: string; x: number; y: number; size: number; color?: string; bold?: boolean}>>([]);
+  const [showStickerTray, setShowStickerTray] = useState(false);
+  const [stickerCategory, setStickerCategory] = useState(0);
   const [activePamphletPostIdx, setActivePamphletPostIdx] = useState<number | null>(null);
   const [xpostPickerIdx, setXpostPickerIdx] = useState<number | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -5793,25 +5866,30 @@ export default function AuthPage({ slug }: { slug?: string }) {
             const profileQrValue = window.location.origin + "/" + (displaySlug || user?.uniqueSlug || "");
 
             const CANVAS_W = 360;
-            const CANVAS_H = 640;
-            const HEADER_H = 52;
-            const PAD = 12;
-            const GAP = 8;
+            const CANVAS_H = 500;
+            const HEADER_H = 48;
+            const PAD = 10;
+            const GAP = 7;
             const n = pamphletCards.length;
-            const useDual = n >= 4;
-            const cardW = useDual ? Math.floor((CANVAS_W - PAD * 2 - GAP) / 2) : CANVAS_W - PAD * 2;
-            const rawCardH = useDual
-              ? Math.min(175, Math.floor((CANVAS_H - HEADER_H - 130 - GAP * Math.ceil(n / 2)) / Math.max(Math.ceil(n / 2), 1)))
-              : Math.min(220, Math.floor((CANVAS_H - HEADER_H - 130 - GAP * n) / Math.max(n, 1)));
-            const cardH = Math.max(rawCardH, 80);
+            const useDual = n >= 2;
+            const baseCardW = useDual ? Math.floor((CANVAS_W - PAD * 2 - GAP) / 2) : CANVAS_W - PAD * 2;
+            const baseCardH = useDual
+              ? Math.min(140, Math.floor((CANVAS_H - HEADER_H - 110 - GAP * Math.ceil(n / 2)) / Math.max(Math.ceil(n / 2), 1)))
+              : Math.min(180, Math.floor((CANVAS_H - HEADER_H - 110 - GAP * n) / Math.max(n, 1)));
+            const defaultCardH = Math.max(baseCardH, 70);
+
+            const getCardSize = (idx: number) => ({
+              w: pamphletCardSizes[idx]?.w ?? baseCardW,
+              h: pamphletCardSizes[idx]?.h ?? defaultCardH,
+            });
 
             const getInitPos = (idx: number) => {
               if (useDual) {
                 const col = idx % 2;
                 const row = Math.floor(idx / 2);
-                return { x: PAD + col * (cardW + GAP), y: HEADER_H + GAP + row * (cardH + GAP) };
+                return { x: PAD + col * (baseCardW + GAP), y: HEADER_H + GAP + row * (defaultCardH + GAP) };
               }
-              return { x: PAD, y: HEADER_H + GAP + idx * (cardH + GAP) };
+              return { x: PAD, y: HEADER_H + GAP + idx * (defaultCardH + GAP) };
             };
 
             const getYtThumb = (url: string) => {
@@ -5905,6 +5983,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     {/* ── DRAGGABLE VOICE CARDS ── */}
                     {pamphletCards.map((card: any, idx: number) => {
                       const initPos = getInitPos(idx);
+                      const { w: cardW, h: cardH } = getCardSize(idx);
                       const ytThumb = getYtThumb(card.url || "");
                       const postImg = pamphletPostImages[idx];
                       const isPost = card.type === "post";
@@ -5926,7 +6005,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           dragConstraints={pamphletCanvasRef}
                           dragElastic={0}
                           dragMomentum={false}
-                          whileDrag={{ scale: 1.04, zIndex: 60 }}
+                          whileDrag={{ scale: 1.03, zIndex: 60 }}
                           style={{
                             position: "absolute",
                             left: initPos.x,
@@ -6067,8 +6146,45 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
                           {/* Drag hint */}
                           {!isCapturingPamphlet && (
-                            <div style={{ position: "absolute", top: 5, left: 5, background: "rgba(0,0,0,0.3)", borderRadius: 4, padding: "1px 4px", zIndex: 20, pointerEvents: "none" }}>
-                              <svg viewBox="0 0 24 24" style={{ width: 8, height: 8, fill: isPost ? "#be185d" : "rgba(255,255,255,0.6)" }}><path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/></svg>
+                            <div style={{ position: "absolute", top: 4, left: 4, background: "rgba(0,0,0,0.28)", borderRadius: 3, padding: "1px 3px", zIndex: 20, pointerEvents: "none" }}>
+                              <svg viewBox="0 0 24 24" style={{ width: 7, height: 7, fill: isPost ? "#be185d" : "rgba(255,255,255,0.6)" }}><path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/></svg>
+                            </div>
+                          )}
+                          {/* Resize handle — bottom-right corner */}
+                          {!isCapturingPamphlet && (
+                            <div
+                              onPointerDown={(e) => {
+                                e.stopPropagation();
+                                const startX = e.clientX;
+                                const startY = e.clientY;
+                                const startW = cardW;
+                                const startH = cardH;
+                                const onMove = (me: PointerEvent) => {
+                                  const newW = Math.max(60, startW + (me.clientX - startX));
+                                  const newH = Math.max(50, startH + (me.clientY - startY));
+                                  setPamphletCardSizes(prev => ({ ...prev, [idx]: { w: newW, h: newH } }));
+                                };
+                                const onUp = () => {
+                                  document.removeEventListener("pointermove", onMove);
+                                  document.removeEventListener("pointerup", onUp);
+                                };
+                                document.addEventListener("pointermove", onMove);
+                                document.addEventListener("pointerup", onUp);
+                              }}
+                              style={{
+                                position: "absolute",
+                                bottom: 3, right: 3,
+                                width: 14, height: 14,
+                                cursor: "se-resize",
+                                zIndex: 30,
+                                display: "flex", alignItems: "flex-end", justifyContent: "flex-end",
+                                touchAction: "none",
+                              }}
+                            >
+                              <svg viewBox="0 0 10 10" style={{ width: 10, height: 10 }}>
+                                <path d="M3 9L9 9L9 3" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                                <path d="M6 9L9 9L9 6" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                              </svg>
                             </div>
                           )}
                         </motion.div>
@@ -6112,12 +6228,56 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         )}
                       </div>
                     </motion.div>
+
+                    {/* ── DRAGGABLE STICKERS ── */}
+                    {pamphletStickers.map((sticker, si) => (
+                      <motion.div
+                        key={sticker.id}
+                        drag
+                        dragConstraints={pamphletCanvasRef}
+                        dragElastic={0}
+                        dragMomentum={false}
+                        whileDrag={{ scale: 1.15, zIndex: 70 }}
+                        style={{
+                          position: "absolute",
+                          left: sticker.x,
+                          top: sticker.y,
+                          zIndex: 20,
+                          touchAction: "none",
+                          cursor: isCapturingPamphlet ? "default" : "grab",
+                          userSelect: "none",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: sticker.size,
+                            fontWeight: sticker.bold ? 900 : 700,
+                            color: sticker.color || "white",
+                            lineHeight: 1,
+                            textShadow: "0 2px 8px rgba(0,0,0,0.7)",
+                            WebkitTextStroke: sticker.color ? `1px ${sticker.color}` : undefined,
+                            letterSpacing: sticker.bold ? "0.05em" : 0,
+                          }}
+                        >
+                          {sticker.e}
+                        </div>
+                        {!isCapturingPamphlet && (
+                          <button
+                            onPointerDown={(e) => e.stopPropagation()}
+                            onClick={(e) => { e.stopPropagation(); setPamphletStickers(prev => prev.filter((_, i) => i !== si)); }}
+                            style={{ position: "absolute", top: -6, right: -6, width: 14, height: 14, borderRadius: "50%", background: "#ef4444", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 30, padding: 0 }}
+                          >
+                            <svg viewBox="0 0 10 10" style={{ width: 8, height: 8, fill: "white" }}><path d="M2 2l6 6M8 2l-6 6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                          </button>
+                        )}
+                      </motion.div>
+                    ))}
                   </div>
                 </div>
 
                 {/* ── BOTTOM TOOLBAR ── */}
                 {!isCapturingPamphlet && (
-                  <div className="flex-shrink-0 px-4 pb-7 pt-2 space-y-3">
+                  <div className="flex-shrink-0 px-4 pb-5 pt-2 space-y-2">
                     {/* Theme Carousel */}
                     <div>
                       <p className="text-[8px] text-white/30 uppercase tracking-[0.18em] font-bold mb-2">Campaign Theme</p>
@@ -6169,35 +6329,105 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         ))}
                       </div>
                     </div>
+
+                    {/* Sticker Tray */}
+                    {showStickerTray && (
+                      <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.08)", padding: "8px 8px 6px" }}>
+                        {/* Category tabs */}
+                        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide mb-2">
+                          {STICKER_CATEGORIES.map((cat, ci) => (
+                            <button
+                              key={ci}
+                              onClick={() => setStickerCategory(ci)}
+                              className="flex-shrink-0 px-2 py-0.5 rounded-full text-[8px] font-bold transition-all"
+                              style={{
+                                background: stickerCategory === ci ? pamphletTheme.accentColor : "rgba(255,255,255,0.07)",
+                                color: stickerCategory === ci ? "white" : "rgba(255,255,255,0.45)",
+                              }}
+                            >
+                              {cat.label}
+                            </button>
+                          ))}
+                        </div>
+                        {/* Sticker grid */}
+                        <div className="flex flex-wrap gap-1.5">
+                          {STICKER_CATEGORIES[stickerCategory].items.map((stk) => (
+                            <button
+                              key={stk.id}
+                              onClick={() => {
+                                const newSticker = {
+                                  id: `${stk.id}-${Date.now()}`,
+                                  e: stk.e,
+                                  x: Math.floor(Math.random() * 220) + 60,
+                                  y: Math.floor(Math.random() * 200) + 80,
+                                  size: (stk as any).bold ? 20 : 28,
+                                  color: (stk as any).color,
+                                  bold: (stk as any).bold,
+                                };
+                                setPamphletStickers(prev => [...prev, newSticker]);
+                              }}
+                              className="flex flex-col items-center gap-0.5 active:scale-90 transition-all"
+                              style={{ minWidth: 36 }}
+                            >
+                              <div style={{ fontSize: (stk as any).bold ? 16 : 22, lineHeight: 1, fontWeight: (stk as any).bold ? 900 : 400, color: (stk as any).color || "white" }}>
+                                {stk.e}
+                              </div>
+                              <span style={{ fontSize: 6, color: "rgba(255,255,255,0.3)", fontWeight: 600 }}>{stk.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                        {pamphletStickers.length > 0 && (
+                          <button
+                            onClick={() => setPamphletStickers([])}
+                            className="mt-2 w-full text-center text-[8px] text-red-400/60 font-bold tracking-wider"
+                          >
+                            Clear All Stickers
+                          </button>
+                        )}
+                      </div>
+                    )}
+
                     <div className="flex gap-2">
                       <button
+                        onClick={() => setShowStickerTray(s => !s)}
+                        className="flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-[11px] font-bold active:scale-95 transition-all border"
+                        style={{
+                          background: showStickerTray ? "rgba(190,24,93,0.25)" : "rgba(255,255,255,0.06)",
+                          borderColor: showStickerTray ? "rgba(190,24,93,0.5)" : "rgba(255,255,255,0.1)",
+                          color: showStickerTray ? "#ec4899" : "rgba(255,255,255,0.7)",
+                          flex: 1,
+                        }}
+                      >
+                        🎭 Stickers
+                      </button>
+                      <button
                         onClick={() => pamphletBgInputRef.current?.click()}
-                        className="flex items-center justify-center gap-1.5 rounded-xl py-3 text-[11px] font-bold text-white/70 active:scale-95 transition-all border border-white/10"
+                        className="flex items-center justify-center gap-1 rounded-xl py-2.5 text-[11px] font-bold text-white/70 active:scale-95 transition-all border border-white/10"
                         style={{ background: "rgba(255,255,255,0.06)", flex: 1 }}
                       >
-                        <ImageIcon className="w-3.5 h-3.5" />
-                        Custom BG
+                        <ImageIcon className="w-3 h-3" />
+                        BG
                       </button>
                       {pamphletBgImage && (
                         <button
                           onClick={() => setPamphletBgImage(null)}
-                          className="px-3 rounded-xl py-3 text-[11px] font-bold text-red-400/80 active:scale-95 border border-red-400/15"
+                          className="px-2.5 rounded-xl py-2.5 text-[11px] font-bold text-red-400/80 active:scale-95 border border-red-400/15"
                           style={{ background: "rgba(239,68,68,0.07)" }}
                         >
-                          Reset
+                          ✕
                         </button>
                       )}
                       <button
                         onClick={sharePamphlet}
-                        className="flex items-center justify-center gap-1.5 rounded-xl py-3 text-[11px] font-bold text-white active:scale-95 shadow-lg"
+                        className="flex items-center justify-center gap-1 rounded-xl py-2.5 text-[11px] font-bold text-white active:scale-95 shadow-lg"
                         style={{ background: pamphletTheme.headerBg, flex: 1 }}
                       >
-                        <Download className="w-3.5 h-3.5" />
-                        Download
+                        <Download className="w-3 h-3" />
+                        Save
                       </button>
                     </div>
-                    <p className="text-center text-white/20 text-[9px] tracking-widest">
-                      కార్డులు మరియు QR కోడ్ మీకు నచ్చిన చోటికి తరలించండి
+                    <p className="text-center text-white/15 text-[8px] tracking-widest">
+                      కార్డులు, స్టిక్కర్లు &amp; QR కోడ్ తరలించండి · రీసైజ్ చేయండి
                     </p>
                   </div>
                 )}
