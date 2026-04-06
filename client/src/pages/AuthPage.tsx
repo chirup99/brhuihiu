@@ -5637,14 +5637,14 @@ export default function AuthPage({ slug }: { slug?: string }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-[110] flex flex-col"
-              style={{ background: "#0f0a1a" }}
+              style={{ background: "#0a0a0f" }}
             >
-              {/* Close button overlay — outside poster, always visible */}
+              {/* Close button */}
               {!isCapturingPamphlet && (
-                <div className="absolute top-4 right-4 z-[120] flex items-center gap-2">
+                <div className="absolute top-4 right-4 z-[120]">
                   <button
                     onClick={() => setShowPamphletDialog(false)}
-                    className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-all border border-white/20"
+                    className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-all border border-white/20"
                   >
                     <X className="w-4 h-4 text-white" />
                   </button>
@@ -5652,183 +5652,201 @@ export default function AuthPage({ slug }: { slug?: string }) {
               )}
 
               {/* Scrollable wrapper */}
-              <div className="flex-1 overflow-y-auto flex items-center justify-center py-6 px-4">
+              <div className="flex-1 overflow-y-auto flex items-start justify-center py-6 px-4">
 
-                {/* ── THE CAMPAIGN POSTER ── */}
-                <div
-                  id="pamphlet-fullscreen"
-                  className="w-full max-w-[340px] rounded-[20px] overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.8)] relative"
-                  style={{ background: "linear-gradient(160deg, #0d0020 0%, #3b0764 30%, #7e22ce 60%, #a21caf 80%, #be185d 100%)" }}
-                >
-                  {/* ── Background decorative blobs ── */}
-                  <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                    <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-25" style={{ background: "radial-gradient(circle, #f0abfc, transparent 70%)" }} />
-                    <div className="absolute bottom-1/3 -left-20 w-56 h-56 rounded-full opacity-20" style={{ background: "radial-gradient(circle, #ec4899, transparent 70%)" }} />
-                    <div className="absolute top-1/2 right-0 w-40 h-40 rounded-full opacity-15" style={{ background: "radial-gradient(circle, #c026d3, transparent 70%)" }} />
-                    {/* Dot grid texture */}
-                    <svg className="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
-                      <defs>
-                        <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
-                          <circle cx="2" cy="2" r="1" fill="white"/>
-                        </pattern>
-                      </defs>
-                      <rect width="100%" height="100%" fill="url(#dots)" />
-                    </svg>
-                  </div>
+                {/* ── CAMPAIGN FLYER ── */}
+                {(() => {
+                  const rawCards = (user?.cards || selectedCards || []).filter(Boolean);
+                  const pamphletCards = rawCards.map((c: string) => {
+                    try {
+                      const card = JSON.parse(c);
+                      if (!card?.type) return null;
+                      return card;
+                    } catch { return null; }
+                  }).filter(Boolean).slice(0, 6);
 
-                  {/* ── TOP HEADER BAND ── */}
-                  <div className="relative z-10 flex items-center justify-between px-4 pt-4 pb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-9 h-9 rounded-full overflow-hidden bg-white shadow-lg flex-shrink-0">
-                        <img src="/brs-logo.png" alt="BRS" className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <p className="text-white font-black text-xs tracking-tight leading-none">BRS Connect</p>
-                        <p className="text-white/50 text-[8px] uppercase tracking-widest leading-none mt-0.5">Bharat Rashtra Samithi</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white/80 text-[8px] uppercase tracking-[0.2em] font-bold">Official</p>
-                      <p className="text-white/80 text-[8px] uppercase tracking-[0.2em] font-bold">Campaign</p>
-                    </div>
-                  </div>
+                  const displayAvatarSrc = normalizeAvatarUrl(user?.avatarUrl || loggedInUser?.avatarUrl) || avatarUrl;
+                  const displayName = user?.name || form.watch("name") || "Your Name";
+                  const roleLabel = ROLES.find((r) => r.value === (user?.role || form.watch("role")))?.label || (user?.role || form.watch("role") || "Member").replace(/[_-]/g, " ");
+                  const bioText = user?.bio || form.watch("bio") || "Voice of the People. Strength of the Nation.";
+                  const profileQrValue = window.location.origin + "/" + (displaySlug || user?.uniqueSlug || "");
 
-                  {/* ── RAINBOW STRIPE ── */}
-                  <div className="w-full h-1 relative z-10" style={{ background: "linear-gradient(90deg, #f59e0b, #ef4444, #ec4899, #8b5cf6, #3b82f6, #10b981)" }} />
+                  const cardBgMap: Record<string, string> = {
+                    reel: "linear-gradient(135deg,#18181b,#09090b)",
+                    image: "linear-gradient(135deg,#1c1917,#0c0a09)",
+                    post: "linear-gradient(135deg,#1a0510,#2d0a1e)",
+                    xpost: "linear-gradient(135deg,#0a0a0a,#1a1a1a)",
+                    product: "linear-gradient(135deg,#0c1a2e,#162032)",
+                    pitch: "linear-gradient(135deg,#0a1f0a,#112211)",
+                  };
 
-                  {/* ── HERO SECTION: large photo ── */}
-                  <div className="relative z-10 flex flex-col items-center px-4 pt-5">
-                    {/* Outer glow ring */}
+                  return (
                     <div
-                      className="relative"
-                      style={{
-                        width: 160,
-                        height: 160,
-                        borderRadius: "50%",
-                        padding: 4,
-                        background: "linear-gradient(135deg, #fbbf24, #ec4899, #8b5cf6)",
-                        boxShadow: "0 0 0 6px rgba(236,72,153,0.2), 0 16px 40px rgba(0,0,0,0.5)",
-                      }}
+                      id="pamphlet-fullscreen"
+                      className="w-full max-w-[360px] rounded-[18px] overflow-hidden shadow-[0_24px_70px_rgba(0,0,0,0.9)]"
+                      style={{ background: "#ffffff", fontFamily: "system-ui, sans-serif" }}
                     >
-                      <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#3b0764" }}>
-                        {(() => {
-                          const displayAvatarSrc = normalizeAvatarUrl(user?.avatarUrl || loggedInUser?.avatarUrl) || avatarUrl;
-                          const displayName = user?.name || loggedInUser?.name || "P";
-                          return isCapturingPamphlet ? (
-                            <img src={avatarDataUrl || displayAvatarSrc} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                          ) : displayAvatarSrc ? (
-                            <img src={displayAvatarSrc} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                          ) : (
-                            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#ec4899,#8b5cf6)", color: "white", fontSize: 52, fontWeight: 900 }}>
-                              {displayName[0]?.toUpperCase() || "P"}
-                            </div>
-                          );
-                        })()}
-                      </div>
-                      {/* Star badge */}
-                      <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center shadow-xl border-2 border-white" style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)" }}>
-                        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                      </div>
-                    </div>
+                      {/* ── TOP COLOR BAR ── */}
+                      <div style={{ height: 6, background: "linear-gradient(90deg,#be185d,#ec4899,#f9a8d4,#ec4899,#be185d)" }} />
 
-                    {/* Name block */}
-                    <div className="mt-4 text-center">
-                      <h1
-                        className="text-white font-black leading-tight tracking-tight"
-                        style={{ fontSize: 26, textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}
-                      >
-                        {user?.name || form.watch("name") || "Your Name"}
-                      </h1>
-                      {/* Role ribbon */}
-                      <div className="mt-2 inline-flex items-center px-4 py-1 rounded-full shadow-lg" style={{ background: "linear-gradient(90deg, #fbbf24, #f59e0b)", boxShadow: "0 4px 12px rgba(251,191,36,0.4)" }}>
-                        <span className="text-black font-black text-[10px] uppercase tracking-widest">
-                          {ROLES.find((r) => r.value === (user?.role || form.watch("role")))?.label || (user?.role || form.watch("role") || "Member").replace(/[_-]/g, " ")}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ── BIO QUOTE ── */}
-                  {(user?.bio || form.watch("bio")) && (
-                    <div className="relative z-10 mx-4 mt-4 px-4 py-3 rounded-2xl text-center" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}>
-                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40 mb-1">Message</p>
-                      <p className="text-white text-xs font-semibold italic leading-relaxed">
-                        "{user?.bio || form.watch("bio")}"
-                      </p>
-                    </div>
-                  )}
-
-                  {/* ── SLOGAN BAND ── */}
-                  <div className="relative z-10 mx-4 mt-4 rounded-xl overflow-hidden">
-                    <div className="flex">
-                      <div className="flex-1 py-2 text-center" style={{ background: "rgba(255,255,255,0.12)" }}>
-                        <p className="text-white font-black text-[10px] tracking-widest uppercase">People's Voice</p>
-                      </div>
-                      <div className="w-px bg-white/20" />
-                      <div className="flex-1 py-2 text-center" style={{ background: "rgba(255,255,255,0.12)" }}>
-                        <p className="text-yellow-300 font-black text-[10px] tracking-widest uppercase">Speed · Action</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ── SOCIAL + QR ROW ── */}
-                  <div className="relative z-10 mx-4 mt-4 flex items-center gap-3">
-                    {/* Social handles */}
-                    <div className="flex-1 space-y-1.5">
-                      {(user?.instagram || form.watch("instagram")) && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}>
-                          <SiInstagram className="w-3 h-3 text-pink-300 flex-shrink-0" />
-                          <span className="text-white text-[9px] font-bold truncate">{(user?.instagram || form.watch("instagram") || "").replace(/https?:\/\/(www\.)?instagram\.com\/?/,"").replace(/\//,"")}</span>
+                      {/* ── HEADER: candidate strip ── */}
+                      <div style={{ background: "linear-gradient(135deg,#be185d 0%,#9d174d 100%)", padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+                        {/* Avatar */}
+                        <div style={{ width: 52, height: 52, borderRadius: "50%", padding: 2, background: "linear-gradient(135deg,#fbbf24,#f9a8d4)", flexShrink: 0, boxShadow: "0 4px 12px rgba(0,0,0,0.4)" }}>
+                          <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#fce7f3" }}>
+                            {isCapturingPamphlet ? (
+                              <img src={avatarDataUrl || displayAvatarSrc} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                            ) : displayAvatarSrc ? (
+                              <img src={displayAvatarSrc} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                            ) : (
+                              <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#ec4899", color: "white", fontSize: 22, fontWeight: 900 }}>
+                                {displayName[0]?.toUpperCase() || "P"}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      )}
-                      {(user?.whatsapp || form.watch("whatsapp")) && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}>
-                          <SiWhatsapp className="w-3 h-3 text-green-300 flex-shrink-0" />
-                          <span className="text-white text-[9px] font-bold truncate">{(user?.whatsapp || form.watch("whatsapp") || "").replace(/\D/g, "").slice(-10)}</span>
+                        {/* Name + role */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ color: "white", fontWeight: 900, fontSize: 15, lineHeight: 1.1, letterSpacing: "-0.02em", textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}>{displayName}</div>
+                          <div style={{ color: "rgba(255,255,255,0.75)", fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", marginTop: 3 }}>{roleLabel}</div>
+                          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 8, fontStyle: "italic", marginTop: 2, lineHeight: 1.3 }} className="line-clamp-1">{bioText}</div>
                         </div>
-                      )}
-                      {(user?.linkedin || form.watch("linkedin")) && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}>
-                          <SiX className="w-3 h-3 text-sky-300 flex-shrink-0" />
-                          <span className="text-white text-[9px] font-bold truncate">{(user?.linkedin || form.watch("linkedin") || "").replace(/https?:\/\/(www\.)?(twitter|x)\.com\/?/,"").replace(/\//,"")}</span>
+                        {/* BRS logo */}
+                        <div style={{ width: 36, height: 36, borderRadius: "50%", overflow: "hidden", background: "white", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>
+                          <img src="/brs-logo.png" alt="BRS" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         </div>
-                      )}
-                      {!(user?.instagram || form.watch("instagram")) && !(user?.whatsapp || form.watch("whatsapp")) && !(user?.linkedin || form.watch("linkedin")) && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}>
-                          <Globe className="w-3 h-3 text-blue-300 flex-shrink-0" />
-                          <span className="text-white text-[9px] font-bold">brsconnect.in</span>
-                        </div>
-                      )}
-                    </div>
-                    {/* QR code — small, corner element */}
-                    <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                      <div className="rounded-xl p-2 shadow-lg" style={{ background: "rgba(255,255,255,0.95)" }}>
-                        <QRCodeSVG
-                          value={window.location.origin + "/" + (displaySlug || user?.uniqueSlug || "")}
-                          size={64}
-                          level="M"
-                          includeMargin={false}
-                          fgColor="#3b0764"
-                          bgColor="transparent"
-                        />
                       </div>
-                      <p className="text-white/50 text-[7px] uppercase tracking-widest text-center">Scan</p>
-                    </div>
-                  </div>
 
-                  {/* ── FOOTER ── */}
-                  <div className="relative z-10 mt-4">
-                    <div className="w-full h-1" style={{ background: "linear-gradient(90deg, #f59e0b, #ef4444, #ec4899, #8b5cf6, #3b82f6, #10b981)" }} />
-                    <div className="px-4 py-3 flex items-center justify-between" style={{ background: "rgba(0,0,0,0.4)" }}>
-                      <p className="text-white/40 text-[7px] uppercase tracking-widest">brsconnect.in</p>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-pink-400" />
-                        <p className="text-white/60 text-[7px] uppercase tracking-widest font-bold">Strength of the Nation</p>
-                        <div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                      {/* ── SECTION LABEL ── */}
+                      <div style={{ background: "#fdf2f8", borderBottom: "1px solid #fce7f3", padding: "6px 14px", display: "flex", alignItems: "center", gap: 6 }}>
+                        <div style={{ width: 3, height: 14, background: "#ec4899", borderRadius: 2 }} />
+                        <span style={{ fontSize: 9, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.25em", color: "#be185d" }}>Voice Cards — Issues Being Addressed</span>
                       </div>
+
+                      {/* ── VOICE CARDS GRID ── */}
+                      <div style={{ background: "#f9fafb", padding: 10 }}>
+                        {pamphletCards.length === 0 ? (
+                          <div style={{ padding: "20px 0", textAlign: "center", color: "#d1d5db", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em" }}>
+                            No voice cards yet
+                          </div>
+                        ) : (
+                          <div style={{ display: "grid", gridTemplateColumns: pamphletCards.length === 1 ? "1fr" : "1fr 1fr", gap: 8 }}>
+                            {pamphletCards.map((card: any, idx: number) => {
+                              const isWide = pamphletCards.length % 2 !== 0 && idx === pamphletCards.length - 1;
+                              return (
+                                <div
+                                  key={idx}
+                                  style={{
+                                    borderRadius: 10,
+                                    overflow: "hidden",
+                                    background: cardBgMap[card.type] || "linear-gradient(135deg,#1e1b4b,#312e81)",
+                                    gridColumn: isWide ? "1 / -1" : undefined,
+                                    minHeight: isWide ? 80 : 90,
+                                    position: "relative",
+                                    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                  }}
+                                >
+                                  {/* Image cards */}
+                                  {(card.type === "image" || card.type === "product") && card.imageUrl && (
+                                    <img src={card.imageUrl} alt={card.title} style={{ width: "100%", height: isWide ? 100 : 70, objectFit: "cover", display: "block" }} />
+                                  )}
+                                  {/* Reel thumbnail */}
+                                  {card.type === "reel" && card.url && (() => {
+                                    const ytMatch = card.url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/))([a-zA-Z0-9_-]{11})/);
+                                    const thumb = ytMatch ? `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg` : null;
+                                    return thumb ? (
+                                      <div style={{ position: "relative" }}>
+                                        <img src={thumb} alt={card.title} style={{ width: "100%", height: isWide ? 100 : 70, objectFit: "cover", display: "block" }} />
+                                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.3)" }}>
+                                          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
+                                            <svg viewBox="0 0 24 24" style={{ width: 14, height: 14, fill: "white", marginLeft: 2 }}><path d="M8 5v14l11-7z"/></svg>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ) : null;
+                                  })()}
+                                  {/* Card info area */}
+                                  <div style={{ flex: 1, padding: "6px 8px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 3 }}>
+                                    {/* Type badge */}
+                                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                      <span style={{ fontSize: 7, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.15em", color: "rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.1)", padding: "1px 5px", borderRadius: 3 }}>
+                                        {card.type === "reel" ? "▶ Reel" : card.type === "image" ? "🖼 Image" : card.type === "post" ? "✍ Post" : card.type === "xpost" ? "𝕏 Post" : card.type === "product" ? "📦 Product" : card.type}
+                                      </span>
+                                    </div>
+                                    {/* Title */}
+                                    <div style={{ color: "white", fontWeight: 800, fontSize: 10, lineHeight: 1.25, letterSpacing: "-0.01em" }} className="line-clamp-2">
+                                      {card.title || "Untitled"}
+                                    </div>
+                                    {/* Post content preview */}
+                                    {card.type === "post" && card.content && (
+                                      <div style={{ color: "rgba(255,255,255,0.65)", fontSize: 8, lineHeight: 1.4 }} className="line-clamp-3">
+                                        {card.content}
+                                      </div>
+                                    )}
+                                    {/* X post preview */}
+                                    {card.type === "xpost" && card.url && (
+                                      <div style={{ color: "rgba(255,255,255,0.45)", fontSize: 8, lineHeight: 1.3 }} className="line-clamp-1">
+                                        {card.url.replace(/https?:\/\/(www\.)?(twitter|x)\.com\//,"")}
+                                      </div>
+                                    )}
+                                  </div>
+                                  {/* Corner glow */}
+                                  <div style={{ position: "absolute", bottom: -12, right: -12, width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,0.06)", pointerEvents: "none" }} />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ── QR + CTA SECTION ── */}
+                      <div style={{ background: "linear-gradient(135deg,#1a0a2e,#2d0a3e)", padding: "14px 14px 12px", display: "flex", alignItems: "center", gap: 12 }}>
+                        {/* Left: CTA text */}
+                        <div style={{ flex: 1 }}>
+                          <div style={{ color: "#f9a8d4", fontSize: 9, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.2em", marginBottom: 4 }}>Scan for Full Campaign</div>
+                          <div style={{ color: "white", fontSize: 13, fontWeight: 900, lineHeight: 1.2, marginBottom: 6 }}>See all Voice Cards online</div>
+                          <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 8, lineHeight: 1.4 }}>
+                            Scan the QR code to view complete profile, all issues, reels & posts.
+                          </div>
+                          {/* Social row */}
+                          <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                            {(user?.instagram || form.watch("instagram")) && (
+                              <div style={{ display: "flex", alignItems: "center", gap: 3, background: "rgba(255,255,255,0.08)", borderRadius: 4, padding: "2px 6px", border: "1px solid rgba(255,255,255,0.12)" }}>
+                                <SiInstagram style={{ width: 8, height: 8, color: "#f9a8d4" }} />
+                                <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 7, fontWeight: 700 }}>{(user?.instagram || form.watch("instagram") || "").replace(/https?:\/\/(www\.)?instagram\.com\/?/,"").replace(/\//,"").slice(0,14)}</span>
+                              </div>
+                            )}
+                            {(user?.whatsapp || form.watch("whatsapp")) && (
+                              <div style={{ display: "flex", alignItems: "center", gap: 3, background: "rgba(255,255,255,0.08)", borderRadius: 4, padding: "2px 6px", border: "1px solid rgba(255,255,255,0.12)" }}>
+                                <SiWhatsapp style={{ width: 8, height: 8, color: "#86efac" }} />
+                                <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 7, fontWeight: 700 }}>{(user?.whatsapp || form.watch("whatsapp") || "").replace(/\D/g,"").slice(-10)}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {/* Right: QR code */}
+                        <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                          <div style={{ background: "white", borderRadius: 10, padding: 6, boxShadow: "0 4px 16px rgba(0,0,0,0.5)" }}>
+                            <QRCodeSVG
+                              value={profileQrValue}
+                              size={80}
+                              level="H"
+                              includeMargin={false}
+                              fgColor="#1a0a2e"
+                              bgColor="transparent"
+                            />
+                          </div>
+                          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 7, textTransform: "uppercase", letterSpacing: "0.15em" }}>brsconnect.in</span>
+                        </div>
+                      </div>
+
+                      {/* ── FOOTER BAR ── */}
+                      <div style={{ height: 4, background: "linear-gradient(90deg,#f59e0b,#ef4444,#ec4899,#8b5cf6,#3b82f6,#10b981)" }} />
                     </div>
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
 
               {/* Download button */}
@@ -5837,13 +5855,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   <button
                     onClick={sharePamphlet}
                     className="w-full rounded-2xl py-4 font-black text-sm flex items-center justify-center gap-2 transition-all shadow-xl active:scale-95"
-                    style={{ background: "linear-gradient(90deg, #be185d, #7e22ce)", color: "white" }}
+                    style={{ background: "linear-gradient(90deg,#be185d,#9d174d)", color: "white" }}
                   >
                     <Download className="w-5 h-5" />
-                    Download Campaign Poster
+                    Download Campaign Flyer
                   </button>
                   <p className="text-center text-white/30 text-[10px] uppercase tracking-widest">
-                    Share your voice with the world
+                    Print &amp; share offline · Scan QR to see full campaign online
                   </p>
                 </div>
               )}
