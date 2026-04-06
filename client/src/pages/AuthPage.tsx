@@ -2669,6 +2669,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [stickerCategory, setStickerCategory] = useState(0);
   const [activePamphletPostIdx, setActivePamphletPostIdx] = useState<number | null>(null);
   const [pamphletGalleryImages, setPamphletGalleryImages] = useState<Array<{id: string; src: string; x: number; y: number; w: number; h: number}>>([]);
+  const [pamphletTextCards, setPamphletTextCards] = useState<Array<{id: string; text: string; x: number; y: number; fontSize: number; color: string; bold: boolean}>>([]);
+  const [editingTextCardId, setEditingTextCardId] = useState<string | null>(null);
+  const [showAddMenu, setShowAddMenu] = useState(false);
   const [xpostPickerIdx, setXpostPickerIdx] = useState<number | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [showScannerDialog, setShowScannerDialog] = useState(false);
@@ -6357,6 +6360,101 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       </motion.div>
                     ))}
 
+                    {/* ── DRAGGABLE TEXT CARDS ── */}
+                    {pamphletTextCards.map((tc) => (
+                      <motion.div
+                        key={tc.id}
+                        drag={editingTextCardId !== tc.id}
+                        dragConstraints={pamphletCanvasRef}
+                        dragElastic={0}
+                        dragMomentum={false}
+                        whileDrag={{ scale: 1.03, zIndex: 65 }}
+                        style={{
+                          position: "absolute",
+                          left: tc.x,
+                          top: tc.y,
+                          minWidth: 80,
+                          maxWidth: 260,
+                          zIndex: 22,
+                          touchAction: editingTextCardId === tc.id ? "auto" : "none",
+                          cursor: isCapturingPamphlet ? "default" : editingTextCardId === tc.id ? "text" : "grab",
+                          userSelect: editingTextCardId === tc.id ? "text" : "none",
+                        }}
+                      >
+                        {editingTextCardId === tc.id ? (
+                          <textarea
+                            autoFocus
+                            value={tc.text}
+                            onChange={(e) => setPamphletTextCards(prev => prev.map(c => c.id === tc.id ? { ...c, text: e.target.value } : c))}
+                            onBlur={() => setEditingTextCardId(null)}
+                            style={{
+                              background: "rgba(0,0,0,0.7)",
+                              border: "1.5px solid rgba(255,255,255,0.5)",
+                              borderRadius: 8,
+                              color: tc.color,
+                              fontSize: tc.fontSize,
+                              fontWeight: tc.bold ? 900 : 700,
+                              padding: "6px 10px",
+                              minWidth: 120,
+                              minHeight: 40,
+                              outline: "none",
+                              resize: "none",
+                              lineHeight: 1.3,
+                              textShadow: "0 1px 4px rgba(0,0,0,0.6)",
+                              letterSpacing: "0.01em",
+                              display: "block",
+                              width: "100%",
+                              boxSizing: "border-box",
+                            }}
+                            rows={2}
+                            onPointerDown={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <div
+                            onClick={() => !isCapturingPamphlet && setEditingTextCardId(tc.id)}
+                            style={{
+                              fontSize: tc.fontSize,
+                              fontWeight: tc.bold ? 900 : 700,
+                              color: tc.color,
+                              padding: "5px 10px",
+                              textShadow: "0 2px 10px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9)",
+                              letterSpacing: "0.01em",
+                              lineHeight: 1.3,
+                              whiteSpace: "pre-wrap",
+                              wordBreak: "break-word",
+                              borderRadius: 8,
+                              border: isCapturingPamphlet ? "none" : "1px dashed rgba(255,255,255,0.2)",
+                            }}
+                          >
+                            {tc.text || "Tap to edit…"}
+                          </div>
+                        )}
+                        {!isCapturingPamphlet && editingTextCardId !== tc.id && (
+                          <>
+                            {/* Delete */}
+                            <button
+                              onPointerDown={(e) => e.stopPropagation()}
+                              onClick={(e) => { e.stopPropagation(); setPamphletTextCards(prev => prev.filter(c => c.id !== tc.id)); }}
+                              style={{ position: "absolute", top: -8, right: -8, width: 16, height: 16, borderRadius: "50%", background: "#ef4444", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 30, padding: 0 }}
+                            >
+                              <svg viewBox="0 0 10 10" style={{ width: 8, height: 8 }}><path d="M2 2l6 6M8 2l-6 6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                            </button>
+                            {/* Font size + / - */}
+                            <button
+                              onPointerDown={(e) => e.stopPropagation()}
+                              onClick={(e) => { e.stopPropagation(); setPamphletTextCards(prev => prev.map(c => c.id === tc.id ? { ...c, fontSize: Math.min(60, c.fontSize + 2) } : c)); }}
+                              style={{ position: "absolute", bottom: -8, right: 14, width: 16, height: 16, borderRadius: "50%", background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 30, padding: 0, color: "white", fontSize: 12, fontWeight: 900, lineHeight: 1 }}
+                            >+</button>
+                            <button
+                              onPointerDown={(e) => e.stopPropagation()}
+                              onClick={(e) => { e.stopPropagation(); setPamphletTextCards(prev => prev.map(c => c.id === tc.id ? { ...c, fontSize: Math.max(10, c.fontSize - 2) } : c)); }}
+                              style={{ position: "absolute", bottom: -8, right: 32, width: 16, height: 16, borderRadius: "50%", background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 30, padding: 0, color: "white", fontSize: 12, fontWeight: 900, lineHeight: 1 }}
+                            >-</button>
+                          </>
+                        )}
+                      </motion.div>
+                    ))}
+
                     {/* ── DRAGGABLE STICKERS ── */}
                     {pamphletStickers.map((sticker, si) => (
                       <motion.div
@@ -6402,32 +6500,79 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     ))}
                   </div>
 
-                  {/* ── FLOATING GALLERY ADD BUTTON ── */}
+                  {/* ── FLOATING ADD BUTTON + SUB-MENU ── */}
                   {!isCapturingPamphlet && (
-                    <button
-                      onClick={() => pamphletGalleryInputRef.current?.click()}
-                      style={{
-                        position: "absolute",
-                        bottom: 24,
-                        right: 16,
-                        width: 44,
-                        height: 44,
-                        borderRadius: "50%",
-                        background: "linear-gradient(135deg, #ec4899, #be185d)",
-                        border: "2.5px solid rgba(255,255,255,0.25)",
-                        boxShadow: "0 4px 20px rgba(190,24,93,0.5)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        zIndex: 50,
-                        flexShrink: 0,
-                      }}
-                    >
-                      <svg viewBox="0 0 24 24" style={{ width: 20, height: 20, fill: "none", stroke: "white", strokeWidth: 2.5, strokeLinecap: "round" }}>
-                        <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-                      </svg>
-                    </button>
+                    <div style={{ position: "absolute", bottom: 24, right: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, zIndex: 50 }}>
+                      {/* Sub-menu buttons (shown when + is active) */}
+                      {showAddMenu && (
+                        <>
+                          {/* Upload Image button */}
+                          <button
+                            onClick={() => { setShowAddMenu(false); pamphletGalleryInputRef.current?.click(); }}
+                            style={{
+                              width: 44, height: 44, borderRadius: "50%",
+                              background: "linear-gradient(135deg, #7c3aed, #5b21b6)",
+                              border: "2px solid rgba(255,255,255,0.25)",
+                              boxShadow: "0 4px 16px rgba(124,58,237,0.5)",
+                              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                              cursor: "pointer", gap: 1,
+                            }}
+                          >
+                            <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, fill: "none", stroke: "white", strokeWidth: 2, strokeLinecap: "round" }}>
+                              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            <span style={{ fontSize: 6, color: "white", fontWeight: 800, letterSpacing: "0.05em", lineHeight: 1 }}>IMAGE</span>
+                          </button>
+                          {/* Text button */}
+                          <button
+                            onClick={() => {
+                              setShowAddMenu(false);
+                              const newCard = {
+                                id: `tc-${Date.now()}`,
+                                text: "",
+                                x: 60 + Math.floor(Math.random() * 160),
+                                y: 120 + Math.floor(Math.random() * 200),
+                                fontSize: 22,
+                                color: "#ffffff",
+                                bold: true,
+                              };
+                              setPamphletTextCards(prev => [...prev, newCard]);
+                              setTimeout(() => setEditingTextCardId(newCard.id), 50);
+                            }}
+                            style={{
+                              width: 44, height: 44, borderRadius: "50%",
+                              background: "linear-gradient(135deg, #0ea5e9, #0369a1)",
+                              border: "2px solid rgba(255,255,255,0.25)",
+                              boxShadow: "0 4px 16px rgba(14,165,233,0.5)",
+                              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                              cursor: "pointer", gap: 1,
+                            }}
+                          >
+                            <span style={{ fontSize: 18, color: "white", fontWeight: 900, lineHeight: 1, fontFamily: "serif" }}>T</span>
+                            <span style={{ fontSize: 6, color: "white", fontWeight: 800, letterSpacing: "0.05em", lineHeight: 1 }}>TEXT</span>
+                          </button>
+                        </>
+                      )}
+                      {/* Main + toggle button */}
+                      <button
+                        onClick={() => setShowAddMenu(v => !v)}
+                        style={{
+                          width: 44, height: 44, borderRadius: "50%",
+                          background: showAddMenu
+                            ? "rgba(255,255,255,0.15)"
+                            : "linear-gradient(135deg, #ec4899, #be185d)",
+                          border: "2.5px solid rgba(255,255,255,0.25)",
+                          boxShadow: showAddMenu ? "none" : "0 4px 20px rgba(190,24,93,0.5)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" style={{ width: 20, height: 20, fill: "none", stroke: "white", strokeWidth: 2.5, strokeLinecap: "round", transform: showAddMenu ? "rotate(45deg)" : "none", transition: "transform 0.2s" }}>
+                          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                      </button>
+                    </div>
                   )}
                 </div>
 
