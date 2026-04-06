@@ -2468,6 +2468,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [showQRDialog, setShowQRDialog] = useState(false);
   const [showPamphletDialog, setShowPamphletDialog] = useState(false);
   const [isCapturingPamphlet, setIsCapturingPamphlet] = useState(false);
+  const [pamphletBgImage, setPamphletBgImage] = useState<string | null>(null);
+  const [pamphletPostImages, setPamphletPostImages] = useState<Record<number, string>>({});
+  const [activePamphletPostIdx, setActivePamphletPostIdx] = useState<number | null>(null);
   const [xpostPickerIdx, setXpostPickerIdx] = useState<number | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [showScannerDialog, setShowScannerDialog] = useState(false);
@@ -2912,6 +2915,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
   const qrRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const pamphletBgInputRef = useRef<HTMLInputElement>(null);
+  const pamphletPostImgRef = useRef<HTMLInputElement>(null);
+  const pamphletCanvasRef = useRef<HTMLDivElement>(null);
 
   // Preload all videos when component mounts for instant playback
   useEffect(() => {
@@ -5630,243 +5636,408 @@ export default function AuthPage({ slug }: { slug?: string }) {
         </AnimatePresence>
 
         {/* ── Campaign Pamphlet Dialog ── */}
+        {/* Hidden inputs for pamphlet editor */}
+        <input
+          ref={pamphletBgInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => setPamphletBgImage(ev.target?.result as string);
+            reader.readAsDataURL(file);
+            e.target.value = "";
+          }}
+        />
+        <input
+          ref={pamphletPostImgRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file && activePamphletPostIdx !== null) {
+              const reader = new FileReader();
+              reader.onload = (ev) => setPamphletPostImages((prev) => ({ ...prev, [activePamphletPostIdx!]: ev.target?.result as string }));
+              reader.readAsDataURL(file);
+            }
+            e.target.value = "";
+          }}
+        />
         <AnimatePresence>
-          {showPamphletDialog && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[110] flex flex-col"
-              style={{ background: "#0a0a0f" }}
-            >
-              {/* Close button */}
-              {!isCapturingPamphlet && (
-                <div className="absolute top-4 right-4 z-[120]">
-                  <button
-                    onClick={() => setShowPamphletDialog(false)}
-                    className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-all border border-white/20"
-                  >
-                    <X className="w-4 h-4 text-white" />
-                  </button>
-                </div>
-              )}
+          {showPamphletDialog && (() => {
+            const rawCards = (user?.cards || selectedCards || []).filter(Boolean);
+            const pamphletCards = rawCards.map((c: string) => {
+              try { const card = JSON.parse(c); return card?.type ? card : null; } catch { return null; }
+            }).filter(Boolean);
 
-              {/* Scrollable wrapper */}
-              <div className="flex-1 overflow-y-auto flex items-start justify-center py-6 px-4">
+            const displayAvatarSrc = normalizeAvatarUrl(user?.avatarUrl || loggedInUser?.avatarUrl) || avatarUrl;
+            const displayName = user?.name || form.watch("name") || "Your Name";
+            const roleLabel = ROLES.find((r) => r.value === (user?.role || form.watch("role")))?.label || (user?.role || form.watch("role") || "Member").replace(/[_-]/g, " ");
+            const profileQrValue = window.location.origin + "/" + (displaySlug || user?.uniqueSlug || "");
 
-                {/* ── CAMPAIGN FLYER ── */}
-                {(() => {
-                  const rawCards = (user?.cards || selectedCards || []).filter(Boolean);
-                  const pamphletCards = rawCards.map((c: string) => {
-                    try {
-                      const card = JSON.parse(c);
-                      if (!card?.type) return null;
-                      return card;
-                    } catch { return null; }
-                  }).filter(Boolean).slice(0, 6);
+            const CANVAS_W = 360;
+            const CANVAS_H = 640;
+            const HEADER_H = 52;
+            const PAD = 12;
+            const GAP = 8;
+            const n = pamphletCards.length;
+            const useDual = n >= 4;
+            const cardW = useDual ? Math.floor((CANVAS_W - PAD * 2 - GAP) / 2) : CANVAS_W - PAD * 2;
+            const rawCardH = useDual
+              ? Math.min(175, Math.floor((CANVAS_H - HEADER_H - 130 - GAP * Math.ceil(n / 2)) / Math.max(Math.ceil(n / 2), 1)))
+              : Math.min(220, Math.floor((CANVAS_H - HEADER_H - 130 - GAP * n) / Math.max(n, 1)));
+            const cardH = Math.max(rawCardH, 80);
 
-                  const displayAvatarSrc = normalizeAvatarUrl(user?.avatarUrl || loggedInUser?.avatarUrl) || avatarUrl;
-                  const displayName = user?.name || form.watch("name") || "Your Name";
-                  const roleLabel = ROLES.find((r) => r.value === (user?.role || form.watch("role")))?.label || (user?.role || form.watch("role") || "Member").replace(/[_-]/g, " ");
-                  const bioText = user?.bio || form.watch("bio") || "Voice of the People. Strength of the Nation.";
-                  const profileQrValue = window.location.origin + "/" + (displaySlug || user?.uniqueSlug || "");
+            const getInitPos = (idx: number) => {
+              if (useDual) {
+                const col = idx % 2;
+                const row = Math.floor(idx / 2);
+                return { x: PAD + col * (cardW + GAP), y: HEADER_H + GAP + row * (cardH + GAP) };
+              }
+              return { x: PAD, y: HEADER_H + GAP + idx * (cardH + GAP) };
+            };
 
-                  const cardBgMap: Record<string, string> = {
-                    reel: "linear-gradient(135deg,#18181b,#09090b)",
-                    image: "linear-gradient(135deg,#1c1917,#0c0a09)",
-                    post: "linear-gradient(135deg,#1a0510,#2d0a1e)",
-                    xpost: "linear-gradient(135deg,#0a0a0a,#1a1a1a)",
-                    product: "linear-gradient(135deg,#0c1a2e,#162032)",
-                    pitch: "linear-gradient(135deg,#0a1f0a,#112211)",
-                  };
+            const getYtThumb = (url: string) => {
+              const m = (url || "").match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/))([a-zA-Z0-9_-]{11})/);
+              return m ? `https://img.youtube.com/vi/${m[1]}/mqdefault.jpg` : null;
+            };
 
-                  return (
-                    <div
-                      id="pamphlet-fullscreen"
-                      className="w-full max-w-[360px] rounded-[18px] overflow-hidden shadow-[0_24px_70px_rgba(0,0,0,0.9)]"
-                      style={{ background: "#ffffff", fontFamily: "system-ui, sans-serif" }}
+            return (
+              <motion.div
+                key="pamphlet-dialog"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[110] flex flex-col"
+                style={{ background: "#0a0a0a" }}
+              >
+                {/* Close */}
+                {!isCapturingPamphlet && (
+                  <div className="absolute top-4 right-4 z-[120]">
+                    <button
+                      onClick={() => setShowPamphletDialog(false)}
+                      className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center active:scale-90 border border-white/15"
                     >
-                      {/* ── TOP COLOR BAR ── */}
-                      <div style={{ height: 6, background: "linear-gradient(90deg,#be185d,#ec4899,#f9a8d4,#ec4899,#be185d)" }} />
+                      <X className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                )}
 
-                      {/* ── HEADER: candidate strip ── */}
-                      <div style={{ background: "linear-gradient(135deg,#be185d 0%,#9d174d 100%)", padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
-                        {/* Avatar */}
-                        <div style={{ width: 52, height: 52, borderRadius: "50%", padding: 2, background: "linear-gradient(135deg,#fbbf24,#f9a8d4)", flexShrink: 0, boxShadow: "0 4px 12px rgba(0,0,0,0.4)" }}>
-                          <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#fce7f3" }}>
-                            {isCapturingPamphlet ? (
-                              <img src={avatarDataUrl || displayAvatarSrc} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                            ) : displayAvatarSrc ? (
-                              <img src={displayAvatarSrc} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                            ) : (
-                              <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#ec4899", color: "white", fontSize: 22, fontWeight: 900 }}>
-                                {displayName[0]?.toUpperCase() || "P"}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        {/* Name + role */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ color: "white", fontWeight: 900, fontSize: 15, lineHeight: 1.1, letterSpacing: "-0.02em", textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}>{displayName}</div>
-                          <div style={{ color: "rgba(255,255,255,0.75)", fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", marginTop: 3 }}>{roleLabel}</div>
-                          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 8, fontStyle: "italic", marginTop: 2, lineHeight: 1.3 }} className="line-clamp-1">{bioText}</div>
-                        </div>
-                        {/* BRS logo */}
-                        <div style={{ width: 36, height: 36, borderRadius: "50%", overflow: "hidden", background: "white", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>
-                          <img src="/brs-logo.png" alt="BRS" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        </div>
-                      </div>
+                {/* Canvas scroll area */}
+                <div className="flex-1 overflow-y-auto flex items-start justify-center py-5 px-4">
+                  {/* ── THE POSTER CANVAS ── */}
+                  <div
+                    id="pamphlet-fullscreen"
+                    ref={pamphletCanvasRef}
+                    className="relative flex-shrink-0 overflow-hidden"
+                    style={{
+                      width: CANVAS_W,
+                      height: CANVAS_H,
+                      borderRadius: 16,
+                      boxShadow: "0 24px_80px rgba(0,0,0,0.9)",
+                      background: pamphletBgImage
+                        ? `url(${pamphletBgImage}) center/cover no-repeat`
+                        : "#ffffff",
+                    }}
+                  >
+                    {/* Bg overlay when image is set */}
+                    {pamphletBgImage && (
+                      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.28)", zIndex: 1, pointerEvents: "none" }} />
+                    )}
 
-                      {/* ── SECTION LABEL ── */}
-                      <div style={{ background: "#fdf2f8", borderBottom: "1px solid #fce7f3", padding: "6px 14px", display: "flex", alignItems: "center", gap: 6 }}>
-                        <div style={{ width: 3, height: 14, background: "#ec4899", borderRadius: 2 }} />
-                        <span style={{ fontSize: 9, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.25em", color: "#be185d" }}>Voice Cards — Issues Being Addressed</span>
-                      </div>
-
-                      {/* ── VOICE CARDS GRID ── */}
-                      <div style={{ background: "#f9fafb", padding: 10 }}>
-                        {pamphletCards.length === 0 ? (
-                          <div style={{ padding: "20px 0", textAlign: "center", color: "#d1d5db", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em" }}>
-                            No voice cards yet
-                          </div>
+                    {/* ── MINIMAL HEADER (non-draggable) ── */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 0, left: 0, right: 0,
+                        height: HEADER_H,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        padding: "0 12px",
+                        background: pamphletBgImage
+                          ? "rgba(0,0,0,0.55)"
+                          : "linear-gradient(135deg,#be185d,#9d174d)",
+                        backdropFilter: pamphletBgImage ? "blur(10px)" : undefined,
+                        zIndex: 20,
+                      }}
+                    >
+                      {/* Avatar */}
+                      <div style={{ width: 34, height: 34, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: "2px solid rgba(255,255,255,0.35)", background: "#fce7f3" }}>
+                        {isCapturingPamphlet ? (
+                          <img src={avatarDataUrl || displayAvatarSrc} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                        ) : displayAvatarSrc ? (
+                          <img src={displayAvatarSrc} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                         ) : (
-                          <div style={{ display: "grid", gridTemplateColumns: pamphletCards.length === 1 ? "1fr" : "1fr 1fr", gap: 8 }}>
-                            {pamphletCards.map((card: any, idx: number) => {
-                              const isWide = pamphletCards.length % 2 !== 0 && idx === pamphletCards.length - 1;
-                              return (
-                                <div
-                                  key={idx}
-                                  style={{
-                                    borderRadius: 10,
-                                    overflow: "hidden",
-                                    background: cardBgMap[card.type] || "linear-gradient(135deg,#1e1b4b,#312e81)",
-                                    gridColumn: isWide ? "1 / -1" : undefined,
-                                    minHeight: isWide ? 80 : 90,
-                                    position: "relative",
-                                    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-                                    display: "flex",
-                                    flexDirection: "column",
-                                  }}
-                                >
-                                  {/* Image cards */}
-                                  {(card.type === "image" || card.type === "product") && card.imageUrl && (
-                                    <img src={card.imageUrl} alt={card.title} style={{ width: "100%", height: isWide ? 100 : 70, objectFit: "cover", display: "block" }} />
-                                  )}
-                                  {/* Reel thumbnail */}
-                                  {card.type === "reel" && card.url && (() => {
-                                    const ytMatch = card.url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/))([a-zA-Z0-9_-]{11})/);
-                                    const thumb = ytMatch ? `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg` : null;
-                                    return thumb ? (
-                                      <div style={{ position: "relative" }}>
-                                        <img src={thumb} alt={card.title} style={{ width: "100%", height: isWide ? 100 : 70, objectFit: "cover", display: "block" }} />
-                                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.3)" }}>
-                                          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
-                                            <svg viewBox="0 0 24 24" style={{ width: 14, height: 14, fill: "white", marginLeft: 2 }}><path d="M8 5v14l11-7z"/></svg>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    ) : null;
-                                  })()}
-                                  {/* Card info area */}
-                                  <div style={{ flex: 1, padding: "6px 8px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 3 }}>
-                                    {/* Type badge */}
-                                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                      <span style={{ fontSize: 7, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.15em", color: "rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.1)", padding: "1px 5px", borderRadius: 3 }}>
-                                        {card.type === "reel" ? "▶ Reel" : card.type === "image" ? "🖼 Image" : card.type === "post" ? "✍ Post" : card.type === "xpost" ? "𝕏 Post" : card.type === "product" ? "📦 Product" : card.type}
-                                      </span>
-                                    </div>
-                                    {/* Title */}
-                                    <div style={{ color: "white", fontWeight: 800, fontSize: 10, lineHeight: 1.25, letterSpacing: "-0.01em" }} className="line-clamp-2">
-                                      {card.title || "Untitled"}
-                                    </div>
-                                    {/* Post content preview */}
-                                    {card.type === "post" && card.content && (
-                                      <div style={{ color: "rgba(255,255,255,0.65)", fontSize: 8, lineHeight: 1.4 }} className="line-clamp-3">
-                                        {card.content}
-                                      </div>
-                                    )}
-                                    {/* X post preview */}
-                                    {card.type === "xpost" && card.url && (
-                                      <div style={{ color: "rgba(255,255,255,0.45)", fontSize: 8, lineHeight: 1.3 }} className="line-clamp-1">
-                                        {card.url.replace(/https?:\/\/(www\.)?(twitter|x)\.com\//,"")}
-                                      </div>
-                                    )}
-                                  </div>
-                                  {/* Corner glow */}
-                                  <div style={{ position: "absolute", bottom: -12, right: -12, width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,0.06)", pointerEvents: "none" }} />
-                                </div>
-                              );
-                            })}
+                          <div style={{ width: "100%", height: "100%", background: "#ec4899", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 900, fontSize: 14 }}>
+                            {displayName[0]?.toUpperCase()}
                           </div>
                         )}
                       </div>
-
-                      {/* ── QR + CTA SECTION ── */}
-                      <div style={{ background: "linear-gradient(135deg,#1a0a2e,#2d0a3e)", padding: "14px 14px 12px", display: "flex", alignItems: "center", gap: 12 }}>
-                        {/* Left: CTA text */}
-                        <div style={{ flex: 1 }}>
-                          <div style={{ color: "#f9a8d4", fontSize: 9, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.2em", marginBottom: 4 }}>Scan for Full Campaign</div>
-                          <div style={{ color: "white", fontSize: 13, fontWeight: 900, lineHeight: 1.2, marginBottom: 6 }}>See all Voice Cards online</div>
-                          <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 8, lineHeight: 1.4 }}>
-                            Scan the QR code to view complete profile, all issues, reels & posts.
-                          </div>
-                          {/* Social row */}
-                          <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
-                            {(user?.instagram || form.watch("instagram")) && (
-                              <div style={{ display: "flex", alignItems: "center", gap: 3, background: "rgba(255,255,255,0.08)", borderRadius: 4, padding: "2px 6px", border: "1px solid rgba(255,255,255,0.12)" }}>
-                                <SiInstagram style={{ width: 8, height: 8, color: "#f9a8d4" }} />
-                                <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 7, fontWeight: 700 }}>{(user?.instagram || form.watch("instagram") || "").replace(/https?:\/\/(www\.)?instagram\.com\/?/,"").replace(/\//,"").slice(0,14)}</span>
-                              </div>
-                            )}
-                            {(user?.whatsapp || form.watch("whatsapp")) && (
-                              <div style={{ display: "flex", alignItems: "center", gap: 3, background: "rgba(255,255,255,0.08)", borderRadius: 4, padding: "2px 6px", border: "1px solid rgba(255,255,255,0.12)" }}>
-                                <SiWhatsapp style={{ width: 8, height: 8, color: "#86efac" }} />
-                                <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 7, fontWeight: 700 }}>{(user?.whatsapp || form.watch("whatsapp") || "").replace(/\D/g,"").slice(-10)}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        {/* Right: QR code */}
-                        <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                          <div style={{ background: "white", borderRadius: 10, padding: 6, boxShadow: "0 4px 16px rgba(0,0,0,0.5)" }}>
-                            <QRCodeSVG
-                              value={profileQrValue}
-                              size={80}
-                              level="H"
-                              includeMargin={false}
-                              fgColor="#1a0a2e"
-                              bgColor="transparent"
-                            />
-                          </div>
-                          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 7, textTransform: "uppercase", letterSpacing: "0.15em" }}>brsconnect.in</span>
-                        </div>
+                      {/* Name + role */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ color: "white", fontWeight: 800, fontSize: 13, lineHeight: 1.1, letterSpacing: "-0.02em" }}>{displayName}</div>
+                        <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 8, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginTop: 2 }}>{roleLabel}</div>
                       </div>
-
-                      {/* ── FOOTER BAR ── */}
-                      <div style={{ height: 4, background: "linear-gradient(90deg,#f59e0b,#ef4444,#ec4899,#8b5cf6,#3b82f6,#10b981)" }} />
+                      {/* BRS logo */}
+                      <div style={{ width: 26, height: 26, borderRadius: "50%", overflow: "hidden", background: "white", flexShrink: 0 }}>
+                        <img src="/brs-logo.png" alt="BRS" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </div>
                     </div>
-                  );
-                })()}
-              </div>
 
-              {/* Download button */}
-              {!isCapturingPamphlet && (
-                <div className="flex-shrink-0 px-5 pb-8 pt-3 space-y-2">
-                  <button
-                    onClick={sharePamphlet}
-                    className="w-full rounded-2xl py-4 font-black text-sm flex items-center justify-center gap-2 transition-all shadow-xl active:scale-95"
-                    style={{ background: "linear-gradient(90deg,#be185d,#9d174d)", color: "white" }}
-                  >
-                    <Download className="w-5 h-5" />
-                    Download Campaign Flyer
-                  </button>
-                  <p className="text-center text-white/30 text-[10px] uppercase tracking-widest">
-                    Print &amp; share offline · Scan QR to see full campaign online
-                  </p>
+                    {/* ── DRAGGABLE VOICE CARDS ── */}
+                    {pamphletCards.map((card: any, idx: number) => {
+                      const initPos = getInitPos(idx);
+                      const ytThumb = getYtThumb(card.url || "");
+                      const postImg = pamphletPostImages[idx];
+                      const isPost = card.type === "post";
+                      const isReel = card.type === "reel";
+                      const isXpost = card.type === "xpost";
+                      const isImageCard = card.type === "image" || card.type === "product";
+                      const hasBgMedia = (isReel && ytThumb) || (isImageCard && card.imageUrl) || (isPost && postImg);
+                      const cardBg = isPost
+                        ? (pamphletBgImage ? "rgba(255,255,255,0.93)" : "#fff")
+                        : isXpost
+                          ? "#0a0a0a"
+                          : "#111111";
+
+                      return (
+                        <motion.div
+                          key={idx}
+                          drag
+                          dragConstraints={pamphletCanvasRef}
+                          dragElastic={0}
+                          dragMomentum={false}
+                          whileDrag={{ scale: 1.04, zIndex: 60 }}
+                          style={{
+                            position: "absolute",
+                            left: initPos.x,
+                            top: initPos.y,
+                            width: cardW,
+                            height: cardH,
+                            borderRadius: 10,
+                            overflow: "hidden",
+                            zIndex: 10,
+                            touchAction: "none",
+                            cursor: isCapturingPamphlet ? "default" : "grab",
+                            boxShadow: "0 4px 18px rgba(0,0,0,0.4)",
+                            background: cardBg,
+                          }}
+                        >
+                          {/* Reel thumbnail */}
+                          {isReel && ytThumb && (
+                            <img src={ytThumb} alt={card.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                          )}
+                          {/* Reel play overlay */}
+                          {isReel && (
+                            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: ytThumb ? "rgba(0,0,0,0.22)" : "rgba(0,0,0,0.6)", zIndex: 2 }}>
+                              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, fill: "white", marginLeft: 2 }}><path d="M8 5v14l11-7z"/></svg>
+                              </div>
+                            </div>
+                          )}
+                          {/* Image/product media */}
+                          {isImageCard && card.imageUrl && (
+                            <img src={card.imageUrl} alt={card.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                          )}
+                          {/* Post card uploaded image (top half) */}
+                          {isPost && postImg && (
+                            <img src={postImg} alt="" style={{ width: "100%", height: "45%", objectFit: "cover", display: "block" }} />
+                          )}
+                          {/* X post media — show card.imageUrl if available */}
+                          {isXpost && card.imageUrl && (
+                            <img src={card.imageUrl} alt={card.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.35 }} />
+                          )}
+
+                          {/* Content layer */}
+                          <div
+                            style={{
+                              position: isPost ? (postImg ? "relative" : "absolute") : "absolute",
+                              inset: isPost && !postImg ? 0 : undefined,
+                              bottom: isPost ? undefined : 0,
+                              left: 0, right: 0,
+                              padding: "7px 9px",
+                              background: isPost
+                                ? "transparent"
+                                : hasBgMedia
+                                  ? "linear-gradient(to top, rgba(0,0,0,0.88) 60%, transparent)"
+                                  : "transparent",
+                              zIndex: 3,
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 3,
+                              flex: isPost ? 1 : undefined,
+                            }}
+                          >
+                            {/* Type label */}
+                            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                              {isXpost && (
+                                <span style={{ display: "flex", alignItems: "center", gap: 3, color: "rgba(255,255,255,0.65)", fontSize: 8, fontWeight: 800 }}>
+                                  <svg viewBox="0 0 24 24" style={{ width: 8, height: 8, fill: "rgba(255,255,255,0.65)" }}><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.73-8.835L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                                  పోస్ట్
+                                </span>
+                              )}
+                              {isReel && <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 8, fontWeight: 700 }}>రీల్</span>}
+                              {isPost && <span style={{ color: "#be185d", fontSize: 8, fontWeight: 800 }}>✍ పోస్ట్ కార్డ్</span>}
+                              {isImageCard && <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 8, fontWeight: 700 }}>చిత్రం</span>}
+                            </div>
+                            {/* Title */}
+                            <div
+                              style={{
+                                color: isPost ? "#111" : "white",
+                                fontWeight: 800,
+                                fontSize: 10,
+                                lineHeight: 1.3,
+                                display: "-webkit-box",
+                                WebkitBoxOrient: "vertical",
+                                WebkitLineClamp: 2,
+                                overflow: "hidden",
+                              }}
+                            >
+                              {card.title || ""}
+                            </div>
+                            {/* Post full text (Telugu portrait) */}
+                            {isPost && card.content && (
+                              <div
+                                style={{
+                                  color: "#222",
+                                  fontSize: 9,
+                                  lineHeight: 1.65,
+                                  display: "-webkit-box",
+                                  WebkitBoxOrient: "vertical",
+                                  WebkitLineClamp: postImg ? 5 : 12,
+                                  overflow: "hidden",
+                                }}
+                              >
+                                {card.content}
+                              </div>
+                            )}
+                            {/* X post URL */}
+                            {isXpost && card.url && (
+                              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 8, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                                {card.url.replace(/https?:\/\/(www\.)?(twitter|x)\.com\//, "")}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Post image upload button */}
+                          {isPost && !isCapturingPamphlet && (
+                            <button
+                              onPointerDown={(e) => e.stopPropagation()}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActivePamphletPostIdx(idx);
+                                setTimeout(() => pamphletPostImgRef.current?.click(), 0);
+                              }}
+                              style={{
+                                position: "absolute",
+                                top: 5, right: 5,
+                                width: 22, height: 22,
+                                borderRadius: "50%",
+                                background: "#be185d",
+                                border: "none",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                cursor: "pointer",
+                                zIndex: 20,
+                              }}
+                            >
+                              <svg viewBox="0 0 24 24" style={{ width: 11, height: 11, fill: "none", stroke: "white", strokeWidth: 2.5, strokeLinecap: "round" }}>
+                                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                              </svg>
+                            </button>
+                          )}
+
+                          {/* Drag hint */}
+                          {!isCapturingPamphlet && (
+                            <div style={{ position: "absolute", top: 5, left: 5, background: "rgba(0,0,0,0.3)", borderRadius: 4, padding: "1px 4px", zIndex: 20, pointerEvents: "none" }}>
+                              <svg viewBox="0 0 24 24" style={{ width: 8, height: 8, fill: isPost ? "#be185d" : "rgba(255,255,255,0.6)" }}><path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/></svg>
+                            </div>
+                          )}
+                        </motion.div>
+                      );
+                    })}
+
+                    {/* ── DRAGGABLE QR CODE ── */}
+                    <motion.div
+                      drag
+                      dragConstraints={pamphletCanvasRef}
+                      dragElastic={0}
+                      dragMomentum={false}
+                      whileDrag={{ zIndex: 60, scale: 1.05 }}
+                      style={{
+                        position: "absolute",
+                        left: Math.floor((CANVAS_W - 104) / 2),
+                        top: CANVAS_H - 128,
+                        zIndex: 15,
+                        touchAction: "none",
+                        cursor: isCapturingPamphlet ? "default" : "grab",
+                      }}
+                    >
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+                        <div style={{ background: "white", borderRadius: 12, padding: 6, boxShadow: "0 4px 20px rgba(0,0,0,0.45)" }}>
+                          <QRCodeSVG
+                            value={profileQrValue}
+                            size={92}
+                            level="H"
+                            includeMargin={false}
+                            fgColor="#be185d"
+                            bgColor="transparent"
+                          />
+                        </div>
+                        <span style={{ color: pamphletBgImage ? "rgba(255,255,255,0.75)" : "#999", fontSize: 8, fontWeight: 700, letterSpacing: "0.1em" }}>
+                          QR స్కాన్ చేయండి
+                        </span>
+                        {!isCapturingPamphlet && (
+                          <div style={{ position: "absolute", top: 4, right: 4, background: "rgba(0,0,0,0.3)", borderRadius: 4, padding: "2px 4px" }}>
+                            <svg viewBox="0 0 24 24" style={{ width: 8, height: 8, fill: "rgba(255,255,255,0.7)" }}><path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/></svg>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  </div>
                 </div>
-              )}
-            </motion.div>
-          )}
+
+                {/* ── BOTTOM TOOLBAR ── */}
+                {!isCapturingPamphlet && (
+                  <div className="flex-shrink-0 px-4 pb-7 pt-2 space-y-2">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => pamphletBgInputRef.current?.click()}
+                        className="flex items-center justify-center gap-1.5 rounded-xl py-3 text-[11px] font-bold text-white/70 active:scale-95 transition-all border border-white/10"
+                        style={{ background: "rgba(255,255,255,0.06)", flex: 1 }}
+                      >
+                        <ImageIcon className="w-3.5 h-3.5" />
+                        Background
+                      </button>
+                      {pamphletBgImage && (
+                        <button
+                          onClick={() => setPamphletBgImage(null)}
+                          className="px-3 rounded-xl py-3 text-[11px] font-bold text-red-400/80 active:scale-95 border border-red-400/15"
+                          style={{ background: "rgba(239,68,68,0.07)" }}
+                        >
+                          Reset
+                        </button>
+                      )}
+                      <button
+                        onClick={sharePamphlet}
+                        className="flex items-center justify-center gap-1.5 rounded-xl py-3 text-[11px] font-bold text-white active:scale-95 shadow-lg"
+                        style={{ background: "linear-gradient(90deg,#be185d,#9d174d)", flex: 1 }}
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        Download
+                      </button>
+                    </div>
+                    <p className="text-center text-white/20 text-[9px] tracking-widest">
+                      కార్డులు మరియు QR కోడ్ మీకు నచ్చిన చోటికి తరలించండి
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            );
+          })()}
         </AnimatePresence>
 
         <AnimatePresence>
