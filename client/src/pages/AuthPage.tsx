@@ -2668,6 +2668,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [showStickerTray, setShowStickerTray] = useState(false);
   const [stickerCategory, setStickerCategory] = useState(0);
   const [activePamphletPostIdx, setActivePamphletPostIdx] = useState<number | null>(null);
+  const [pamphletGalleryImages, setPamphletGalleryImages] = useState<Array<{id: string; src: string; x: number; y: number; w: number; h: number}>>([]);
   const [xpostPickerIdx, setXpostPickerIdx] = useState<number | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [showScannerDialog, setShowScannerDialog] = useState(false);
@@ -3114,6 +3115,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const pamphletBgInputRef = useRef<HTMLInputElement>(null);
   const pamphletPostImgRef = useRef<HTMLInputElement>(null);
+  const pamphletGalleryInputRef = useRef<HTMLInputElement>(null);
   const pamphletCanvasRef = useRef<HTMLDivElement>(null);
 
   // Preload all videos when component mounts for instant playback
@@ -5863,6 +5865,35 @@ export default function AuthPage({ slug }: { slug?: string }) {
             e.target.value = "";
           }}
         />
+        <input
+          ref={pamphletGalleryInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            const files = Array.from(e.target.files || []);
+            files.forEach((file) => {
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                const src = ev.target?.result as string;
+                setPamphletGalleryImages((prev) => [
+                  ...prev,
+                  {
+                    id: `gal-${Date.now()}-${Math.random()}`,
+                    src,
+                    x: Math.floor(Math.random() * 120) + 40,
+                    y: Math.floor(Math.random() * 120) + 60,
+                    w: 130,
+                    h: 100,
+                  },
+                ]);
+              };
+              reader.readAsDataURL(file);
+            });
+            e.target.value = "";
+          }}
+        />
         <AnimatePresence>
           {showPamphletDialog && (() => {
             const rawCards = (user?.cards || selectedCards || []).filter(Boolean);
@@ -5929,7 +5960,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 )}
 
                 {/* Canvas scroll area */}
-                <div className="flex-1 overflow-y-auto flex items-start justify-center py-5 px-4">
+                <div className="flex-1 overflow-y-auto flex items-start justify-center py-5 px-4 relative">
                   {/* ── THE POSTER CANVAS ── */}
                   <div
                     id="pamphlet-fullscreen"
@@ -6251,6 +6282,76 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       </div>
                     </motion.div>
 
+                    {/* ── DRAGGABLE GALLERY IMAGES ── */}
+                    {pamphletGalleryImages.map((img) => (
+                      <motion.div
+                        key={img.id}
+                        drag
+                        dragConstraints={pamphletCanvasRef}
+                        dragElastic={0}
+                        dragMomentum={false}
+                        whileDrag={{ scale: 1.03, zIndex: 60 }}
+                        style={{
+                          position: "absolute",
+                          left: img.x,
+                          top: img.y,
+                          width: img.w,
+                          height: img.h,
+                          borderRadius: 10,
+                          overflow: "hidden",
+                          zIndex: 18,
+                          touchAction: "none",
+                          cursor: isCapturingPamphlet ? "default" : "grab",
+                          boxShadow: "0 4px 18px rgba(0,0,0,0.45)",
+                        }}
+                      >
+                        <img src={img.src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                        {!isCapturingPamphlet && (
+                          <>
+                            {/* Delete button */}
+                            <button
+                              onPointerDown={(e) => e.stopPropagation()}
+                              onClick={(e) => { e.stopPropagation(); setPamphletGalleryImages(prev => prev.filter(i => i.id !== img.id)); }}
+                              style={{ position: "absolute", top: 4, right: 4, width: 18, height: 18, borderRadius: "50%", background: "#ef4444", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 30, padding: 0 }}
+                            >
+                              <svg viewBox="0 0 10 10" style={{ width: 8, height: 8, fill: "white" }}><path d="M2 2l6 6M8 2l-6 6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                            </button>
+                            {/* Drag hint */}
+                            <div style={{ position: "absolute", top: 4, left: 4, background: "rgba(0,0,0,0.3)", borderRadius: 3, padding: "1px 3px", zIndex: 20, pointerEvents: "none" }}>
+                              <svg viewBox="0 0 24 24" style={{ width: 7, height: 7, fill: "rgba(255,255,255,0.7)" }}><path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/></svg>
+                            </div>
+                            {/* Resize handle */}
+                            <div
+                              onPointerDown={(e) => {
+                                e.stopPropagation();
+                                const startX = e.clientX;
+                                const startY = e.clientY;
+                                const startW = img.w;
+                                const startH = img.h;
+                                const onMove = (me: PointerEvent) => {
+                                  const newW = Math.max(60, startW + (me.clientX - startX));
+                                  const newH = Math.max(50, startH + (me.clientY - startY));
+                                  setPamphletGalleryImages(prev => prev.map(i => i.id === img.id ? { ...i, w: newW, h: newH } : i));
+                                };
+                                const onUp = () => {
+                                  document.removeEventListener("pointermove", onMove);
+                                  document.removeEventListener("pointerup", onUp);
+                                };
+                                document.addEventListener("pointermove", onMove);
+                                document.addEventListener("pointerup", onUp);
+                              }}
+                              style={{ position: "absolute", bottom: 3, right: 3, width: 14, height: 14, cursor: "se-resize", zIndex: 30, display: "flex", alignItems: "flex-end", justifyContent: "flex-end", touchAction: "none" }}
+                            >
+                              <svg viewBox="0 0 10 10" style={{ width: 10, height: 10 }}>
+                                <path d="M3 9L9 9L9 3" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                                <path d="M6 9L9 9L9 6" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                              </svg>
+                            </div>
+                          </>
+                        )}
+                      </motion.div>
+                    ))}
+
                     {/* ── DRAGGABLE STICKERS ── */}
                     {pamphletStickers.map((sticker, si) => (
                       <motion.div
@@ -6295,6 +6396,34 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       </motion.div>
                     ))}
                   </div>
+
+                  {/* ── FLOATING GALLERY ADD BUTTON ── */}
+                  {!isCapturingPamphlet && (
+                    <button
+                      onClick={() => pamphletGalleryInputRef.current?.click()}
+                      style={{
+                        position: "absolute",
+                        bottom: 24,
+                        right: 16,
+                        width: 44,
+                        height: 44,
+                        borderRadius: "50%",
+                        background: "linear-gradient(135deg, #ec4899, #be185d)",
+                        border: "2.5px solid rgba(255,255,255,0.25)",
+                        boxShadow: "0 4px 20px rgba(190,24,93,0.5)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        zIndex: 50,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <svg viewBox="0 0 24 24" style={{ width: 20, height: 20, fill: "none", stroke: "white", strokeWidth: 2.5, strokeLinecap: "round" }}>
+                        <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
 
                 {/* ── BOTTOM TOOLBAR ── */}
