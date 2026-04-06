@@ -5947,7 +5947,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 key="pamphlet-dialog"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                exit={{ opacity: 0, transition: { duration: 0 } }}
                 className="fixed inset-0 z-[110] flex flex-col"
                 style={{ background: "#0a0a0a" }}
               >
@@ -5955,7 +5955,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 {!isCapturingPamphlet && (
                   <div className="absolute top-4 right-4 z-[120]">
                     <button
-                      onClick={() => setShowPamphletDialog(false)}
+                      onClick={() => { setShowPamphletDialog(false); setShowAddMenu(false); setEditingTextCardId(null); }}
                       className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center active:scale-90 border border-white/15"
                     >
                       <X className="w-4 h-4 text-white" />
