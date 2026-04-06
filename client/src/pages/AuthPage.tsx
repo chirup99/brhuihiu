@@ -2669,9 +2669,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [stickerCategory, setStickerCategory] = useState(0);
   const [activePamphletPostIdx, setActivePamphletPostIdx] = useState<number | null>(null);
   const [pamphletGalleryImages, setPamphletGalleryImages] = useState<Array<{id: string; src: string; x: number; y: number; w: number; h: number}>>([]);
-  const [pamphletTextCards, setPamphletTextCards] = useState<Array<{id: string; text: string; x: number; y: number; fontSize: number; color: string; bold: boolean}>>([]);
+  const [pamphletTextCards, setPamphletTextCards] = useState<Array<{id: string; text: string; x: number; y: number; w: number; fontSize: number; color: string; bold: boolean}>>([]);
   const [editingTextCardId, setEditingTextCardId] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [pamphletQrSize, setPamphletQrSize] = useState(92);
   const [xpostPickerIdx, setXpostPickerIdx] = useState<number | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [showScannerDialog, setShowScannerDialog] = useState(false);
@@ -6256,32 +6257,52 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       whileDrag={{ zIndex: 60, scale: 1.05 }}
                       style={{
                         position: "absolute",
-                        left: Math.floor((CANVAS_W - 104) / 2),
+                        left: Math.floor((CANVAS_W - (pamphletQrSize + 12 + 12)) / 2),
                         top: CANVAS_H - 128,
                         zIndex: 15,
                         touchAction: "none",
                         cursor: isCapturingPamphlet ? "default" : "grab",
+                        userSelect: "none",
                       }}
                     >
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
-                        <div style={{ background: "white", borderRadius: 12, padding: 6, boxShadow: "0 4px 20px rgba(0,0,0,0.45)" }}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, position: "relative" }}>
+                        <div style={{ background: "white", borderRadius: 12, padding: 6, boxShadow: "0 4px 20px rgba(0,0,0,0.45)", position: "relative" }}>
                           <QRCodeSVG
                             value={profileQrValue}
-                            size={92}
+                            size={pamphletQrSize}
                             level="H"
                             includeMargin={false}
                             fgColor="#be185d"
                             bgColor="transparent"
                           />
+                          {/* Resize handle on QR */}
+                          {!isCapturingPamphlet && (
+                            <div
+                              onPointerDown={(e) => {
+                                e.stopPropagation();
+                                const startX = e.clientX;
+                                const startY = e.clientY;
+                                const startSize = pamphletQrSize;
+                                const onMove = (me: PointerEvent) => {
+                                  const delta = ((me.clientX - startX) + (me.clientY - startY)) / 2;
+                                  setPamphletQrSize(Math.max(48, Math.min(180, Math.round(startSize + delta))));
+                                };
+                                const onUp = () => { document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerup", onUp); };
+                                document.addEventListener("pointermove", onMove);
+                                document.addEventListener("pointerup", onUp);
+                              }}
+                              style={{ position: "absolute", bottom: 0, right: 0, width: 22, height: 22, cursor: "se-resize", zIndex: 30, display: "flex", alignItems: "center", justifyContent: "center", touchAction: "none", background: "rgba(190,24,93,0.75)", borderTopLeftRadius: 6, borderBottomRightRadius: 10 }}
+                            >
+                              <svg viewBox="0 0 10 10" style={{ width: 10, height: 10 }}>
+                                <path d="M3 9L9 9L9 3" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                                <path d="M6 9L9 9L9 6" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                              </svg>
+                            </div>
+                          )}
                         </div>
                         <span style={{ color: pamphletBgImage ? "rgba(255,255,255,0.75)" : (pamphletTheme.cardStyle === "dark" ? "rgba(255,255,255,0.6)" : "#999"), fontSize: 8, fontWeight: 700, letterSpacing: "0.1em" }}>
                           QR స్కాన్ చేయండి
                         </span>
-                        {!isCapturingPamphlet && (
-                          <div style={{ position: "absolute", top: 4, right: 4, background: "rgba(0,0,0,0.3)", borderRadius: 4, padding: "2px 4px" }}>
-                            <svg viewBox="0 0 24 24" style={{ width: 8, height: 8, fill: "rgba(255,255,255,0.7)" }}><path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/></svg>
-                          </div>
-                        )}
                       </div>
                     </motion.div>
 
@@ -6373,8 +6394,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           position: "absolute",
                           left: tc.x,
                           top: tc.y,
-                          minWidth: 80,
-                          maxWidth: 260,
+                          width: tc.w,
                           zIndex: 22,
                           touchAction: editingTextCardId === tc.id ? "auto" : "none",
                           cursor: isCapturingPamphlet ? "default" : editingTextCardId === tc.id ? "text" : "grab",
@@ -6395,15 +6415,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
                               fontSize: tc.fontSize,
                               fontWeight: tc.bold ? 900 : 700,
                               padding: "6px 10px",
-                              minWidth: 120,
+                              width: "100%",
                               minHeight: 40,
                               outline: "none",
                               resize: "none",
                               lineHeight: 1.3,
-                              textShadow: "0 1px 4px rgba(0,0,0,0.6)",
                               letterSpacing: "0.01em",
                               display: "block",
-                              width: "100%",
                               boxSizing: "border-box",
                             }}
                             rows={2}
@@ -6422,6 +6440,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                               lineHeight: 1.3,
                               whiteSpace: "pre-wrap",
                               wordBreak: "break-word",
+                              width: "100%",
+                              boxSizing: "border-box",
                               borderRadius: 8,
                               border: isCapturingPamphlet ? "none" : "1px dashed rgba(255,255,255,0.2)",
                             }}
@@ -6439,17 +6459,30 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             >
                               <svg viewBox="0 0 10 10" style={{ width: 8, height: 8 }}><path d="M2 2l6 6M8 2l-6 6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
                             </button>
-                            {/* Font size + / - */}
-                            <button
-                              onPointerDown={(e) => e.stopPropagation()}
-                              onClick={(e) => { e.stopPropagation(); setPamphletTextCards(prev => prev.map(c => c.id === tc.id ? { ...c, fontSize: Math.min(60, c.fontSize + 2) } : c)); }}
-                              style={{ position: "absolute", bottom: -8, right: 14, width: 16, height: 16, borderRadius: "50%", background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 30, padding: 0, color: "white", fontSize: 12, fontWeight: 900, lineHeight: 1 }}
-                            >+</button>
-                            <button
-                              onPointerDown={(e) => e.stopPropagation()}
-                              onClick={(e) => { e.stopPropagation(); setPamphletTextCards(prev => prev.map(c => c.id === tc.id ? { ...c, fontSize: Math.max(10, c.fontSize - 2) } : c)); }}
-                              style={{ position: "absolute", bottom: -8, right: 32, width: 16, height: 16, borderRadius: "50%", background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 30, padding: 0, color: "white", fontSize: 12, fontWeight: 900, lineHeight: 1 }}
-                            >-</button>
+                            {/* Corner resize handle — resizes width & font size together */}
+                            <div
+                              onPointerDown={(e) => {
+                                e.stopPropagation();
+                                const startX = e.clientX;
+                                const startW = tc.w;
+                                const startFs = tc.fontSize;
+                                const onMove = (me: PointerEvent) => {
+                                  const ratio = Math.max(0.4, (startW + (me.clientX - startX)) / startW);
+                                  const newW = Math.max(60, Math.round(startW * ratio));
+                                  const newFs = Math.max(8, Math.min(72, Math.round(startFs * ratio)));
+                                  setPamphletTextCards(prev => prev.map(c => c.id === tc.id ? { ...c, w: newW, fontSize: newFs } : c));
+                                };
+                                const onUp = () => { document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerup", onUp); };
+                                document.addEventListener("pointermove", onMove);
+                                document.addEventListener("pointerup", onUp);
+                              }}
+                              style={{ position: "absolute", bottom: 0, right: -1, width: 22, height: 22, cursor: "se-resize", zIndex: 30, display: "flex", alignItems: "center", justifyContent: "center", touchAction: "none", background: "rgba(0,0,0,0.4)", borderTopLeftRadius: 6, borderBottomRightRadius: 8 }}
+                            >
+                              <svg viewBox="0 0 10 10" style={{ width: 10, height: 10 }}>
+                                <path d="M3 9L9 9L9 3" stroke="rgba(255,255,255,0.85)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                                <path d="M6 9L9 9L9 6" stroke="rgba(255,255,255,0.85)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                              </svg>
+                            </div>
                           </>
                         )}
                       </motion.div>
@@ -6530,8 +6563,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
                               const newCard = {
                                 id: `tc-${Date.now()}`,
                                 text: "",
-                                x: 60 + Math.floor(Math.random() * 160),
+                                x: 60 + Math.floor(Math.random() * 120),
                                 y: 120 + Math.floor(Math.random() * 200),
+                                w: 160,
                                 fontSize: 22,
                                 color: "#ffffff",
                                 bold: true,
