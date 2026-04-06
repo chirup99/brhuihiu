@@ -30,6 +30,8 @@ import {
   Layout,
   Mail,
   Search,
+  Newspaper,
+  Download,
 } from "lucide-react";
 import {
   motion,
@@ -2464,6 +2466,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
   );
 
   const [showQRDialog, setShowQRDialog] = useState(false);
+  const [showPamphletDialog, setShowPamphletDialog] = useState(false);
+  const [isCapturingPamphlet, setIsCapturingPamphlet] = useState(false);
   const [xpostPickerIdx, setXpostPickerIdx] = useState<number | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [showScannerDialog, setShowScannerDialog] = useState(false);
@@ -3180,6 +3184,38 @@ export default function AuthPage({ slug }: { slug?: string }) {
         description: "Could not generate image. Please try again.",
         variant: "destructive",
       });
+    }
+  };
+
+  const sharePamphlet = async () => {
+    const element = document.getElementById("pamphlet-fullscreen");
+    if (!element) return;
+    try {
+      const actualAvatarSrc = normalizeAvatarUrl(user?.avatarUrl || loggedInUser?.avatarUrl) || avatarUrl;
+      const freshDataUrl = await toBase64(actualAvatarSrc);
+      setAvatarDataUrl(freshDataUrl);
+      setIsCapturingPamphlet(true);
+      await new Promise<void>((resolve) => setTimeout(resolve, 300));
+      const dataUrl = await htmlToImage.toPng(element, {
+        quality: 1,
+        pixelRatio: 3,
+        cacheBust: true,
+        skipFonts: true,
+        filter: (node) => {
+          if (node.tagName === "LINK" && (node as HTMLLinkElement).rel === "stylesheet") return false;
+          return true;
+        },
+      });
+      setIsCapturingPamphlet(false);
+      const link = document.createElement("a");
+      link.download = `brs-campaign-${user?.uniqueSlug || "pamphlet"}.png`;
+      link.href = dataUrl;
+      link.click();
+      toast({ title: "Downloaded!", description: "Campaign pamphlet saved to your downloads." });
+    } catch (err: any) {
+      setIsCapturingPamphlet(false);
+      console.error("Pamphlet download error:", err);
+      toast({ title: "Download failed", description: "Could not generate pamphlet. Please try again.", variant: "destructive" });
     }
   };
 
@@ -4206,14 +4242,24 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   className="space-y-4"
                 >
                   <div className="flex flex-col items-center text-center space-y-4 py-2 relative">
-                    <button
-                      type="button"
-                      onClick={() => setShowQRDialog(true)}
-                      className="absolute top-0 right-0 p-2 bg-pink-50 hover:bg-pink-100 rounded-lg text-pink-400 hover:text-pink-600 transition-all z-10"
-                      title="View QR Code"
-                    >
-                      <QrCode className="w-4 h-4" />
-                    </button>
+                    <div className="absolute top-0 right-0 flex flex-col gap-1.5 z-10">
+                      <button
+                        type="button"
+                        onClick={() => setShowQRDialog(true)}
+                        className="p-2 bg-pink-50 hover:bg-pink-100 rounded-lg text-pink-400 hover:text-pink-600 transition-all"
+                        title="View QR Code"
+                      >
+                        <QrCode className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowPamphletDialog(true)}
+                        className="p-2 bg-pink-50 hover:bg-pink-100 rounded-lg text-pink-400 hover:text-pink-600 transition-all"
+                        title="Campaign Pamphlet"
+                      >
+                        <Newspaper className="w-4 h-4" />
+                      </button>
+                    </div>
                     {(() => {
                       const isOwnProfile = loggedInUser?.id === user?.id;
                       const displayAvatar = normalizeAvatarUrl(user?.avatarUrl);
@@ -5576,6 +5622,203 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         Download QR Wallpaper
                       </>
                     )}
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Campaign Pamphlet Dialog ── */}
+        <AnimatePresence>
+          {showPamphletDialog && (
+            <motion.div
+              id="pamphlet-fullscreen"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[110] flex flex-col overflow-hidden"
+              style={{ background: "linear-gradient(170deg, #1a0010 0%, #6b0030 35%, #ec4899 75%, #fce7f3 100%)" }}
+            >
+              {/* Decorative circles */}
+              <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-20" style={{ background: "radial-gradient(circle, #f9a8d4, transparent)" }} />
+                <div className="absolute top-1/3 -left-16 w-56 h-56 rounded-full opacity-15" style={{ background: "radial-gradient(circle, #fce7f3, transparent)" }} />
+                <div className="absolute bottom-24 right-8 w-40 h-40 rounded-full opacity-10" style={{ background: "radial-gradient(circle, #fda4af, transparent)" }} />
+                {/* Grid lines */}
+                <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="0.5"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#grid)" />
+                </svg>
+                {/* Diagonal accent stripe */}
+                <div className="absolute top-0 left-0 w-full h-2" style={{ background: "linear-gradient(90deg, #be185d, #ec4899, #f9a8d4, #ec4899, #be185d)" }} />
+              </div>
+
+              {/* Top bar */}
+              <div className="flex-shrink-0 flex items-center justify-between px-5 pt-10 pb-3 relative z-10">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-white overflow-hidden shadow-md">
+                    <img src="/brs-logo.png" alt="BRS" className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <p className="text-white font-black text-sm tracking-tight leading-none">BRS Connect</p>
+                    <p className="text-white/50 text-[9px] uppercase tracking-widest">Bharat Rashtra Samithi</p>
+                  </div>
+                </div>
+                {!isCapturingPamphlet && (
+                  <button
+                    onClick={() => setShowPamphletDialog(false)}
+                    className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center active:scale-90 transition-all"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                )}
+              </div>
+
+              {/* Scrollable content */}
+              <div className="flex-1 overflow-y-auto relative z-10">
+                <div className="flex flex-col items-center px-5 py-4 gap-5 min-h-full justify-center">
+
+                  {/* Campaign headline */}
+                  <div className="text-center space-y-1">
+                    <p className="text-white/60 text-[9px] uppercase tracking-[0.35em] font-bold">Official Campaign</p>
+                    <h1 className="text-white font-black text-2xl tracking-tight leading-tight drop-shadow-lg">
+                      Voice of the People
+                    </h1>
+                    <div className="flex items-center justify-center gap-2 mt-1">
+                      <div className="h-px flex-1 max-w-[60px] bg-white/30" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-pink-300" />
+                      <div className="h-px flex-1 max-w-[60px] bg-white/30" />
+                    </div>
+                  </div>
+
+                  {/* Profile card */}
+                  <div
+                    className="w-full max-w-[300px] rounded-[28px] overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.45)]"
+                    style={{ background: "linear-gradient(175deg, #ffffff 0%, #fff0f7 100%)" }}
+                  >
+                    {/* Card top accent */}
+                    <div className="h-1.5 w-full" style={{ background: "linear-gradient(90deg, #be185d, #ec4899, #f9a8d4, #ec4899, #be185d)" }} />
+
+                    <div className="flex flex-col items-center px-6 pt-5 pb-6 gap-4">
+                      {/* Avatar */}
+                      {(() => {
+                        const displayAvatarSrc = normalizeAvatarUrl(user?.avatarUrl || loggedInUser?.avatarUrl) || avatarUrl;
+                        const displayName = user?.name || loggedInUser?.name || "P";
+                        return (
+                          <div style={{ width: 84, height: 84, borderRadius: "50%", padding: 3, background: "linear-gradient(135deg, #ec4899, #be185d 50%, #9d174d)", flexShrink: 0, boxShadow: "0 8px 24px rgba(190,24,93,0.35)" }}>
+                            <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#ffffff" }}>
+                              {isCapturingPamphlet ? (
+                                <img src={avatarDataUrl || displayAvatarSrc} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                              ) : displayAvatarSrc ? (
+                                <img src={displayAvatarSrc} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                              ) : (
+                                <div style={{ width: "100%", height: "100%", background: "#ec4899", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 28, fontWeight: 900 }}>
+                                  {displayName[0]?.toUpperCase() || "P"}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Name & role */}
+                      <div className="text-center space-y-1.5">
+                        <h2 className="text-gray-900 text-lg font-black tracking-tight leading-none">
+                          {user?.name || form.watch("name") || "Your Name"}
+                        </h2>
+                        {(user?.role || form.watch("role")) && (
+                          <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-3 py-0.5 rounded-full text-pink-700 whitespace-nowrap" style={{ background: "rgba(236,72,153,0.12)", border: "1px solid rgba(236,72,153,0.3)" }}>
+                            {ROLES.find((r) => r.value === (user?.role || form.watch("role")))?.label || (user?.role || form.watch("role") || "").replace(/[_-]/g, " ")}
+                          </span>
+                        )}
+                        {(user?.bio || form.watch("bio")) && (
+                          <p className="text-gray-500 text-[10px] italic leading-snug mt-1 px-2">
+                            "{user?.bio || form.watch("bio")}"
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Divider */}
+                      <div className="w-full h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(236,72,153,0.35), transparent)" }} />
+
+                      {/* QR code — centrepiece */}
+                      <div className="flex flex-col items-center gap-2">
+                        <p className="text-[8px] font-black uppercase tracking-[0.3em] text-pink-500">Scan to Connect</p>
+                        <div className="rounded-2xl p-3 shadow-inner" style={{ background: "rgba(236,72,153,0.07)", border: "1px solid rgba(236,72,153,0.2)" }}>
+                          <QRCodeSVG
+                            value={
+                              window.location.origin +
+                              "/" +
+                              (displaySlug || user?.uniqueSlug || window.location.pathname.split("/")[1] || "")
+                            }
+                            size={150}
+                            level="H"
+                            includeMargin={false}
+                            fgColor="#9d174d"
+                            bgColor="transparent"
+                          />
+                        </div>
+                        <div className="bg-pink-50 border border-pink-200 rounded-xl py-1 px-5">
+                          <p className="text-pink-700 font-black font-mono text-xs tracking-[0.25em] uppercase">
+                            {displaySlug || user?.uniqueSlug || "—"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Social icons row */}
+                      <div className="flex items-center justify-center gap-3">
+                        {(user?.linkedin || form.watch("linkedin")) && (
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(236,72,153,0.1)", border: "1px solid rgba(236,72,153,0.2)" }}>
+                            <SiX className="w-3 h-3 text-pink-600" />
+                          </div>
+                        )}
+                        {(user?.instagram || form.watch("instagram")) && (
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(236,72,153,0.1)", border: "1px solid rgba(236,72,153,0.2)" }}>
+                            <SiInstagram className="w-3 h-3 text-pink-600" />
+                          </div>
+                        )}
+                        {(user?.whatsapp || form.watch("whatsapp")) && (
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(236,72,153,0.1)", border: "1px solid rgba(236,72,153,0.2)" }}>
+                            <SiWhatsapp className="w-3 h-3 text-pink-600" />
+                          </div>
+                        )}
+                        {((user as any)?.youtube || form.watch("youtube" as any)) && (
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(236,72,153,0.1)", border: "1px solid rgba(236,72,153,0.2)" }}>
+                            <SiYoutube className="w-3 h-3 text-pink-600" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Footer tag */}
+                      <p className="text-[7px] text-gray-400 uppercase tracking-widest">brsconnect.in · Strength of the Nation</p>
+                    </div>
+                  </div>
+
+                  {/* Bottom slogan */}
+                  <div className="text-center space-y-1 pb-2">
+                    <p className="text-white font-black text-base tracking-wide drop-shadow">Speed. Action. Change.</p>
+                    <p className="text-white/50 text-[9px] uppercase tracking-[0.3em]">Bharat Rashtra Samithi</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Download button */}
+              {!isCapturingPamphlet && (
+                <div className="flex-shrink-0 px-6 pb-8 pt-3 relative z-10 space-y-2">
+                  <p className="text-center text-white/60 text-xs leading-relaxed">
+                    Download and share this campaign pamphlet to spread your voice.
+                  </p>
+                  <button
+                    onClick={sharePamphlet}
+                    className="w-full bg-white text-pink-700 rounded-2xl py-4 font-black text-sm flex items-center justify-center gap-2 transition-all shadow-xl active:scale-95 hover:bg-pink-50"
+                  >
+                    <Download className="w-5 h-5" />
+                    Download Pamphlet
                   </button>
                 </div>
               )}
