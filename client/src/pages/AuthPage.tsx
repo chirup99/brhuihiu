@@ -6302,10 +6302,19 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           zIndex: 18,
                           touchAction: "none",
                           cursor: isCapturingPamphlet ? "default" : "grab",
+                          userSelect: "none",
                           boxShadow: "0 4px 18px rgba(0,0,0,0.45)",
+                          border: "1.5px solid rgba(255,255,255,0.18)",
+                          background: "#111",
                         }}
                       >
-                        <img src={img.src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                        {/* pointerEvents none so Framer Motion drag works on the outer div */}
+                        <img
+                          src={img.src}
+                          alt=""
+                          draggable={false}
+                          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block", pointerEvents: "none", userSelect: "none" }}
+                        />
                         {!isCapturingPamphlet && (
                           <>
                             {/* Delete button */}
@@ -6316,10 +6325,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             >
                               <svg viewBox="0 0 10 10" style={{ width: 8, height: 8, fill: "white" }}><path d="M2 2l6 6M8 2l-6 6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
                             </button>
-                            {/* Drag hint */}
-                            <div style={{ position: "absolute", top: 4, left: 4, background: "rgba(0,0,0,0.3)", borderRadius: 3, padding: "1px 3px", zIndex: 20, pointerEvents: "none" }}>
-                              <svg viewBox="0 0 24 24" style={{ width: 7, height: 7, fill: "rgba(255,255,255,0.7)" }}><path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/></svg>
-                            </div>
                             {/* Resize handle */}
                             <div
                               onPointerDown={(e) => {
@@ -6340,11 +6345,11 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                 document.addEventListener("pointermove", onMove);
                                 document.addEventListener("pointerup", onUp);
                               }}
-                              style={{ position: "absolute", bottom: 3, right: 3, width: 14, height: 14, cursor: "se-resize", zIndex: 30, display: "flex", alignItems: "flex-end", justifyContent: "flex-end", touchAction: "none" }}
+                              style={{ position: "absolute", bottom: 0, right: 0, width: 22, height: 22, cursor: "se-resize", zIndex: 30, display: "flex", alignItems: "center", justifyContent: "center", touchAction: "none", background: "rgba(0,0,0,0.45)", borderTopLeftRadius: 6 }}
                             >
                               <svg viewBox="0 0 10 10" style={{ width: 10, height: 10 }}>
-                                <path d="M3 9L9 9L9 3" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-                                <path d="M6 9L9 9L9 6" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                                <path d="M3 9L9 9L9 3" stroke="rgba(255,255,255,0.85)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                                <path d="M6 9L9 9L9 6" stroke="rgba(255,255,255,0.85)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
                               </svg>
                             </div>
                           </>
