@@ -1014,6 +1014,30 @@ const SwipeCardContent = forwardRef(
 
 SwipeCardContent.displayName = "SwipeCardContent";
 
+const PamphletXVideoThumb = ({ url }: { url: string }) => {
+  const tweetIdMatch = url.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
+  const tweetId = tweetIdMatch?.[1];
+  const { data } = useQuery<{ videoUrl: string; thumbnailUrl: string | null }>({
+    queryKey: ["/api/tweet-video", tweetId],
+    queryFn: async () => {
+      const res = await fetch(`/api/tweet-video/${tweetId}`);
+      if (!res.ok) throw new Error("No video found");
+      return res.json();
+    },
+    enabled: !!tweetId,
+    retry: 1,
+    staleTime: 1000 * 60 * 30,
+  });
+  if (!data?.thumbnailUrl) return null;
+  return (
+    <img
+      src={data.thumbnailUrl}
+      alt=""
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.7 }}
+    />
+  );
+};
+
 const XVideoCard = ({ tweetId, xUrl, onEditClick, onPlayStateChange }: { tweetId: string; xUrl: string; onEditClick?: (e: React.MouseEvent) => void; onPlayStateChange?: (isPlaying: boolean) => void }) => {
   const { data, isLoading, isError } = useQuery<{ videoUrl: string; thumbnailUrl: string | null }>({
     queryKey: ["/api/tweet-video", tweetId],
@@ -5976,7 +6000,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       const isReel = card.type === "reel";
                       const isXpost = card.type === "xpost";
                       const isImageCard = card.type === "image" || card.type === "product";
-                      const hasBgMedia = (isReel && ytThumb) || (isImageCard && card.imageUrl) || (isPost && postImg);
+                      const isXVideo = isXpost && card.subtype === "video" && !!card.url && !card.imageUrl;
+                      const hasBgMedia = (isReel && ytThumb) || (isImageCard && card.imageUrl) || (isPost && postImg) || (isXpost && !!card.imageUrl) || isXVideo;
                       const isDarkTheme = pamphletTheme.cardStyle === "dark";
                       const cardBg = isPost
                         ? (isDarkTheme ? "rgba(255,255,255,0.93)" : (pamphletBgImage ? "rgba(255,255,255,0.93)" : "#fff"))
@@ -6027,9 +6052,20 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           {isPost && postImg && (
                             <img src={postImg} alt="" style={{ width: "100%", height: "45%", objectFit: "cover", display: "block" }} />
                           )}
-                          {/* X post media — show card.imageUrl if available */}
+                          {/* X post media — show card.imageUrl if available, or fetch thumbnail for videos */}
                           {isXpost && card.imageUrl && (
                             <img src={card.imageUrl} alt={card.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.35 }} />
+                          )}
+                          {isXpost && !card.imageUrl && card.subtype === "video" && card.url && (
+                            <PamphletXVideoThumb url={card.url} />
+                          )}
+                          {/* X video play overlay */}
+                          {isXVideo && (
+                            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.28)", zIndex: 2 }}>
+                              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, fill: "white", marginLeft: 2 }}><path d="M8 5v14l11-7z"/></svg>
+                              </div>
+                            </div>
                           )}
 
                           {/* Content layer */}
