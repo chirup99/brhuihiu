@@ -1,5 +1,64 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "bKFqSa0iFKRvZ88QkEnqU"
+uri = "file://public/stickers/vs.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "cdpN4TrX3RtgbwhdrDGsu"
+uri = "file://public/stickers/scam.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "GzvB443Kf0V1koy2AP7Su"
+uri = "file://public/stickers/expose.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "18CBedfdMIjbHlY5Toh3A"
+uri = "file://public/stickers/water.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "OeckdE92p2djdilqc0nbu"
+uri = "file://public/stickers/demolish.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "kAlBF82CTLUzdVSXIzy45"
+uri = "file://public/stickers/flood.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "huNldl-dJUkpsig8FFzgU"
+uri = "file://public/stickers/power.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "6efW-j952BK_bJm5NKPhN"
+uri = "file://public/stickers/land.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "azSh-36xDkVgeJl_OhXfF"
+uri = "file://public/stickers/fist.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "6Z1Au9VD9JIwdKKuItlAD"
+uri = "file://public/stickers/alert.png"
+type = "image"
+title = "generated_image"
 
 [[outputs]]
 id = "UFWH6okMy4FkECoe2Eb7k"
