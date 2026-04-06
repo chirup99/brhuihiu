@@ -5633,193 +5633,218 @@ export default function AuthPage({ slug }: { slug?: string }) {
         <AnimatePresence>
           {showPamphletDialog && (
             <motion.div
-              id="pamphlet-fullscreen"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[110] flex flex-col overflow-hidden"
-              style={{ background: "linear-gradient(170deg, #1a0010 0%, #6b0030 35%, #ec4899 75%, #fce7f3 100%)" }}
+              className="fixed inset-0 z-[110] flex flex-col"
+              style={{ background: "#0f0a1a" }}
             >
-              {/* Decorative circles */}
-              <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-20" style={{ background: "radial-gradient(circle, #f9a8d4, transparent)" }} />
-                <div className="absolute top-1/3 -left-16 w-56 h-56 rounded-full opacity-15" style={{ background: "radial-gradient(circle, #fce7f3, transparent)" }} />
-                <div className="absolute bottom-24 right-8 w-40 h-40 rounded-full opacity-10" style={{ background: "radial-gradient(circle, #fda4af, transparent)" }} />
-                {/* Grid lines */}
-                <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="0.5"/>
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#grid)" />
-                </svg>
-                {/* Diagonal accent stripe */}
-                <div className="absolute top-0 left-0 w-full h-2" style={{ background: "linear-gradient(90deg, #be185d, #ec4899, #f9a8d4, #ec4899, #be185d)" }} />
-              </div>
-
-              {/* Top bar */}
-              <div className="flex-shrink-0 flex items-center justify-between px-5 pt-10 pb-3 relative z-10">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-white overflow-hidden shadow-md">
-                    <img src="/brs-logo.png" alt="BRS" className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <p className="text-white font-black text-sm tracking-tight leading-none">BRS Connect</p>
-                    <p className="text-white/50 text-[9px] uppercase tracking-widest">Bharat Rashtra Samithi</p>
-                  </div>
-                </div>
-                {!isCapturingPamphlet && (
+              {/* Close button overlay — outside poster, always visible */}
+              {!isCapturingPamphlet && (
+                <div className="absolute top-4 right-4 z-[120] flex items-center gap-2">
                   <button
                     onClick={() => setShowPamphletDialog(false)}
-                    className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center active:scale-90 transition-all"
+                    className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-all border border-white/20"
                   >
                     <X className="w-4 h-4 text-white" />
                   </button>
-                )}
-              </div>
+                </div>
+              )}
 
-              {/* Scrollable content */}
-              <div className="flex-1 overflow-y-auto relative z-10">
-                <div className="flex flex-col items-center px-5 py-4 gap-5 min-h-full justify-center">
+              {/* Scrollable wrapper */}
+              <div className="flex-1 overflow-y-auto flex items-center justify-center py-6 px-4">
 
-                  {/* Campaign headline */}
-                  <div className="text-center space-y-1">
-                    <p className="text-white/60 text-[9px] uppercase tracking-[0.35em] font-bold">Official Campaign</p>
-                    <h1 className="text-white font-black text-2xl tracking-tight leading-tight drop-shadow-lg">
-                      Voice of the People
-                    </h1>
-                    <div className="flex items-center justify-center gap-2 mt-1">
-                      <div className="h-px flex-1 max-w-[60px] bg-white/30" />
-                      <div className="w-1.5 h-1.5 rounded-full bg-pink-300" />
-                      <div className="h-px flex-1 max-w-[60px] bg-white/30" />
+                {/* ── THE CAMPAIGN POSTER ── */}
+                <div
+                  id="pamphlet-fullscreen"
+                  className="w-full max-w-[340px] rounded-[20px] overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.8)] relative"
+                  style={{ background: "linear-gradient(160deg, #0d0020 0%, #3b0764 30%, #7e22ce 60%, #a21caf 80%, #be185d 100%)" }}
+                >
+                  {/* ── Background decorative blobs ── */}
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                    <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-25" style={{ background: "radial-gradient(circle, #f0abfc, transparent 70%)" }} />
+                    <div className="absolute bottom-1/3 -left-20 w-56 h-56 rounded-full opacity-20" style={{ background: "radial-gradient(circle, #ec4899, transparent 70%)" }} />
+                    <div className="absolute top-1/2 right-0 w-40 h-40 rounded-full opacity-15" style={{ background: "radial-gradient(circle, #c026d3, transparent 70%)" }} />
+                    {/* Dot grid texture */}
+                    <svg className="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
+                          <circle cx="2" cy="2" r="1" fill="white"/>
+                        </pattern>
+                      </defs>
+                      <rect width="100%" height="100%" fill="url(#dots)" />
+                    </svg>
+                  </div>
+
+                  {/* ── TOP HEADER BAND ── */}
+                  <div className="relative z-10 flex items-center justify-between px-4 pt-4 pb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-9 h-9 rounded-full overflow-hidden bg-white shadow-lg flex-shrink-0">
+                        <img src="/brs-logo.png" alt="BRS" className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <p className="text-white font-black text-xs tracking-tight leading-none">BRS Connect</p>
+                        <p className="text-white/50 text-[8px] uppercase tracking-widest leading-none mt-0.5">Bharat Rashtra Samithi</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-white/80 text-[8px] uppercase tracking-[0.2em] font-bold">Official</p>
+                      <p className="text-white/80 text-[8px] uppercase tracking-[0.2em] font-bold">Campaign</p>
                     </div>
                   </div>
 
-                  {/* Profile card */}
-                  <div
-                    className="w-full max-w-[300px] rounded-[28px] overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.45)]"
-                    style={{ background: "linear-gradient(175deg, #ffffff 0%, #fff0f7 100%)" }}
-                  >
-                    {/* Card top accent */}
-                    <div className="h-1.5 w-full" style={{ background: "linear-gradient(90deg, #be185d, #ec4899, #f9a8d4, #ec4899, #be185d)" }} />
+                  {/* ── RAINBOW STRIPE ── */}
+                  <div className="w-full h-1 relative z-10" style={{ background: "linear-gradient(90deg, #f59e0b, #ef4444, #ec4899, #8b5cf6, #3b82f6, #10b981)" }} />
 
-                    <div className="flex flex-col items-center px-6 pt-5 pb-6 gap-4">
-                      {/* Avatar */}
-                      {(() => {
-                        const displayAvatarSrc = normalizeAvatarUrl(user?.avatarUrl || loggedInUser?.avatarUrl) || avatarUrl;
-                        const displayName = user?.name || loggedInUser?.name || "P";
-                        return (
-                          <div style={{ width: 84, height: 84, borderRadius: "50%", padding: 3, background: "linear-gradient(135deg, #ec4899, #be185d 50%, #9d174d)", flexShrink: 0, boxShadow: "0 8px 24px rgba(190,24,93,0.35)" }}>
-                            <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#ffffff" }}>
-                              {isCapturingPamphlet ? (
-                                <img src={avatarDataUrl || displayAvatarSrc} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                              ) : displayAvatarSrc ? (
-                                <img src={displayAvatarSrc} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                              ) : (
-                                <div style={{ width: "100%", height: "100%", background: "#ec4899", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 28, fontWeight: 900 }}>
-                                  {displayName[0]?.toUpperCase() || "P"}
-                                </div>
-                              )}
+                  {/* ── HERO SECTION: large photo ── */}
+                  <div className="relative z-10 flex flex-col items-center px-4 pt-5">
+                    {/* Outer glow ring */}
+                    <div
+                      className="relative"
+                      style={{
+                        width: 160,
+                        height: 160,
+                        borderRadius: "50%",
+                        padding: 4,
+                        background: "linear-gradient(135deg, #fbbf24, #ec4899, #8b5cf6)",
+                        boxShadow: "0 0 0 6px rgba(236,72,153,0.2), 0 16px 40px rgba(0,0,0,0.5)",
+                      }}
+                    >
+                      <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#3b0764" }}>
+                        {(() => {
+                          const displayAvatarSrc = normalizeAvatarUrl(user?.avatarUrl || loggedInUser?.avatarUrl) || avatarUrl;
+                          const displayName = user?.name || loggedInUser?.name || "P";
+                          return isCapturingPamphlet ? (
+                            <img src={avatarDataUrl || displayAvatarSrc} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                          ) : displayAvatarSrc ? (
+                            <img src={displayAvatarSrc} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                          ) : (
+                            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#ec4899,#8b5cf6)", color: "white", fontSize: 52, fontWeight: 900 }}>
+                              {displayName[0]?.toUpperCase() || "P"}
                             </div>
-                          </div>
-                        );
-                      })()}
-
-                      {/* Name & role */}
-                      <div className="text-center space-y-1.5">
-                        <h2 className="text-gray-900 text-lg font-black tracking-tight leading-none">
-                          {user?.name || form.watch("name") || "Your Name"}
-                        </h2>
-                        {(user?.role || form.watch("role")) && (
-                          <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-3 py-0.5 rounded-full text-pink-700 whitespace-nowrap" style={{ background: "rgba(236,72,153,0.12)", border: "1px solid rgba(236,72,153,0.3)" }}>
-                            {ROLES.find((r) => r.value === (user?.role || form.watch("role")))?.label || (user?.role || form.watch("role") || "").replace(/[_-]/g, " ")}
-                          </span>
-                        )}
-                        {(user?.bio || form.watch("bio")) && (
-                          <p className="text-gray-500 text-[10px] italic leading-snug mt-1 px-2">
-                            "{user?.bio || form.watch("bio")}"
-                          </p>
-                        )}
+                          );
+                        })()}
                       </div>
-
-                      {/* Divider */}
-                      <div className="w-full h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(236,72,153,0.35), transparent)" }} />
-
-                      {/* QR code — centrepiece */}
-                      <div className="flex flex-col items-center gap-2">
-                        <p className="text-[8px] font-black uppercase tracking-[0.3em] text-pink-500">Scan to Connect</p>
-                        <div className="rounded-2xl p-3 shadow-inner" style={{ background: "rgba(236,72,153,0.07)", border: "1px solid rgba(236,72,153,0.2)" }}>
-                          <QRCodeSVG
-                            value={
-                              window.location.origin +
-                              "/" +
-                              (displaySlug || user?.uniqueSlug || window.location.pathname.split("/")[1] || "")
-                            }
-                            size={150}
-                            level="H"
-                            includeMargin={false}
-                            fgColor="#9d174d"
-                            bgColor="transparent"
-                          />
-                        </div>
-                        <div className="bg-pink-50 border border-pink-200 rounded-xl py-1 px-5">
-                          <p className="text-pink-700 font-black font-mono text-xs tracking-[0.25em] uppercase">
-                            {displaySlug || user?.uniqueSlug || "—"}
-                          </p>
-                        </div>
+                      {/* Star badge */}
+                      <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center shadow-xl border-2 border-white" style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)" }}>
+                        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                       </div>
+                    </div>
 
-                      {/* Social icons row */}
-                      <div className="flex items-center justify-center gap-3">
-                        {(user?.linkedin || form.watch("linkedin")) && (
-                          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(236,72,153,0.1)", border: "1px solid rgba(236,72,153,0.2)" }}>
-                            <SiX className="w-3 h-3 text-pink-600" />
-                          </div>
-                        )}
-                        {(user?.instagram || form.watch("instagram")) && (
-                          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(236,72,153,0.1)", border: "1px solid rgba(236,72,153,0.2)" }}>
-                            <SiInstagram className="w-3 h-3 text-pink-600" />
-                          </div>
-                        )}
-                        {(user?.whatsapp || form.watch("whatsapp")) && (
-                          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(236,72,153,0.1)", border: "1px solid rgba(236,72,153,0.2)" }}>
-                            <SiWhatsapp className="w-3 h-3 text-pink-600" />
-                          </div>
-                        )}
-                        {((user as any)?.youtube || form.watch("youtube" as any)) && (
-                          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(236,72,153,0.1)", border: "1px solid rgba(236,72,153,0.2)" }}>
-                            <SiYoutube className="w-3 h-3 text-pink-600" />
-                          </div>
-                        )}
+                    {/* Name block */}
+                    <div className="mt-4 text-center">
+                      <h1
+                        className="text-white font-black leading-tight tracking-tight"
+                        style={{ fontSize: 26, textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}
+                      >
+                        {user?.name || form.watch("name") || "Your Name"}
+                      </h1>
+                      {/* Role ribbon */}
+                      <div className="mt-2 inline-flex items-center px-4 py-1 rounded-full shadow-lg" style={{ background: "linear-gradient(90deg, #fbbf24, #f59e0b)", boxShadow: "0 4px 12px rgba(251,191,36,0.4)" }}>
+                        <span className="text-black font-black text-[10px] uppercase tracking-widest">
+                          {ROLES.find((r) => r.value === (user?.role || form.watch("role")))?.label || (user?.role || form.watch("role") || "Member").replace(/[_-]/g, " ")}
+                        </span>
                       </div>
-
-                      {/* Footer tag */}
-                      <p className="text-[7px] text-gray-400 uppercase tracking-widest">brsconnect.in · Strength of the Nation</p>
                     </div>
                   </div>
 
-                  {/* Bottom slogan */}
-                  <div className="text-center space-y-1 pb-2">
-                    <p className="text-white font-black text-base tracking-wide drop-shadow">Speed. Action. Change.</p>
-                    <p className="text-white/50 text-[9px] uppercase tracking-[0.3em]">Bharat Rashtra Samithi</p>
+                  {/* ── BIO QUOTE ── */}
+                  {(user?.bio || form.watch("bio")) && (
+                    <div className="relative z-10 mx-4 mt-4 px-4 py-3 rounded-2xl text-center" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40 mb-1">Message</p>
+                      <p className="text-white text-xs font-semibold italic leading-relaxed">
+                        "{user?.bio || form.watch("bio")}"
+                      </p>
+                    </div>
+                  )}
+
+                  {/* ── SLOGAN BAND ── */}
+                  <div className="relative z-10 mx-4 mt-4 rounded-xl overflow-hidden">
+                    <div className="flex">
+                      <div className="flex-1 py-2 text-center" style={{ background: "rgba(255,255,255,0.12)" }}>
+                        <p className="text-white font-black text-[10px] tracking-widest uppercase">People's Voice</p>
+                      </div>
+                      <div className="w-px bg-white/20" />
+                      <div className="flex-1 py-2 text-center" style={{ background: "rgba(255,255,255,0.12)" }}>
+                        <p className="text-yellow-300 font-black text-[10px] tracking-widest uppercase">Speed · Action</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ── SOCIAL + QR ROW ── */}
+                  <div className="relative z-10 mx-4 mt-4 flex items-center gap-3">
+                    {/* Social handles */}
+                    <div className="flex-1 space-y-1.5">
+                      {(user?.instagram || form.watch("instagram")) && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}>
+                          <SiInstagram className="w-3 h-3 text-pink-300 flex-shrink-0" />
+                          <span className="text-white text-[9px] font-bold truncate">{(user?.instagram || form.watch("instagram") || "").replace(/https?:\/\/(www\.)?instagram\.com\/?/,"").replace(/\//,"")}</span>
+                        </div>
+                      )}
+                      {(user?.whatsapp || form.watch("whatsapp")) && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}>
+                          <SiWhatsapp className="w-3 h-3 text-green-300 flex-shrink-0" />
+                          <span className="text-white text-[9px] font-bold truncate">{(user?.whatsapp || form.watch("whatsapp") || "").replace(/\D/g, "").slice(-10)}</span>
+                        </div>
+                      )}
+                      {(user?.linkedin || form.watch("linkedin")) && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}>
+                          <SiX className="w-3 h-3 text-sky-300 flex-shrink-0" />
+                          <span className="text-white text-[9px] font-bold truncate">{(user?.linkedin || form.watch("linkedin") || "").replace(/https?:\/\/(www\.)?(twitter|x)\.com\/?/,"").replace(/\//,"")}</span>
+                        </div>
+                      )}
+                      {!(user?.instagram || form.watch("instagram")) && !(user?.whatsapp || form.watch("whatsapp")) && !(user?.linkedin || form.watch("linkedin")) && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}>
+                          <Globe className="w-3 h-3 text-blue-300 flex-shrink-0" />
+                          <span className="text-white text-[9px] font-bold">brsconnect.in</span>
+                        </div>
+                      )}
+                    </div>
+                    {/* QR code — small, corner element */}
+                    <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                      <div className="rounded-xl p-2 shadow-lg" style={{ background: "rgba(255,255,255,0.95)" }}>
+                        <QRCodeSVG
+                          value={window.location.origin + "/" + (displaySlug || user?.uniqueSlug || "")}
+                          size={64}
+                          level="M"
+                          includeMargin={false}
+                          fgColor="#3b0764"
+                          bgColor="transparent"
+                        />
+                      </div>
+                      <p className="text-white/50 text-[7px] uppercase tracking-widest text-center">Scan</p>
+                    </div>
+                  </div>
+
+                  {/* ── FOOTER ── */}
+                  <div className="relative z-10 mt-4">
+                    <div className="w-full h-1" style={{ background: "linear-gradient(90deg, #f59e0b, #ef4444, #ec4899, #8b5cf6, #3b82f6, #10b981)" }} />
+                    <div className="px-4 py-3 flex items-center justify-between" style={{ background: "rgba(0,0,0,0.4)" }}>
+                      <p className="text-white/40 text-[7px] uppercase tracking-widest">brsconnect.in</p>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-pink-400" />
+                        <p className="text-white/60 text-[7px] uppercase tracking-widest font-bold">Strength of the Nation</p>
+                        <div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Download button */}
               {!isCapturingPamphlet && (
-                <div className="flex-shrink-0 px-6 pb-8 pt-3 relative z-10 space-y-2">
-                  <p className="text-center text-white/60 text-xs leading-relaxed">
-                    Download and share this campaign pamphlet to spread your voice.
-                  </p>
+                <div className="flex-shrink-0 px-5 pb-8 pt-3 space-y-2">
                   <button
                     onClick={sharePamphlet}
-                    className="w-full bg-white text-pink-700 rounded-2xl py-4 font-black text-sm flex items-center justify-center gap-2 transition-all shadow-xl active:scale-95 hover:bg-pink-50"
+                    className="w-full rounded-2xl py-4 font-black text-sm flex items-center justify-center gap-2 transition-all shadow-xl active:scale-95"
+                    style={{ background: "linear-gradient(90deg, #be185d, #7e22ce)", color: "white" }}
                   >
                     <Download className="w-5 h-5" />
-                    Download Pamphlet
+                    Download Campaign Poster
                   </button>
+                  <p className="text-center text-white/30 text-[10px] uppercase tracking-widest">
+                    Share your voice with the world
+                  </p>
                 </div>
               )}
             </motion.div>
