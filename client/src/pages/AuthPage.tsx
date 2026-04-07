@@ -2474,12 +2474,35 @@ export default function AuthPage({ slug }: { slug?: string }) {
     role: string | null;
     uniqueSlug: string | null;
     avatarUrl?: string | null;
+    locationName?: string | null;
     distanceKm: number;
   };
   const [showNearbyDropdown, setShowNearbyDropdown] = useState(false);
   const [nearbyVoices, setNearbyVoices] = useState<NearbyVoice[]>([]);
   const [nearbyLoading, setNearbyLoading] = useState(false);
   const [nearbyError, setNearbyError] = useState<string | null>(null);
+  const [nearbyLocationLabel, setNearbyLocationLabel] = useState<string | null>(null);
+  const [nearbyRegionalCard, setNearbyRegionalCard] = useState<typeof featuredProfiles[0] | null>(null);
+
+  const reverseGeocode = async (lat: number, lng: number): Promise<{ display: string; district: string }> => {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=en`,
+        { headers: { "User-Agent": "BRS-Connect/1.0" } }
+      );
+      const data = await res.json();
+      const addr = data.address || {};
+      const village = addr.village || addr.suburb || addr.town || addr.city_block || "";
+      const city = addr.city || addr.town || addr.municipality || "";
+      const district = addr.county || addr.state_district || addr.district || "";
+      const state = addr.state || "";
+      const parts = [village || city, district].filter(Boolean);
+      const display = parts.length > 0 ? parts.join(", ") : (state || "India");
+      return { display, district: district || city || village || "" };
+    } catch {
+      return { display: "", district: "" };
+    }
+  };
 
   const handleNearbyVoices = async () => {
     if (showNearbyDropdown) {
@@ -2490,6 +2513,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
     setNearbyLoading(true);
     setShowNearbyDropdown(true);
     setNearbyVoices([]);
+    setNearbyLocationLabel(null);
+    setNearbyRegionalCard(null);
 
     if (!navigator.geolocation) {
       setNearbyError("Location not supported on this device.");
@@ -2502,14 +2527,31 @@ export default function AuthPage({ slug }: { slug?: string }) {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
         try {
+          // Reverse geocode to get location name
+          const { display: locationDisplay, district } = await reverseGeocode(lat, lng);
+          if (locationDisplay) setNearbyLocationLabel(locationDisplay);
+
+          // Find matching BRS regional card from featured profiles
+          if (district) {
+            const districtLower = district.toLowerCase();
+            const match = featuredProfiles.find((p) => {
+              const nameLower = (p.name || "").toLowerCase();
+              const industryLower = (p.industry || "").toLowerCase();
+              return nameLower.includes(districtLower) || industryLower.includes(districtLower) ||
+                districtLower.includes(nameLower.replace(/^brs\s*/i, "").trim());
+            });
+            if (match) setNearbyRegionalCard(match);
+          }
+
           // Save location for logged-in users
           if (user?.id) {
             await fetch(`/api/user/${user.id}`, {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ latitude: lat, longitude: lng }),
+              body: JSON.stringify({ latitude: lat, longitude: lng, locationName: locationDisplay || null }),
             });
           }
+
           const excludeSlug = user?.uniqueSlug || "";
           const res = await fetch(`/api/users/nearby?lat=${lat}&lng=${lng}&radius=50${excludeSlug ? `&exclude=${excludeSlug}` : ""}`);
           if (!res.ok) throw new Error("Failed to fetch nearby users");
@@ -4010,20 +4052,58 @@ export default function AuthPage({ slug }: { slug?: string }) {
             className="absolute top-[calc(var(--safe-area-inset-top,0px)+56px)] right-4 z-[60] w-72 max-h-[70vh] overflow-y-auto rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl"
             data-testid="nearby-voices-dropdown"
           >
-            <div className="flex items-center justify-between px-4 pt-4 pb-2">
-              <div className="flex items-center gap-2">
-                <Navigation className="w-4 h-4 text-pink-400" />
-                <span className="text-white font-semibold text-sm">Nearby Voices</span>
+            <div className="flex items-center justify-between px-4 pt-4 pb-1">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <Navigation className="w-4 h-4 text-pink-400" />
+                  <span className="text-white font-semibold text-sm">Nearby Voices</span>
+                </div>
+                {nearbyLocationLabel && (
+                  <p className="text-white/50 text-[10px] mt-0.5 ml-6 leading-tight truncate max-w-[170px]">
+                    📍 {nearbyLocationLabel}
+                  </p>
+                )}
               </div>
               <button
                 onClick={() => setShowNearbyDropdown(false)}
-                className="text-white/60 hover:text-white transition-colors p-1"
+                className="text-white/60 hover:text-white transition-colors p-1 flex-shrink-0"
                 data-testid="button-close-nearby"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="px-2 pb-3">
+
+            {/* BRS Regional Voice Card */}
+            {nearbyRegionalCard && (
+              <div className="px-2 pt-2">
+                <p className="text-[9px] text-pink-300/80 uppercase tracking-widest font-semibold px-2 mb-1.5">Your Local BRS Voice</p>
+                <button
+                  onClick={() => { setShowNearbyDropdown(false); setLocation("/" + nearbyRegionalCard.uniqueSlug); }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-pink-500/20 border border-pink-400/30 hover:bg-pink-500/30 transition-colors text-left"
+                  data-testid={`nearby-regional-card-${nearbyRegionalCard.uniqueSlug}`}
+                >
+                  <div className="w-9 h-9 rounded-full bg-pink-500/40 flex-shrink-0 overflow-hidden border border-pink-400/50">
+                    {nearbyRegionalCard.avatarUrl ? (
+                      <img src={normalizeAvatarUrl(nearbyRegionalCard.avatarUrl) || ""} alt={nearbyRegionalCard.name || ""} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-white font-bold text-sm">{(nearbyRegionalCard.name || "B").charAt(0).toUpperCase()}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-semibold truncate">{nearbyRegionalCard.name}</p>
+                    <p className="text-pink-300/80 text-[10px] truncate">
+                      {ROLES.find((r) => r.value === nearbyRegionalCard.role)?.label || nearbyRegionalCard.role || "BRS"}
+                    </p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-pink-400 flex-shrink-0" />
+                </button>
+                <div className="mt-2 mx-2 border-t border-white/10" />
+              </div>
+            )}
+
+            <div className="px-2 pb-3 pt-1">
               {nearbyLoading && (
                 <div className="flex items-center justify-center py-8 gap-2">
                   <Loader2 className="w-5 h-5 text-white/60 animate-spin" />
@@ -4041,6 +4121,11 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   <MapPin className="w-8 h-8 text-white/30 mx-auto mb-2" />
                   <p className="text-white/60 text-xs leading-relaxed">No BRS voices found within 50 km of your location.</p>
                 </div>
+              )}
+              {!nearbyLoading && nearbyVoices.length > 0 && (
+                <p className="text-[9px] text-white/40 uppercase tracking-widest font-semibold px-2 mb-1">
+                  {nearbyVoices.length} voice{nearbyVoices.length !== 1 ? "s" : ""} near you
+                </p>
               )}
               {!nearbyLoading && nearbyVoices.map((voice, idx) => (
                 <button
@@ -4065,8 +4150,17 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-sm font-medium truncate">{voice.name || "BRS Member"}</p>
-                    {voice.role && (
-                      <p className="text-white/60 text-xs truncate">{voice.role}</p>
+                    {(voice.locationName || voice.role) && (
+                      <p className="text-white/55 text-[10px] truncate leading-tight">
+                        {voice.locationName
+                          ? voice.locationName
+                          : (ROLES.find((r) => r.value === voice.role)?.label || voice.role || "")}
+                      </p>
+                    )}
+                    {voice.locationName && voice.role && (
+                      <p className="text-white/35 text-[9px] truncate leading-tight">
+                        {ROLES.find((r) => r.value === voice.role)?.label || voice.role}
+                      </p>
                     )}
                   </div>
                   <div className="flex-shrink-0 text-right">

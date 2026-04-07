@@ -91,6 +91,7 @@ export type User = {
   notes: { id: string; text: string; completed: boolean; expiresAt: string }[];
   latitude: number | null;
   longitude: number | null;
+  locationName: string | null;
   createdAt: Date;
 };
 
@@ -121,6 +122,7 @@ export const insertUserSchema = z.object({
   pin: z.string().length(5).optional().nullable(),
   latitude: z.number().optional().nullable(),
   longitude: z.number().optional().nullable(),
+  locationName: z.string().optional().nullable(),
   avatarUrl: z.string().optional().nullable(),
   reachCount: z.number().optional(),
   instaClicks: z.number().optional(),

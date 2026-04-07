@@ -87,6 +87,7 @@ export async function registerRoutes(
           role: user.role,
           uniqueSlug: user.uniqueSlug,
           avatarUrl: user.avatarUrl,
+          locationName: user.locationName || null,
           distanceKm: Math.round(dist * 10) / 10,
         }));
 
