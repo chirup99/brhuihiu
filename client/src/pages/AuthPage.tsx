@@ -1033,7 +1033,7 @@ const PamphletXVideoThumb = ({ url }: { url: string }) => {
     <img
       src={data.thumbnailUrl}
       alt=""
-      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.7 }}
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
     />
   );
 };
@@ -6089,7 +6089,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           )}
                           {/* X post media — show card.imageUrl if available, or fetch thumbnail for videos */}
                           {isXpost && card.imageUrl && (
-                            <img src={card.imageUrl} alt={card.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.35 }} />
+                            <img src={card.imageUrl} alt={card.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
                           )}
                           {isXpost && !card.imageUrl && card.subtype === "video" && card.url && (
                             <PamphletXVideoThumb url={card.url} />
@@ -6102,8 +6102,15 @@ export default function AuthPage({ slug }: { slug?: string }) {
                               </div>
                             </div>
                           )}
+                          {/* X icon badge — bottom-right corner for all X post/video cards */}
+                          {isXpost && (
+                            <div style={{ position: "absolute", bottom: 6, right: 6, width: 22, height: 22, borderRadius: "50%", background: "#000", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 5, boxShadow: "0 2px 8px rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.15)" }}>
+                              <svg viewBox="0 0 24 24" style={{ width: 11, height: 11, fill: "white" }}><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.73-8.835L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            </div>
+                          )}
 
-                          {/* Content layer */}
+                          {/* Content layer — hidden for X post/video cards */}
+                          {!isXpost && (
                           <div
                             style={{
                               position: isPost ? (postImg ? "relative" : "absolute") : "absolute",
@@ -6125,12 +6132,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           >
                             {/* Type label */}
                             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                              {isXpost && (
-                                <span style={{ display: "flex", alignItems: "center", gap: 3, color: "rgba(255,255,255,0.65)", fontSize: 8, fontWeight: 800 }}>
-                                  <svg viewBox="0 0 24 24" style={{ width: 8, height: 8, fill: "rgba(255,255,255,0.65)" }}><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.73-8.835L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                                  పోస్ట్
-                                </span>
-                              )}
                               {isReel && <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 8, fontWeight: 700 }}>రీల్</span>}
                               {isPost && <span style={{ color: "#be185d", fontSize: 8, fontWeight: 800 }}>✍ పోస్ట్ కార్డ్</span>}
                               {isImageCard && <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 8, fontWeight: 700 }}>చిత్రం</span>}
@@ -6150,29 +6151,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             >
                               {card.title || ""}
                             </div>
-                            {/* Post full text (Telugu portrait) */}
-                            {isPost && card.content && (
-                              <div
-                                style={{
-                                  color: "#222",
-                                  fontSize: 9,
-                                  lineHeight: 1.65,
-                                  display: "-webkit-box",
-                                  WebkitBoxOrient: "vertical",
-                                  WebkitLineClamp: postImg ? 5 : 12,
-                                  overflow: "hidden",
-                                }}
-                              >
-                                {card.content}
-                              </div>
-                            )}
-                            {/* X post URL */}
-                            {isXpost && card.url && (
-                              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 8, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
-                                {card.url.replace(/https?:\/\/(www\.)?(twitter|x)\.com\//, "")}
-                              </div>
-                            )}
                           </div>
+                          )}
 
                           {/* Post image upload button */}
                           {isPost && !isCapturingPamphlet && (
