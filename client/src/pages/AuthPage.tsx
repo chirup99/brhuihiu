@@ -6241,19 +6241,11 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
             const n = pamphletCards.length;
 
-            // Special 2-card layout: one media card (reel/image/xpost) + one post card
-            // → media as full-width landscape banner on top, post on bottom-left, QR on bottom-right
-            const MEDIA_TYPES = ["reel", "image", "product", "xpost"];
-            const isSpecialTwoCard = n === 2
-              && pamphletCards.some((c: any) => MEDIA_TYPES.includes(c.type))
-              && pamphletCards.some((c: any) => c.type === "post");
-
-            const mediaCardIdx = isSpecialTwoCard
-              ? pamphletCards.findIndex((c: any) => MEDIA_TYPES.includes(c.type))
-              : -1;
-            const postCardIdx = isSpecialTwoCard
-              ? pamphletCards.findIndex((c: any) => c.type === "post")
-              : -1;
+            // Special 2-card layout: any two cards
+            // → first card as full-width landscape banner on top, second card bottom-left, QR bottom-right
+            const isSpecialTwoCard = n === 2;
+            const mediaCardIdx = 0; // banner (top)
+            const postCardIdx = 1;  // below-left
 
             // Special layout measurements
             const BANNER_H = 134;
