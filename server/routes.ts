@@ -55,6 +55,48 @@ export async function registerRoutes(
     }
   });
 
+  // Haversine distance in km
+  function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  app.get("/api/users/nearby", async (req, res) => {
+    try {
+      const lat = parseFloat(req.query.lat as string);
+      const lng = parseFloat(req.query.lng as string);
+      const radius = parseFloat((req.query.radius as string) || "50");
+      const excludeSlug = req.query.exclude as string | undefined;
+
+      if (isNaN(lat) || isNaN(lng)) {
+        return res.status(400).json({ message: "Invalid lat/lng" });
+      }
+
+      const allUsers = await storage.getAllUsers();
+      const nearby = allUsers
+        .filter(u => u.latitude != null && u.longitude != null && u.uniqueSlug && (!excludeSlug || u.uniqueSlug !== excludeSlug))
+        .map(u => ({ dist: haversineKm(lat, lng, u.latitude!, u.longitude!), user: u }))
+        .filter(({ dist }) => dist <= radius)
+        .sort((a, b) => a.dist - b.dist)
+        .slice(0, 15)
+        .map(({ dist, user }) => ({
+          name: user.name,
+          role: user.role,
+          uniqueSlug: user.uniqueSlug,
+          avatarUrl: user.avatarUrl,
+          distanceKm: Math.round(dist * 10) / 10,
+        }));
+
+      res.json({ users: nearby });
+    } catch (e) {
+      console.error("Nearby users error:", e);
+      res.status(500).json({ message: "Failed to fetch nearby users" });
+    }
+  });
+
   app.post("/api/featured-slugs", async (req, res) => {
     try {
       const { slugs } = z.object({ slugs: z.array(z.string()) }).parse(req.body);

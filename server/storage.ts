@@ -30,6 +30,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserBySlug(slug: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, user: Partial<InsertUser>): Promise<User>;
   getEvents(): Promise<BRSEvent[]>;
@@ -56,6 +57,10 @@ export class MemStorage implements IStorage {
 
   async getUserBySlug(slug: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find((u) => u.uniqueSlug === slug);
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -165,6 +170,25 @@ export class DynamoDBStorage implements IStorage {
     } catch (error) {
       console.error("Error getting user by slug from DynamoDB:", error);
       throw error;
+    }
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    try {
+      const items: User[] = [];
+      let lastKey: Record<string, any> | undefined;
+      do {
+        const { Items, LastEvaluatedKey } = await ddbDocClient.send(new ScanCommand({
+          TableName: TABLE_NAME,
+          ExclusiveStartKey: lastKey,
+        }));
+        if (Items) items.push(...(Items as User[]));
+        lastKey = LastEvaluatedKey as Record<string, any> | undefined;
+      } while (lastKey);
+      return items.filter(u => u.id && !u.id.startsWith("brs_system_") && u.uniqueSlug);
+    } catch (e) {
+      console.error("DynamoDB getAllUsers Error:", e);
+      return [];
     }
   }
 

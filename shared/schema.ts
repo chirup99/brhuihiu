@@ -89,6 +89,8 @@ export type User = {
   connections: { slug: string; connectedAt: string }[]; // array of uniqueSlugs with timestamp
   cards: string[]; // JSON strings
   notes: { id: string; text: string; completed: boolean; expiresAt: string }[];
+  latitude: number | null;
+  longitude: number | null;
   createdAt: Date;
 };
 
@@ -117,6 +119,8 @@ export const insertUserSchema = z.object({
   })).optional(),
   uniqueSlug: z.string().optional().nullable(),
   pin: z.string().length(5).optional().nullable(),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
   avatarUrl: z.string().optional().nullable(),
   reachCount: z.number().optional(),
   instaClicks: z.number().optional(),

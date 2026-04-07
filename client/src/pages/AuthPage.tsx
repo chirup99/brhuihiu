@@ -32,6 +32,8 @@ import {
   Search,
   Newspaper,
   Download,
+  MapPin,
+  Navigation,
 } from "lucide-react";
 import {
   motion,
@@ -2466,6 +2468,70 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditingPin, setIsEditingPin] = useState(false);
+
+  type NearbyVoice = {
+    name: string | null;
+    role: string | null;
+    uniqueSlug: string | null;
+    avatarUrl?: string | null;
+    distanceKm: number;
+  };
+  const [showNearbyDropdown, setShowNearbyDropdown] = useState(false);
+  const [nearbyVoices, setNearbyVoices] = useState<NearbyVoice[]>([]);
+  const [nearbyLoading, setNearbyLoading] = useState(false);
+  const [nearbyError, setNearbyError] = useState<string | null>(null);
+
+  const handleNearbyVoices = async () => {
+    if (showNearbyDropdown) {
+      setShowNearbyDropdown(false);
+      return;
+    }
+    setNearbyError(null);
+    setNearbyLoading(true);
+    setShowNearbyDropdown(true);
+    setNearbyVoices([]);
+
+    if (!navigator.geolocation) {
+      setNearbyError("Location not supported on this device.");
+      setNearbyLoading(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        try {
+          // Save location for logged-in users
+          if (user?.id) {
+            await fetch(`/api/user/${user.id}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ latitude: lat, longitude: lng }),
+            });
+          }
+          const excludeSlug = user?.uniqueSlug || "";
+          const res = await fetch(`/api/users/nearby?lat=${lat}&lng=${lng}&radius=50${excludeSlug ? `&exclude=${excludeSlug}` : ""}`);
+          if (!res.ok) throw new Error("Failed to fetch nearby users");
+          const data = await res.json();
+          setNearbyVoices(data.users || []);
+        } catch {
+          setNearbyError("Could not load nearby voices.");
+        } finally {
+          setNearbyLoading(false);
+        }
+      },
+      (err) => {
+        if (err.code === 1) {
+          setNearbyError("Please allow location access to see nearby voices.");
+        } else {
+          setNearbyError("Unable to get your location.");
+        }
+        setNearbyLoading(false);
+      },
+      { timeout: 10000, maximumAge: 60000 }
+    );
+  };
   const [newPinValue, setNewPinValue] = useState("");
 
   const updatePinMutation = useMutation({
@@ -3925,6 +3991,92 @@ export default function AuthPage({ slug }: { slug?: string }) {
           className="absolute inset-0 bg-black/20 pointer-events-none opacity-0 transition-opacity duration-500"
           style={{ opacity: isMenuOpen ? 1 : 0 }}
         ></div>
+
+        {/* Nearby Voices Button */}
+        <button
+          onClick={handleNearbyVoices}
+          data-testid="button-nearby-voices"
+          className="absolute top-8-safe right-16 z-50 p-2 group"
+          title="Nearby Voices"
+        >
+          <MapPin
+            className={`w-5 h-5 transition-colors duration-200 ${showNearbyDropdown ? "text-pink-400" : "text-white/80 group-hover:text-white"}`}
+          />
+        </button>
+
+        {/* Nearby Voices Dropdown */}
+        {showNearbyDropdown && (
+          <div
+            className="absolute top-[calc(var(--safe-area-inset-top,0px)+56px)] right-4 z-[60] w-72 max-h-[70vh] overflow-y-auto rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl"
+            data-testid="nearby-voices-dropdown"
+          >
+            <div className="flex items-center justify-between px-4 pt-4 pb-2">
+              <div className="flex items-center gap-2">
+                <Navigation className="w-4 h-4 text-pink-400" />
+                <span className="text-white font-semibold text-sm">Nearby Voices</span>
+              </div>
+              <button
+                onClick={() => setShowNearbyDropdown(false)}
+                className="text-white/60 hover:text-white transition-colors p-1"
+                data-testid="button-close-nearby"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="px-2 pb-3">
+              {nearbyLoading && (
+                <div className="flex items-center justify-center py-8 gap-2">
+                  <Loader2 className="w-5 h-5 text-white/60 animate-spin" />
+                  <span className="text-white/60 text-sm">Finding voices near you…</span>
+                </div>
+              )}
+              {!nearbyLoading && nearbyError && (
+                <div className="text-center py-6 px-3">
+                  <MapPin className="w-8 h-8 text-white/30 mx-auto mb-2" />
+                  <p className="text-white/60 text-xs leading-relaxed">{nearbyError}</p>
+                </div>
+              )}
+              {!nearbyLoading && !nearbyError && nearbyVoices.length === 0 && (
+                <div className="text-center py-6 px-3">
+                  <MapPin className="w-8 h-8 text-white/30 mx-auto mb-2" />
+                  <p className="text-white/60 text-xs leading-relaxed">No BRS voices found within 50 km of your location.</p>
+                </div>
+              )}
+              {!nearbyLoading && nearbyVoices.map((voice, idx) => (
+                <button
+                  key={voice.uniqueSlug || idx}
+                  data-testid={`nearby-voice-${voice.uniqueSlug}`}
+                  onClick={() => {
+                    setShowNearbyDropdown(false);
+                    setLocation("/" + voice.uniqueSlug);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 transition-colors text-left"
+                >
+                  <div className="w-9 h-9 rounded-full bg-white/20 flex-shrink-0 overflow-hidden border border-white/30">
+                    {voice.avatarUrl ? (
+                      <img src={voice.avatarUrl} alt={voice.name || ""} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-white font-bold text-sm">
+                          {(voice.name || "?").charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate">{voice.name || "BRS Member"}</p>
+                    {voice.role && (
+                      <p className="text-white/60 text-xs truncate">{voice.role}</p>
+                    )}
+                  </div>
+                  <div className="flex-shrink-0 text-right">
+                    <span className="text-pink-300 text-xs font-medium">{voice.distanceKm} km</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
