@@ -4779,7 +4779,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setShowPamphletDialog(true)}
+                        onClick={() => { setPamphletCardSizes({}); setShowPamphletDialog(true); }}
                         className="p-2 bg-pink-50 hover:bg-pink-100 rounded-lg text-pink-400 hover:text-pink-600 transition-all"
                         title="Campaign Pamphlet"
                       >
@@ -6232,27 +6232,40 @@ export default function AuthPage({ slug }: { slug?: string }) {
             const HEADER_H = 48;
             const PAD = 10;
             const GAP = 7;
+
+            // QR block dimensions (based on default size for layout calc)
+            const QR_DEFAULT_SIZE = 92;
+            const QR_BLOCK_H = QR_DEFAULT_SIZE + 12 + 5 + 14; // white box padding + gap + text label
+            const QR_ZONE = QR_BLOCK_H + PAD; // total reserved at bottom
+
             const n = pamphletCards.length;
-            const useDual = n >= 2;
-            const baseCardW = useDual ? Math.floor((CANVAS_W - PAD * 2 - GAP) / 2) : CANVAS_W - PAD * 2;
-            const baseCardH = useDual
-              ? Math.min(140, Math.floor((CANVAS_H - HEADER_H - 110 - GAP * Math.ceil(n / 2)) / Math.max(Math.ceil(n / 2), 1)))
-              : Math.min(180, Math.floor((CANVAS_H - HEADER_H - 110 - GAP * n) / Math.max(n, 1)));
-            const defaultCardH = Math.max(baseCardH, 70);
+            // Choose columns: 1 card → full width, 2+ → 2 columns
+            const cols = n >= 2 ? 2 : 1;
+            const rows = Math.ceil(n / Math.max(cols, 1));
+
+            // Available height between header and QR area
+            const availableH = CANVAS_H - HEADER_H - QR_ZONE - PAD;
+
+            const baseCardW = Math.floor((CANVAS_W - PAD * 2 - GAP * (cols - 1)) / cols);
+            const baseCardH = Math.max(65, Math.floor((availableH - GAP * Math.max(rows - 1, 0)) / Math.max(rows, 1)));
 
             const getCardSize = (idx: number) => ({
               w: pamphletCardSizes[idx]?.w ?? baseCardW,
-              h: pamphletCardSizes[idx]?.h ?? defaultCardH,
+              h: pamphletCardSizes[idx]?.h ?? baseCardH,
             });
 
             const getInitPos = (idx: number) => {
-              if (useDual) {
-                const col = idx % 2;
-                const row = Math.floor(idx / 2);
-                return { x: PAD + col * (baseCardW + GAP), y: HEADER_H + GAP + row * (defaultCardH + GAP) };
-              }
-              return { x: PAD, y: HEADER_H + GAP + idx * (defaultCardH + GAP) };
+              const col = cols === 2 ? idx % 2 : 0;
+              const row = cols === 2 ? Math.floor(idx / 2) : idx;
+              return {
+                x: PAD + col * (baseCardW + GAP),
+                y: HEADER_H + PAD + row * (baseCardH + GAP),
+              };
             };
+
+            // QR initial position: centered, pinned to bottom
+            const qrInitLeft = Math.floor((CANVAS_W - (QR_DEFAULT_SIZE + 24)) / 2);
+            const qrInitTop = CANVAS_H - QR_BLOCK_H - PAD;
 
             const getYtThumb = (url: string) => {
               const m = (url || "").match(/(?:youtu\.be\/|youtube\.com\/(?:shorts\/|watch\?v=|v\/|embed\/|reels\/))([\w-]{11})/);
@@ -6569,8 +6582,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       whileDrag={{ zIndex: 60, scale: 1.05 }}
                       style={{
                         position: "absolute",
-                        left: Math.floor((CANVAS_W - (pamphletQrSize + 12 + 12)) / 2),
-                        top: CANVAS_H - 128,
+                        left: qrInitLeft,
+                        top: qrInitTop,
                         zIndex: 15,
                         touchAction: "none",
                         cursor: isCapturingPamphlet ? "default" : "grab",
