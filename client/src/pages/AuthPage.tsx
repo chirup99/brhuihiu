@@ -2311,24 +2311,22 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
   const fetchingSlugRef = useRef<string | null>(null);
 
+  const DEFAULT_SLUG = "brsparty";
+
   useEffect(() => {
+    // If not logged in and at root, redirect to the default brsparty profile
+    if (!slug && !authUser && !isAuthLoading) {
+      setLocation(`/${DEFAULT_SLUG}`);
+      return;
+    }
+
     // If we are switching from viewing a persona to the root path,
-    // and we are NOT logged in, we should clear the public user and form
+    // and we are NOT logged in, redirect to default instead of showing blank
     if (!slug && !authUser && publicUser) {
       setPublicUser(null);
       setLastLoadedSlug(null);
-      form.reset({
-        name: "",
-        role: "people",
-        bio: "",
-        instagram: "",
-        linkedin: "",
-        whatsapp: "",
-        website: "",
-        youtube: "",
-        cards: [],
-      });
-      setSelectedCards([]);
+      setLocation(`/${DEFAULT_SLUG}`);
+      return;
     }
 
     // Only fetch if the slug changed to a new slug we haven't loaded yet,
@@ -2365,7 +2363,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
         setLocation(`/${user.uniqueSlug}`);
       }
     }
-  }, [slug, setLocation, loggedInUser, lastLoadedSlug]);
+  }, [slug, setLocation, loggedInUser, lastLoadedSlug, authUser, isAuthLoading]);
 
   const trackClick = async (
     type: "insta" | "linkedin" | "whatsapp" | "website",
