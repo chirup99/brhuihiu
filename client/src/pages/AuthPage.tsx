@@ -5537,7 +5537,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   <div className="flex gap-2 mt-4">
                     <button
                       type="button"
-                      disabled={!form.watch("name") || !form.watch("role")}
+                      disabled={!form.watch("name") || !form.watch("role") || !form.watch("industry")}
                       onClick={() => setMode("customize")}
                       className="flex-1 bg-pink-500 text-white hover:bg-pink-600 rounded-lg py-3 font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
