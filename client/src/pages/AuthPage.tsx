@@ -3435,8 +3435,29 @@ export default function AuthPage({ slug }: { slug?: string }) {
       setIsCapturingPamphlet(false);
 
       const filename = `brs-campaign-${user?.uniqueSlug || "pamphlet"}.png`;
-      await downloadPng(dataUrl, filename, `BRS Campaign — ${user?.name || "Pamphlet"}`);
+      const profileUrl = window.location.origin + "/" + (user?.uniqueSlug || loggedInUser?.uniqueSlug || "");
+      const shareText = `${user?.name || loggedInUser?.name || "BRS"} — BRS Connect\n${profileUrl}`;
 
+      // Try native share (mobile) — includes image + URL text for direct social sharing
+      if (navigator.share) {
+        try {
+          const res = await fetch(dataUrl);
+          const blob = await res.blob();
+          const file = new File([blob], filename, { type: "image/png" });
+          const shareData: ShareData = { files: [file], title: `BRS Campaign — ${user?.name || "Pamphlet"}`, text: shareText };
+          if (navigator.canShare?.(shareData)) {
+            await navigator.share(shareData);
+            toast({ title: "Shared!", description: "Campaign pamphlet shared successfully." });
+            return;
+          }
+        } catch (e: any) {
+          if (e?.name === "AbortError") return;
+          console.warn("Share with file failed, falling back:", e);
+        }
+      }
+
+      // Fallback: plain download
+      await downloadPng(dataUrl, filename, `BRS Campaign — ${user?.name || "Pamphlet"}`);
       toast({ title: "Downloaded!", description: "Campaign pamphlet saved to your downloads." });
     } catch (err: any) {
       setIsCapturingPamphlet(false);
@@ -6621,34 +6642,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     </div>
                   )}
 
-                  {/* ── PROFILE URL FOOTER (always rendered, visible in capture) ── */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: 22,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 5,
-                      background: "rgba(0,0,0,0.55)",
-                      backdropFilter: "blur(6px)",
-                      zIndex: 25,
-                      opacity: isCapturingPamphlet ? 1 : 0.45,
-                    }}
-                  >
-                    <svg viewBox="0 0 12 12" style={{ width: 9, height: 9, fill: "none", stroke: "rgba(255,255,255,0.7)", strokeWidth: 1.5, strokeLinecap: "round" }}>
-                      <circle cx="6" cy="6" r="5"/>
-                      <path d="M6 1C6 1 4 3.5 4 6s2 5 2 5"/>
-                      <path d="M6 1c0 0 2 2.5 2 5s-2 5-2 5"/>
-                      <path d="M1 6h10"/>
-                    </svg>
-                    <span style={{ fontSize: 8, color: "rgba(255,255,255,0.8)", fontWeight: 700, letterSpacing: "0.06em", fontFamily: "monospace" }}>
-                      {profileQrValue}
-                    </span>
-                  </div>
                 </div>
 
                 {/* ── BOTTOM TOOLBAR ── */}
