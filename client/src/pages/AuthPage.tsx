@@ -6460,13 +6460,47 @@ export default function AuthPage({ slug }: { slug?: string }) {
                               </div>
                             </div>
                           )}
-                          {/* X post media — show card.imageUrl if available, or fetch thumbnail for videos */}
+                          {/* X post media — image cover */}
                           {isXpost && card.imageUrl && (
                             <img src={card.imageUrl} alt={card.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
                           )}
+                          {/* X video thumb */}
                           {isXpost && !card.imageUrl && card.subtype === "video" && card.url && (
                             <PamphletXVideoThumb url={card.url} />
                           )}
+                          {/* X tweet card — iframe embed in normal view, styled fallback during capture */}
+                          {isXpost && !card.imageUrl && card.subtype !== "video" && (() => {
+                            const tweetIdMatch = (card.url || "").match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
+                            const tweetId = tweetIdMatch?.[1];
+                            if (!isCapturingPamphlet && tweetId) {
+                              return (
+                                <div style={{ position: "absolute", inset: 0, zIndex: 3, overflow: "hidden", borderRadius: 10 }}>
+                                  <iframe
+                                    src={`https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&chrome=nofooter&conversation=none`}
+                                    style={{ width: "100%", height: "100%", border: "none", pointerEvents: "none", display: "block" }}
+                                    sandbox="allow-scripts allow-same-origin allow-popups"
+                                    scrolling="no"
+                                  />
+                                </div>
+                              );
+                            }
+                            // Capture mode or no tweet ID → styled X card
+                            return (
+                              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", padding: "8px 9px", zIndex: 3, overflow: "hidden" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 6, flexShrink: 0 }}>
+                                  <svg viewBox="0 0 24 24" style={{ width: 11, height: 11, fill: "rgba(255,255,255,0.55)", flexShrink: 0 }}><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.73-8.835L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                                  <span style={{ fontSize: 7, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em" }}>X Post</span>
+                                </div>
+                                <div style={{ flex: 1, overflow: "hidden" }}>
+                                  {card.url ? (
+                                    <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 8, lineHeight: 1.45, margin: 0, wordBreak: "break-all" }}>{card.url}</p>
+                                  ) : (
+                                    <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 8, textAlign: "center", marginTop: 12 }}>No URL</p>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })()}
                           {/* X video play overlay */}
                           {isXVideo && (
                             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.28)", zIndex: 2 }}>
@@ -6475,8 +6509,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                               </div>
                             </div>
                           )}
-                          {/* X icon badge — bottom-right corner for all X post/video cards */}
-                          {isXpost && (
+                          {/* X icon badge — bottom-right corner for image/video X cards only */}
+                          {isXpost && (card.imageUrl || isXVideo) && (
                             <div style={{ position: "absolute", bottom: 6, right: 6, width: 22, height: 22, borderRadius: "50%", background: "#000", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 5, boxShadow: "0 2px 8px rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.15)" }}>
                               <svg viewBox="0 0 24 24" style={{ width: 11, height: 11, fill: "white" }}><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.73-8.835L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                             </div>
