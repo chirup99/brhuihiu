@@ -2520,6 +2520,37 @@ export default function AuthPage({ slug }: { slug?: string }) {
     return url;
   };
 
+  // Detect iOS / Safari so we can use share-sheet instead of anchor download
+  const isIOSSafari = () =>
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  // Safari-safe image download: share as File on iOS, anchor-click elsewhere
+  const downloadPng = async (dataUrl: string, filename: string, shareTitle: string) => {
+    if (isIOSSafari() && navigator.share) {
+      try {
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const file = new File([blob], filename, { type: "image/png" });
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: shareTitle });
+          return;
+        }
+      } catch (e: any) {
+        if (e?.name !== "AbortError") console.warn("Share failed, falling back:", e);
+      }
+    }
+    // Fallback: open in new tab (Safari) or trigger anchor download (Chrome/Firefox)
+    if (isIOSSafari()) {
+      const w = window.open();
+      if (w) { w.document.write(`<img src="${dataUrl}" style="max-width:100%">`); return; }
+    }
+    const link = document.createElement("a");
+    link.download = filename;
+    link.href = dataUrl;
+    link.click();
+  };
+
   // Converts any image src (URL or data URL) to a base64 data URL via fetch+FileReader.
   // This avoids canvas-taint issues on mobile (iOS Safari) that occur with crossOrigin canvas tricks.
   const toBase64 = async (src: string): Promise<string> => {
@@ -3344,45 +3375,26 @@ export default function AuthPage({ slug }: { slug?: string }) {
       // 300ms gives mobile devices enough time to fully render the base64 image.
       await new Promise<void>((resolve) => setTimeout(resolve, 300));
 
-      const dataUrl = await htmlToImage.toPng(element, {
+      const captureOpts = {
         quality: 1,
         pixelRatio: 3,
         cacheBust: true,
         skipFonts: true,
-        filter: (node) => {
-          // Skip external stylesheet link elements to avoid CORS font-fetch errors
+        filter: (node: HTMLElement) => {
           if (node.tagName === "LINK" && (node as HTMLLinkElement).rel === "stylesheet") return false;
           return true;
         },
-      });
+      };
+
+      // Safari requires two renders — first pass primes the canvas, second is correct
+      await htmlToImage.toPng(element, captureOpts);
+      await new Promise<void>((resolve) => setTimeout(resolve, 150));
+      const dataUrl = await htmlToImage.toPng(element, captureOpts);
 
       setIsCapturing(false);
 
-      const profileUrl =
-        window.location.origin +
-        "/" +
-        (displaySlug || user?.uniqueSlug || "");
-
-      // Always download the wallpaper image
-      const link = document.createElement("a");
-      link.download = `brs-voice-card-${user?.uniqueSlug || "connect"}.png`;
-      link.href = dataUrl;
-      link.click();
-
-      // Also try sharing the profile URL
-      try {
-        if (navigator.share) {
-          await navigator.share({
-            title: `BRS Connect — ${user?.name || "Profile"}`,
-            text: `Connect with ${user?.name || "me"} on BRS Connect`,
-            url: profileUrl,
-          });
-        }
-      } catch (shareErr: any) {
-        if (shareErr?.name !== "AbortError") {
-          console.error("Share error:", shareErr);
-        }
-      }
+      const filename = `brs-voice-card-${user?.uniqueSlug || "connect"}.png`;
+      await downloadPng(dataUrl, filename, `BRS Connect — ${user?.name || "Profile"}`);
 
       toast({ title: "Saved!", description: "Voice card saved to your downloads." });
     } catch (err: any) {
@@ -3405,21 +3417,28 @@ export default function AuthPage({ slug }: { slug?: string }) {
       setAvatarDataUrl(freshDataUrl);
       setIsCapturingPamphlet(true);
       await new Promise<void>((resolve) => setTimeout(resolve, 300));
-      const dataUrl = await htmlToImage.toPng(element, {
+
+      const captureOpts = {
         quality: 1,
         pixelRatio: 3,
         cacheBust: true,
         skipFonts: true,
-        filter: (node) => {
+        filter: (node: HTMLElement) => {
           if (node.tagName === "LINK" && (node as HTMLLinkElement).rel === "stylesheet") return false;
           return true;
         },
-      });
+      };
+
+      // Safari requires two renders — first pass primes the canvas, second is correct
+      await htmlToImage.toPng(element, captureOpts);
+      await new Promise<void>((resolve) => setTimeout(resolve, 150));
+      const dataUrl = await htmlToImage.toPng(element, captureOpts);
+
       setIsCapturingPamphlet(false);
-      const link = document.createElement("a");
-      link.download = `brs-campaign-${user?.uniqueSlug || "pamphlet"}.png`;
-      link.href = dataUrl;
-      link.click();
+
+      const filename = `brs-campaign-${user?.uniqueSlug || "pamphlet"}.png`;
+      await downloadPng(dataUrl, filename, `BRS Campaign — ${user?.name || "Pamphlet"}`);
+
       toast({ title: "Downloaded!", description: "Campaign pamphlet saved to your downloads." });
     } catch (err: any) {
       setIsCapturingPamphlet(false);
