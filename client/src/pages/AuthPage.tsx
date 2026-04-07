@@ -6613,7 +6613,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           )}
                         </div>
                         <span style={{ color: pamphletBgImage ? "rgba(255,255,255,0.75)" : (pamphletTheme.cardStyle === "dark" ? "rgba(255,255,255,0.6)" : "#999"), fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", whiteSpace: "nowrap" }}>
-                          QR స్కాన్ చేయండి · Scan to Connect
+                          Scan to Connect
                         </span>
                       </div>
                     </motion.div>
