@@ -2560,7 +2560,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
           const excludeSlug = user?.uniqueSlug || "";
           const districtParam = district ? `&district=${encodeURIComponent(district)}` : "";
-          const res = await fetch(`/api/users/nearby?lat=${lat}&lng=${lng}&radius=50${excludeSlug ? `&exclude=${excludeSlug}` : ""}${districtParam}`);
+          const res = await fetch(`/api/users/nearby?lat=${lat}&lng=${lng}&radius=75${excludeSlug ? `&exclude=${excludeSlug}` : ""}${districtParam}`);
           if (!res.ok) throw new Error("Failed to fetch nearby users");
           const data = await res.json();
           setNearbyVoices(data.users || []);
@@ -4127,7 +4127,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
               {!nearbyLoading && !nearbyError && nearbyVoices.length === 0 && constituencyVoices.length === 0 && (
                 <div className="text-center py-6 px-3">
                   <MapPin className="w-8 h-8 text-white/30 mx-auto mb-2" />
-                  <p className="text-white/60 text-xs leading-relaxed">No BRS voices found within 50 km of your location.</p>
+                  <p className="text-white/60 text-xs leading-relaxed">No BRS voices found within 75 km of your location.</p>
                 </div>
               )}
 
@@ -4314,6 +4314,15 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     {featuredProfiles.filter((p) => {
                       const q = voiceCardSearch.toLowerCase();
                       return !q || (p.name || "").toLowerCase().includes(q) || (p.uniqueSlug || "").toLowerCase().includes(q) || (p.role || "").toLowerCase().includes(q);
+                    }).slice().sort((a, b) => {
+                      const aIdx = nearbyVoices.findIndex(v => v.uniqueSlug === a.uniqueSlug);
+                      const bIdx = nearbyVoices.findIndex(v => v.uniqueSlug === b.uniqueSlug);
+                      const aIsNearby = aIdx !== -1;
+                      const bIsNearby = bIdx !== -1;
+                      if (aIsNearby && bIsNearby) return aIdx - bIdx;
+                      if (aIsNearby) return -1;
+                      if (bIsNearby) return 1;
+                      return 0;
                     }).map((profile, idx) => (
                       <motion.div
                         key={profile.uniqueSlug || idx}
