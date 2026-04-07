@@ -3924,8 +3924,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-[8px] text-white/30 uppercase tracking-widest font-bold mb-0.5">Profile Views</p>
-                          <p className="text-sm font-bold text-pink-400">{history.length}</p>
+                          <p className="text-[8px] text-white/30 uppercase tracking-widest font-bold mb-0.5">Today's Reach</p>
+                          <p className="text-sm font-bold text-pink-400">
+                            {history
+                              .filter((h) => new Date(h.timestamp).toDateString() === new Date().toDateString())
+                              .reduce((sum, h) => sum + (h.count || 0), 0)
+                              .toLocaleString()}
+                          </p>
                         </div>
                       </div>
 
