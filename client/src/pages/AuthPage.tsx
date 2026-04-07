@@ -6235,26 +6235,52 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
             // QR block dimensions (based on default size for layout calc)
             const QR_DEFAULT_SIZE = 92;
-            const QR_BLOCK_H = QR_DEFAULT_SIZE + 12 + 5 + 14; // white box padding + gap + text label
-            const QR_ZONE = QR_BLOCK_H + PAD; // total reserved at bottom
+            const QR_BOX_W = QR_DEFAULT_SIZE + 24; // QR + white padding both sides
+            const QR_BLOCK_H = QR_DEFAULT_SIZE + 12 + 5 + 14; // white box + gap + text label
+            const QR_ZONE = QR_BLOCK_H + PAD;
 
             const n = pamphletCards.length;
-            // Choose columns: 1 card → full width, 2+ → 2 columns
-            const cols = n >= 2 ? 2 : 1;
+
+            // Special 2-card layout: one media card (reel/image/xpost) + one post card
+            // → media as full-width landscape banner on top, post on bottom-left, QR on bottom-right
+            const MEDIA_TYPES = ["reel", "image", "product", "xpost"];
+            const isSpecialTwoCard = n === 2
+              && pamphletCards.some((c: any) => MEDIA_TYPES.includes(c.type))
+              && pamphletCards.some((c: any) => c.type === "post");
+
+            const mediaCardIdx = isSpecialTwoCard
+              ? pamphletCards.findIndex((c: any) => MEDIA_TYPES.includes(c.type))
+              : -1;
+            const postCardIdx = isSpecialTwoCard
+              ? pamphletCards.findIndex((c: any) => c.type === "post")
+              : -1;
+
+            // Special layout measurements
+            const BANNER_H = 134;
+            const bottomRowY = HEADER_H + PAD + BANNER_H + GAP;
+            const bottomRowH = CANVAS_H - bottomRowY - PAD;
+            const postCardW = CANVAS_W - PAD * 2 - GAP - QR_BOX_W;
+
+            // Standard grid layout
+            const cols = !isSpecialTwoCard && n >= 2 ? 2 : 1;
             const rows = Math.ceil(n / Math.max(cols, 1));
-
-            // Available height between header and QR area
             const availableH = CANVAS_H - HEADER_H - QR_ZONE - PAD;
-
             const baseCardW = Math.floor((CANVAS_W - PAD * 2 - GAP * (cols - 1)) / cols);
             const baseCardH = Math.max(65, Math.floor((availableH - GAP * Math.max(rows - 1, 0)) / Math.max(rows, 1)));
 
-            const getCardSize = (idx: number) => ({
-              w: pamphletCardSizes[idx]?.w ?? baseCardW,
-              h: pamphletCardSizes[idx]?.h ?? baseCardH,
-            });
+            const getCardSize = (idx: number) => {
+              if (isSpecialTwoCard) {
+                if (idx === mediaCardIdx) return { w: pamphletCardSizes[idx]?.w ?? CANVAS_W - PAD * 2, h: pamphletCardSizes[idx]?.h ?? BANNER_H };
+                if (idx === postCardIdx) return { w: pamphletCardSizes[idx]?.w ?? postCardW, h: pamphletCardSizes[idx]?.h ?? bottomRowH };
+              }
+              return { w: pamphletCardSizes[idx]?.w ?? baseCardW, h: pamphletCardSizes[idx]?.h ?? baseCardH };
+            };
 
             const getInitPos = (idx: number) => {
+              if (isSpecialTwoCard) {
+                if (idx === mediaCardIdx) return { x: PAD, y: HEADER_H + PAD };
+                if (idx === postCardIdx) return { x: PAD, y: bottomRowY };
+              }
               const col = cols === 2 ? idx % 2 : 0;
               const row = cols === 2 ? Math.floor(idx / 2) : idx;
               return {
@@ -6263,9 +6289,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
               };
             };
 
-            // QR initial position: centered, pinned to bottom
-            const qrInitLeft = Math.floor((CANVAS_W - (QR_DEFAULT_SIZE + 24)) / 2);
-            const qrInitTop = CANVAS_H - QR_BLOCK_H - PAD;
+            // QR position: bottom-right in special layout, centered-bottom otherwise
+            const qrInitLeft = isSpecialTwoCard
+              ? CANVAS_W - PAD - QR_BOX_W
+              : Math.floor((CANVAS_W - QR_BOX_W) / 2);
+            const qrInitTop = isSpecialTwoCard
+              ? bottomRowY + Math.max(0, Math.floor((bottomRowH - QR_BLOCK_H) / 2))
+              : CANVAS_H - QR_BLOCK_H - PAD;
 
             const getYtThumb = (url: string) => {
               const m = (url || "").match(/(?:youtu\.be\/|youtube\.com\/(?:shorts\/|watch\?v=|v\/|embed\/|reels\/))([\w-]{11})/);
