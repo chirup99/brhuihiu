@@ -633,6 +633,7 @@ interface SwipeCardProps {
   onSwipeRight: () => void;
   onVideoPlayStateChange?: (isPlaying: boolean) => void;
   isVideoPlaying?: boolean;
+  disableDrag?: boolean;
 }
 
 const getThumbnailUrl = (url: string) => {
@@ -685,7 +686,7 @@ const TrendLine = () => (
 );
 
 const SwipeCardContent = forwardRef(
-  ({ card, currentIndex, totalCards, onSwipeLeft, onSwipeRight, onVideoPlayStateChange, isVideoPlaying }: SwipeCardProps, ref) => {
+  ({ card, currentIndex, totalCards, onSwipeLeft, onSwipeRight, onVideoPlayStateChange, isVideoPlaying, disableDrag }: SwipeCardProps, ref) => {
     const x = useMotionValue(0);
     const rotate = useTransform(x, [-200, 200], [-30, 30]);
     const opacity = useTransform(x, [-200, -150, 0, 150, 200], [0, 1, 1, 1, 0]);
@@ -791,7 +792,7 @@ const SwipeCardContent = forwardRef(
         ref={ref}
         key={currentIndex}
         style={{ x, rotate, opacity }}
-        drag={isVideoPlaying ? false : "x"}
+        drag={(disableDrag || isVideoPlaying) ? false : "x"}
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.2}
         onDragEnd={(_, info) => {
@@ -1450,6 +1451,7 @@ const SwipeCard = ({
           onSwipeRight={() => triggerSwipe(1)}
           onVideoPlayStateChange={setIsVideoPlaying}
           isVideoPlaying={isVideoPlaying}
+          disableDrag={true}
         />
       </motion.div>
     </div>
@@ -4766,7 +4768,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
               key={mode}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={{ opacity: 0, pointerEvents: "none" }}
               transition={{ duration: 0.15, ease: "easeInOut" }}
               style={{ touchAction: "auto" }}
               className="space-y-3"
