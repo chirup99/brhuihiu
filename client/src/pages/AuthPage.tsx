@@ -6039,7 +6039,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       const hasBgMedia = (isReel && ytThumb) || (isImageCard && card.imageUrl) || (isPost && postImg) || (isXpost && !!card.imageUrl) || isXVideo;
                       const isDarkTheme = pamphletTheme.cardStyle === "dark";
                       const cardBg = isPost
-                        ? (isDarkTheme ? "rgba(255,255,255,0.93)" : (pamphletBgImage ? "rgba(255,255,255,0.93)" : "#fff"))
+                        ? "#0f0f0f"
                         : isXpost
                           ? "#0a0a0a"
                           : isDarkTheme ? "#111111" : "#1a1a2e";
@@ -6083,9 +6083,29 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           {isImageCard && card.imageUrl && (
                             <img src={card.imageUrl} alt={card.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
                           )}
-                          {/* Post card uploaded image (top half) */}
-                          {isPost && postImg && (
-                            <img src={postImg} alt="" style={{ width: "100%", height: "45%", objectFit: "cover", display: "block" }} />
+                          {/* Post card — Voice-tab style layout */}
+                          {isPost && (
+                            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", padding: "7px 8px", zIndex: 3, overflow: "hidden" }}>
+                              {/* Header */}
+                              <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 5, flexShrink: 0 }}>
+                                <div style={{ width: 16, height: 16, borderRadius: "50%", background: "rgba(236,72,153,0.2)", border: "1px solid rgba(236,72,153,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                  <svg viewBox="0 0 24 24" style={{ width: 8, height: 8, fill: "none", stroke: "rgb(244,114,182)", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }}><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                </div>
+                                <span style={{ fontSize: 7, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(216,180,254,0.6)" }}>Post</span>
+                              </div>
+                              {/* Content */}
+                              <div style={{ flex: 1, overflow: "hidden" }}>
+                                {card.content ? (
+                                  <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 9, lineHeight: 1.6, margin: 0, display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 10, overflow: "hidden", wordBreak: "break-words" }}>
+                                    {card.content}
+                                  </p>
+                                ) : (
+                                  <p style={{ color: "rgba(236,72,153,0.4)", fontSize: 8, textAlign: "center", marginTop: 8, fontWeight: 500 }}>
+                                    Tap to write your post…
+                                  </p>
+                                )}
+                              </div>
+                            </div>
                           )}
                           {/* X post media — show card.imageUrl if available, or fetch thumbnail for videos */}
                           {isXpost && card.imageUrl && (
@@ -6109,37 +6129,32 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             </div>
                           )}
 
-                          {/* Content layer — hidden for X post/video cards */}
-                          {!isXpost && (
+                          {/* Content layer — hidden for X post/video cards and post cards (which have their own layout) */}
+                          {!isXpost && !isPost && (
                           <div
                             style={{
-                              position: isPost ? (postImg ? "relative" : "absolute") : "absolute",
-                              inset: isPost && !postImg ? 0 : undefined,
-                              bottom: isPost ? undefined : 0,
+                              position: "absolute",
+                              bottom: 0,
                               left: 0, right: 0,
                               padding: "7px 9px",
-                              background: isPost
-                                ? "transparent"
-                                : hasBgMedia
-                                  ? "linear-gradient(to top, rgba(0,0,0,0.88) 60%, transparent)"
-                                  : "transparent",
+                              background: hasBgMedia
+                                ? "linear-gradient(to top, rgba(0,0,0,0.88) 60%, transparent)"
+                                : "transparent",
                               zIndex: 3,
                               display: "flex",
                               flexDirection: "column",
                               gap: 3,
-                              flex: isPost ? 1 : undefined,
                             }}
                           >
                             {/* Type label */}
                             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                               {isReel && <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 8, fontWeight: 700 }}>రీల్</span>}
-                              {isPost && <span style={{ color: "#be185d", fontSize: 8, fontWeight: 800 }}>✍ పోస్ట్ కార్డ్</span>}
                               {isImageCard && <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 8, fontWeight: 700 }}>చిత్రం</span>}
                             </div>
                             {/* Title */}
                             <div
                               style={{
-                                color: isPost ? "#111" : "white",
+                                color: "white",
                                 fontWeight: 800,
                                 fontSize: 10,
                                 lineHeight: 1.3,
