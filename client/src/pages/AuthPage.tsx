@@ -1342,6 +1342,7 @@ const SwipeCard = ({
   useEffect(() => {
     if (!isActive) {
       setIsVideoPlaying(false);
+      setActiveIndex(0);
       setContentResetKey((k) => k + 1);
     }
   }, [isActive]);
