@@ -1,7 +1,7 @@
 # BRS Connect — AWS Elastic Beanstalk Deployment Guide
 
 Region: **ap-south-1 (Mumbai)**  
-Environment: **brs-connect-prod-v2**
+Environment: **brs-connect-prod-v4**
 
 ---
 
@@ -41,7 +41,12 @@ This script:
 3. Produces `brs-connect-eb.zip` ready to upload
 
 Then upload via the AWS Console:
-> Elastic Beanstalk → brs-connect → brs-connect-prod-v2 → **Upload and deploy** → select `brs-connect-eb.zip`
+> Elastic Beanstalk → brs-connect → brs-connect-prod-v4 → **Upload and deploy** → select `brs-connect-eb.zip`
+
+Or deploy automatically using the deployment script:
+```bash
+node deploy/deploy-eb.mjs
+```
 
 ---
 
