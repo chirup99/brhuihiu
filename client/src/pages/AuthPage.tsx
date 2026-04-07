@@ -1056,6 +1056,13 @@ const XVideoCard = ({ tweetId, xUrl, onEditClick, onPlayStateChange }: { tweetId
   const videoRef = useRef<HTMLVideoElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
+  useEffect(() => {
+    return () => {
+      const v = videoRef.current;
+      if (v) { v.pause(); v.src = ""; }
+    };
+  }, []);
+
   const togglePlay = () => {
     const v = videoRef.current;
     if (!v) return;
@@ -1174,6 +1181,13 @@ const InstaVideoCard = ({ reelId, reelUrl, onEditClick, onPlayStateChange }: { r
   const [isLandscape, setIsLandscape] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    return () => {
+      const v = videoRef.current;
+      if (v) { v.pause(); v.src = ""; }
+    };
+  }, []);
 
   const togglePlay = () => {
     const v = videoRef.current;
