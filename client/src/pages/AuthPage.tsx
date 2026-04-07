@@ -2339,9 +2339,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
         .then((data) => {
           if (data.id) {
             setPublicUser(data);
-            // Only switch to BRS tab if the user hasn't manually selected Voice;
-            // use functional form so we read the *current* mode at resolution time.
-            setMode((currentMode) => currentMode === "swipe" ? currentMode : "login");
+            // For unauthenticated visitors landing on the default profile, open in voice/swipe mode.
+            // For all other cases, keep existing mode or switch to login.
+            setMode((currentMode) => {
+              if (currentMode === "swipe") return "swipe";
+              if (!authUser && slug === DEFAULT_SLUG) return "swipe";
+              return "login";
+            });
             setLastLoadedSlug(slug);
             // Populate form with the fetched profile data
             Object.entries(data).forEach(([key, value]) => {
@@ -5721,8 +5725,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 onClick={() => {
                   if (mode === "login") {
                     setMode("register");
-                    setPublicUser(null);
-                    setLastLoadedSlug(null);
                     form.reset({
                       password: "",
                       name: "",
@@ -5736,7 +5738,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       cards: [],
                     });
                     setSelectedCards([]);
-                    setLocation("/");
                   } else {
                     setMode("login");
                   }
