@@ -5265,11 +5265,11 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   <div className="flex items-center justify-between">
                     <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
                       Choose Your Voice ({selectedCards.length}
-                      /4)
+                      /7)
                     </h4>
                   </div>
                   <div className="flex gap-4 overflow-x-auto pb-4 px-1 custom-scrollbar snap-x">
-                    {[0, 1, 2, 3].map((idx) => (
+                    {[0, 1, 2, 3, 4, 5, 6].map((idx) => (
                       <div
                         key={idx}
                         className="min-w-[220px] aspect-[3/4] snap-center"
