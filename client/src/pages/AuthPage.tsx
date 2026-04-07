@@ -1278,10 +1278,12 @@ const SwipeCard = ({
   cards,
   user: propsUser,
   voiceMode = false,
+  isActive = true,
 }: {
   cards: string[];
   user?: any;
   voiceMode?: boolean;
+  isActive?: boolean;
 }) => {
   const parseCardJson = (c: string) => {
     try {
@@ -1331,10 +1333,18 @@ const SwipeCard = ({
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [contentResetKey, setContentResetKey] = useState(0);
 
   useEffect(() => {
     if (activeIndex >= displayCards.length) setActiveIndex(0);
-  }, [displayCards.length]);
+  }, [displayCards]);
+
+  useEffect(() => {
+    if (!isActive) {
+      setIsVideoPlaying(false);
+      setContentResetKey((k) => k + 1);
+    }
+  }, [isActive]);
 
   // Motion values for top card drag
   const x = useMotionValue(0);
@@ -1395,6 +1405,8 @@ const SwipeCard = ({
   if (!displayCards.length) return null;
 
   const frontCard = displayCards[activeIndex];
+  if (!frontCard) return null;
+
   const midCard = displayCards[(activeIndex + 1) % displayCards.length];
   const bkCard = displayCards[(activeIndex + 2) % displayCards.length];
 
@@ -1426,7 +1438,7 @@ const SwipeCard = ({
 
       {/* Front card — fully interactive */}
       <motion.div
-        key={activeIndex}
+        key={`${activeIndex}-${contentResetKey}`}
         style={{ x, rotate, opacity: frontOpacity, zIndex: 30 }}
         drag={isAnimating || isVideoPlaying ? false : "x"}
         dragConstraints={{ left: 0, right: 0 }}
@@ -5703,7 +5715,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 </div>
               ) : (
                 <div className="py-2">
-                  <SwipeCard cards={selectedCards} user={user} voiceMode={true} />
+                  <SwipeCard cards={selectedCards} user={user} voiceMode={true} isActive={mode === "swipe"} />
                 </div>
               )}
             </motion.div>
