@@ -2475,13 +2475,16 @@ export default function AuthPage({ slug }: { slug?: string }) {
     uniqueSlug: string | null;
     avatarUrl?: string | null;
     locationName?: string | null;
-    distanceKm: number;
+    industry?: string | null;
+    distanceKm: number | null;
   };
   const [showNearbyDropdown, setShowNearbyDropdown] = useState(false);
   const [nearbyVoices, setNearbyVoices] = useState<NearbyVoice[]>([]);
+  const [constituencyVoices, setConstituencyVoices] = useState<NearbyVoice[]>([]);
   const [nearbyLoading, setNearbyLoading] = useState(false);
   const [nearbyError, setNearbyError] = useState<string | null>(null);
   const [nearbyLocationLabel, setNearbyLocationLabel] = useState<string | null>(null);
+  const [nearbyDetectedDistrict, setNearbyDetectedDistrict] = useState<string | null>(null);
   const [nearbyRegionalCard, setNearbyRegionalCard] = useState<typeof featuredProfiles[0] | null>(null);
 
   const reverseGeocode = async (lat: number, lng: number): Promise<{ display: string; district: string }> => {
@@ -2513,7 +2516,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
     setNearbyLoading(true);
     setShowNearbyDropdown(true);
     setNearbyVoices([]);
+    setConstituencyVoices([]);
     setNearbyLocationLabel(null);
+    setNearbyDetectedDistrict(null);
     setNearbyRegionalCard(null);
 
     if (!navigator.geolocation) {
@@ -2527,9 +2532,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
         try {
-          // Reverse geocode to get location name
+          // Reverse geocode to get location name + district
           const { display: locationDisplay, district } = await reverseGeocode(lat, lng);
           if (locationDisplay) setNearbyLocationLabel(locationDisplay);
+          if (district) setNearbyDetectedDistrict(district);
 
           // Find matching BRS regional card from featured profiles
           if (district) {
@@ -2553,10 +2559,12 @@ export default function AuthPage({ slug }: { slug?: string }) {
           }
 
           const excludeSlug = user?.uniqueSlug || "";
-          const res = await fetch(`/api/users/nearby?lat=${lat}&lng=${lng}&radius=50${excludeSlug ? `&exclude=${excludeSlug}` : ""}`);
+          const districtParam = district ? `&district=${encodeURIComponent(district)}` : "";
+          const res = await fetch(`/api/users/nearby?lat=${lat}&lng=${lng}&radius=50${excludeSlug ? `&exclude=${excludeSlug}` : ""}${districtParam}`);
           if (!res.ok) throw new Error("Failed to fetch nearby users");
           const data = await res.json();
           setNearbyVoices(data.users || []);
+          setConstituencyVoices(data.constituencyVoices || []);
         } catch {
           setNearbyError("Could not load nearby voices.");
         } finally {
@@ -4116,12 +4124,14 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   <p className="text-white/60 text-xs leading-relaxed">{nearbyError}</p>
                 </div>
               )}
-              {!nearbyLoading && !nearbyError && nearbyVoices.length === 0 && (
+              {!nearbyLoading && !nearbyError && nearbyVoices.length === 0 && constituencyVoices.length === 0 && (
                 <div className="text-center py-6 px-3">
                   <MapPin className="w-8 h-8 text-white/30 mx-auto mb-2" />
                   <p className="text-white/60 text-xs leading-relaxed">No BRS voices found within 50 km of your location.</p>
                 </div>
               )}
+
+              {/* Geo-nearby voices */}
               {!nearbyLoading && nearbyVoices.length > 0 && (
                 <p className="text-[9px] text-white/40 uppercase tracking-widest font-semibold px-2 mb-1">
                   {nearbyVoices.length} voice{nearbyVoices.length !== 1 ? "s" : ""} near you
@@ -4131,43 +4141,59 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 <button
                   key={voice.uniqueSlug || idx}
                   data-testid={`nearby-voice-${voice.uniqueSlug}`}
-                  onClick={() => {
-                    setShowNearbyDropdown(false);
-                    setLocation("/" + voice.uniqueSlug);
-                  }}
+                  onClick={() => { setShowNearbyDropdown(false); setLocation("/" + voice.uniqueSlug); }}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 transition-colors text-left"
                 >
                   <div className="w-9 h-9 rounded-full bg-white/20 flex-shrink-0 overflow-hidden border border-white/30">
-                    {voice.avatarUrl ? (
-                      <img src={voice.avatarUrl} alt={voice.name || ""} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">
-                          {(voice.name || "?").charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
+                    {voice.avatarUrl
+                      ? <img src={voice.avatarUrl} alt={voice.name || ""} className="w-full h-full object-cover" />
+                      : <div className="w-full h-full flex items-center justify-center"><span className="text-white font-bold text-sm">{(voice.name || "?").charAt(0).toUpperCase()}</span></div>
+                    }
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-sm font-medium truncate">{voice.name || "BRS Member"}</p>
-                    {(voice.locationName || voice.role) && (
-                      <p className="text-white/55 text-[10px] truncate leading-tight">
-                        {voice.locationName
-                          ? voice.locationName
-                          : (ROLES.find((r) => r.value === voice.role)?.label || voice.role || "")}
-                      </p>
-                    )}
+                    <p className="text-white/55 text-[10px] truncate leading-tight">
+                      {voice.locationName || (ROLES.find(r => r.value === voice.role)?.label || voice.role || "")}
+                    </p>
                     {voice.locationName && voice.role && (
-                      <p className="text-white/35 text-[9px] truncate leading-tight">
-                        {ROLES.find((r) => r.value === voice.role)?.label || voice.role}
-                      </p>
+                      <p className="text-white/35 text-[9px] truncate">{ROLES.find(r => r.value === voice.role)?.label || voice.role}</p>
                     )}
                   </div>
-                  <div className="flex-shrink-0 text-right">
-                    <span className="text-pink-300 text-xs font-medium">{voice.distanceKm} km</span>
-                  </div>
+                  <span className="text-pink-300 text-xs font-medium flex-shrink-0">{voice.distanceKm} km</span>
                 </button>
               ))}
+
+              {/* Constituency voices */}
+              {!nearbyLoading && constituencyVoices.length > 0 && (
+                <>
+                  {nearbyVoices.length > 0 && <div className="mx-2 my-2 border-t border-white/10" />}
+                  <p className="text-[9px] text-amber-300/80 uppercase tracking-widest font-semibold px-2 mb-1">
+                    🗳️ {nearbyDetectedDistrict ? nearbyDetectedDistrict.charAt(0).toUpperCase() + nearbyDetectedDistrict.slice(1) : "Your"} Constituency Voices
+                  </p>
+                  {constituencyVoices.map((voice, idx) => (
+                    <button
+                      key={voice.uniqueSlug || idx}
+                      data-testid={`constituency-voice-${voice.uniqueSlug}`}
+                      onClick={() => { setShowNearbyDropdown(false); setLocation("/" + voice.uniqueSlug); }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-amber-500/10 transition-colors text-left"
+                    >
+                      <div className="w-9 h-9 rounded-full bg-amber-500/20 flex-shrink-0 overflow-hidden border border-amber-400/30">
+                        {voice.avatarUrl
+                          ? <img src={voice.avatarUrl} alt={voice.name || ""} className="w-full h-full object-cover" />
+                          : <div className="w-full h-full flex items-center justify-center"><span className="text-amber-200 font-bold text-sm">{(voice.name || "?").charAt(0).toUpperCase()}</span></div>
+                        }
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-sm font-medium truncate">{voice.name || "BRS Member"}</p>
+                        <p className="text-amber-300/70 text-[10px] truncate leading-tight">
+                          {voice.industry || (ROLES.find(r => r.value === voice.role)?.label || voice.role || "")}
+                        </p>
+                      </div>
+                      <span className="text-amber-300/70 text-[10px] font-medium flex-shrink-0">Constituency</span>
+                    </button>
+                  ))}
+                </>
+              )}
             </div>
           </div>
         )}

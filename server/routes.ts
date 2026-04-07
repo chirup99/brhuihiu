@@ -70,28 +70,53 @@ export async function registerRoutes(
       const lng = parseFloat(req.query.lng as string);
       const radius = parseFloat((req.query.radius as string) || "50");
       const excludeSlug = req.query.exclude as string | undefined;
+      const district = (req.query.district as string || "").trim().toLowerCase();
 
       if (isNaN(lat) || isNaN(lng)) {
         return res.status(400).json({ message: "Invalid lat/lng" });
       }
 
       const allUsers = await storage.getAllUsers();
+
+      const toCard = (user: any, distanceKm?: number) => ({
+        name: user.name,
+        role: user.role,
+        uniqueSlug: user.uniqueSlug,
+        avatarUrl: user.avatarUrl,
+        locationName: user.locationName || null,
+        industry: user.industry || null,
+        distanceKm: distanceKm ?? null,
+      });
+
+      // Geo-nearby voices
       const nearby = allUsers
         .filter(u => u.latitude != null && u.longitude != null && u.uniqueSlug && (!excludeSlug || u.uniqueSlug !== excludeSlug))
         .map(u => ({ dist: haversineKm(lat, lng, u.latitude!, u.longitude!), user: u }))
         .filter(({ dist }) => dist <= radius)
         .sort((a, b) => a.dist - b.dist)
         .slice(0, 15)
-        .map(({ dist, user }) => ({
-          name: user.name,
-          role: user.role,
-          uniqueSlug: user.uniqueSlug,
-          avatarUrl: user.avatarUrl,
-          locationName: user.locationName || null,
-          distanceKm: Math.round(dist * 10) / 10,
-        }));
+        .map(({ dist, user }) => toCard(user, Math.round(dist * 10) / 10));
 
-      res.json({ users: nearby });
+      // Constituency-matched voices (by industry field matching district)
+      let constituencyVoices: ReturnType<typeof toCard>[] = [];
+      if (district) {
+        const nearbySlugSet = new Set(nearby.map(u => u.uniqueSlug));
+        constituencyVoices = allUsers
+          .filter(u =>
+            u.uniqueSlug &&
+            u.industry &&
+            (!excludeSlug || u.uniqueSlug !== excludeSlug) &&
+            !nearbySlugSet.has(u.uniqueSlug) &&
+            (
+              u.industry.toLowerCase().includes(district) ||
+              district.includes(u.industry.toLowerCase())
+            )
+          )
+          .slice(0, 10)
+          .map(u => toCard(u));
+      }
+
+      res.json({ users: nearby, constituencyVoices });
     } catch (e) {
       console.error("Nearby users error:", e);
       res.status(500).json({ message: "Failed to fetch nearby users" });
