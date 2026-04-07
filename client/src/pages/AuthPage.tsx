@@ -6115,7 +6115,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       </div>
 
                       {/* Footer */}
-                      <p className="text-[8px] text-gray-400 uppercase tracking-widest">brsconnect.in · Scan to Connect</p>
+                      <p className="text-[8px] text-gray-400 uppercase tracking-widest whitespace-nowrap">brsconnect.in · Scan to Connect · స్కాన్ చేయండి</p>
                     </div>
                   </div>
                 </div>
@@ -6614,8 +6614,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             </div>
                           )}
                         </div>
-                        <span style={{ color: pamphletBgImage ? "rgba(255,255,255,0.75)" : (pamphletTheme.cardStyle === "dark" ? "rgba(255,255,255,0.6)" : "#999"), fontSize: 8, fontWeight: 700, letterSpacing: "0.1em" }}>
-                          QR స్కాన్ చేయండి
+                        <span style={{ color: pamphletBgImage ? "rgba(255,255,255,0.75)" : (pamphletTheme.cardStyle === "dark" ? "rgba(255,255,255,0.6)" : "#999"), fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", whiteSpace: "nowrap" }}>
+                          QR స్కాన్ చేయండి · Scan to Connect
                         </span>
                       </div>
                     </motion.div>
