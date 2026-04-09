@@ -3118,13 +3118,14 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [pamphletTextCards, setPamphletTextCards] = useState<Array<{id: string; text: string; x: number; y: number; w: number; fontSize: number; color: string; bold: boolean}>>([]);
   const [editingTextCardId, setEditingTextCardId] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
-  const [pamphletDateBlocks, setPamphletDateBlocks] = useState<Array<{ id: string; x: number; y: number; date: Date; mode: "all" | "month" | "year" }>>([]);
+  const [pamphletDateBlocks, setPamphletDateBlocks] = useState<Array<{ id: string; x: number; y: number; date: Date; mode: "all" | "month" | "year" | "count"; count?: number }>>([]);
   const [pamphletBABlocks, setPamphletBABlocks] = useState<Array<{ id: string; label: "before" | "after"; x: number; y: number }>>([]);
   const [editingDateBlockId, setEditingDateBlockId] = useState<string | null>(null);
   const [datePickerMonth, setDatePickerMonth] = useState(() => new Date());
   const [showYearPicker, setShowYearPicker] = useState(false);
-  const [datePickerMode, setDatePickerMode] = useState<"all" | "month" | "year">("all");
+  const [datePickerMode, setDatePickerMode] = useState<"all" | "month" | "year" | "count">("all");
   const [showAllYearPicker, setShowAllYearPicker] = useState(false);
+  const [datePickerCount, setDatePickerCount] = useState<number>(100);
   const [pamphletQrSize, setPamphletQrSize] = useState(92);
   const [xpostPickerIdx, setXpostPickerIdx] = useState<number | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -7269,7 +7270,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         >
                           <div
                             onPointerDown={(e) => e.stopPropagation()}
-                            onClick={(e) => { if (!isCapturingPamphlet) { e.stopPropagation(); setDatePickerMonth(new Date(d)); setShowYearPicker(false); setShowAllYearPicker(false); setDatePickerMode(db.mode || "all"); setEditingDateBlockId(db.id); } }}
+                            onClick={(e) => { if (!isCapturingPamphlet) { e.stopPropagation(); setDatePickerMonth(new Date(d)); setShowYearPicker(false); setShowAllYearPicker(false); const bMode = db.mode || "all"; setDatePickerMode(bMode); if (bMode === "count") setDatePickerCount(db.count ?? 100); setEditingDateBlockId(db.id); } }}
                             style={{
                               display: "flex",
                               alignItems: "center",
@@ -7285,7 +7286,12 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             <div style={{ background: pamphletTheme.headerBg, width: 6, alignSelf: "stretch", flexShrink: 0 }} />
                             {/* Content */}
                             <div style={{ background: "rgba(10,10,20,0.9)", padding: "5px 10px", display: "flex", alignItems: "baseline", gap: 4 }}>
-                              {blockMode === "year" ? (
+                              {blockMode === "count" ? (
+                                <>
+                                  <span style={{ fontSize: 22, fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.03em" }}>{db.count ?? 100}</span>
+                                  <span style={{ fontSize: 8, fontWeight: 800, color: pamphletTheme.accentColor, letterSpacing: "0.12em", lineHeight: 1, alignSelf: "flex-end", paddingBottom: 1 }}>DAYS</span>
+                                </>
+                              ) : blockMode === "year" ? (
                                 <span style={{ fontSize: 18, fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.02em" }}>{yr}</span>
                               ) : blockMode === "month" ? (
                                 <>
@@ -7893,9 +7899,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   transition={{ type: "spring", damping: 28, stiffness: 340 }}
                   style={{ position: "relative", background: "#111114", borderRadius: 20, padding: "20px 16px 16px", width: "100%", maxWidth: 300, boxShadow: "0 24px 60px rgba(0,0,0,0.8)", border: "1px solid rgba(255,255,255,0.07)" }}
                 >
-                  {/* Mode toggle: All / Month / Year */}
+                  {/* Mode toggle: All / Month / Year / Count */}
                   <div style={{ display: "flex", background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: 3, marginBottom: 14, gap: 2 }}>
-                    {(["all", "month", "year"] as const).map((m) => (
+                    {(["all", "month", "year", "count"] as const).map((m) => (
                       <button
                         key={m}
                         onClick={() => { setDatePickerMode(m); setShowYearPicker(false); setShowAllYearPicker(false); }}
@@ -7905,16 +7911,16 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           borderRadius: 8,
                           border: "none",
                           cursor: "pointer",
-                          fontSize: 11,
+                          fontSize: 10,
                           fontWeight: datePickerMode === m ? 800 : 500,
-                          background: datePickerMode === m ? "rgba(255,255,255,0.14)" : "transparent",
-                          color: datePickerMode === m ? "white" : "rgba(255,255,255,0.4)",
+                          background: datePickerMode === m ? (m === "count" ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.14)") : "transparent",
+                          color: datePickerMode === m ? (m === "count" ? "#f59e0b" : "white") : "rgba(255,255,255,0.4)",
                           transition: "all 0.15s",
                           letterSpacing: "0.04em",
                           textTransform: "capitalize",
                         }}
                       >
-                        {m === "all" ? "All" : m === "month" ? "Month" : "Year"}
+                        {m === "all" ? "All" : m === "month" ? "Month" : m === "year" ? "Year" : "Count"}
                       </button>
                     ))}
                   </div>
@@ -8127,6 +8133,54 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         </>
                       )}
                     </>
+                  )}
+
+                  {/* Count mode */}
+                  {datePickerMode === "count" && (
+                    <div style={{ padding: "4px 0 8px", display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+                      {/* Big number display */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <button
+                          onClick={() => setDatePickerCount(v => Math.max(1, v - 1))}
+                          style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.08)", border: "none", cursor: "pointer", fontSize: 22, fontWeight: 700, color: "rgba(255,255,255,0.7)", display: "flex", alignItems: "center", justifyContent: "center" }}
+                        >−</button>
+                        <div style={{ textAlign: "center" }}>
+                          <input
+                            type="number"
+                            min={1}
+                            max={9999}
+                            value={datePickerCount}
+                            onChange={(e) => { const v = parseInt(e.target.value) || 1; setDatePickerCount(Math.min(9999, Math.max(1, v))); }}
+                            style={{ width: 90, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, color: "white", fontSize: 28, fontWeight: 900, textAlign: "center", padding: "6px 0", outline: "none", WebkitAppearance: "none", MozAppearance: "textfield" }}
+                          />
+                          <div style={{ fontSize: 10, fontWeight: 800, color: "#f59e0b", letterSpacing: "0.15em", marginTop: 3 }}>DAYS</div>
+                        </div>
+                        <button
+                          onClick={() => setDatePickerCount(v => Math.min(9999, v + 1))}
+                          style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.08)", border: "none", cursor: "pointer", fontSize: 22, fontWeight: 700, color: "rgba(255,255,255,0.7)", display: "flex", alignItems: "center", justifyContent: "center" }}
+                        >+</button>
+                      </div>
+                      {/* Quick presets */}
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center" }}>
+                        {[10, 50, 100, 150, 200, 365, 500, 1000].map(n => (
+                          <button
+                            key={n}
+                            onClick={() => setDatePickerCount(n)}
+                            style={{ padding: "5px 10px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 11, fontWeight: datePickerCount === n ? 800 : 600, background: datePickerCount === n ? "rgba(245,158,11,0.3)" : "rgba(255,255,255,0.07)", color: datePickerCount === n ? "#f59e0b" : "rgba(255,255,255,0.65)", outline: datePickerCount === n ? "1px solid rgba(245,158,11,0.5)" : "none", transition: "all 0.12s" }}
+                          >{n}</button>
+                        ))}
+                      </div>
+                      {/* Set button */}
+                      <button
+                        onClick={() => {
+                          setPamphletDateBlocks(prev => prev.map(b => b.id === editingDateBlockId ? { ...b, count: datePickerCount, mode: "count" } : b));
+                          setEditingDateBlockId(null);
+                        }}
+                        style={{ width: "100%", padding: "10px 0", borderRadius: 12, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 800, background: "rgba(245,158,11,0.9)", color: "#111114", letterSpacing: "0.04em" }}
+                      >
+                        Set {datePickerCount} Days
+                      </button>
+                    </div>
                   )}
                 </motion.div>
               </div>
