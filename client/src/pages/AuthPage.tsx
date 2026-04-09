@@ -716,16 +716,32 @@ const TweetDialog = ({ tweetId, onClose }: { tweetId: string; onClose: () => voi
   };
 
   return (
-    <div
-      style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.85)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}
-      onClick={onClose}
-    >
-      <div
-        style={{ width: "100%", maxWidth: 480, background: "#0d0d0d", borderRadius: "20px 20px 0 0", maxHeight: "88vh", display: "flex", flexDirection: "column", border: "1px solid rgba(255,255,255,0.08)", borderBottom: "none" }}
+    <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}>
+      {/* Animated backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        onClick={onClose}
+        style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.82)" }}
+      />
+      {/* Animated sheet — slides up */}
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 32, stiffness: 340 }}
         onClick={(e) => e.stopPropagation()}
+        style={{ position: "relative", width: "100%", maxWidth: 480, background: "#0d0d0d", borderRadius: "20px 20px 0 0", maxHeight: "88vh", display: "flex", flexDirection: "column", border: "1px solid rgba(255,255,255,0.08)", borderBottom: "none" }}
       >
+        {/* Drag handle */}
+        <div style={{ display: "flex", justifyContent: "center", paddingTop: 10, paddingBottom: 2, flexShrink: 0 }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.18)" }} />
+        </div>
+
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 12px", borderBottom: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px 12px", borderBottom: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <SiX style={{ width: 15, height: 15, color: "white" }} />
             <span style={{ color: "white", fontWeight: 700, fontSize: 15 }}>X Post</span>
@@ -835,7 +851,7 @@ const TweetDialog = ({ tweetId, onClose }: { tweetId: string; onClose: () => voi
             Open on X
           </a>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
@@ -1173,9 +1189,11 @@ const SwipeCardContent = forwardRef(
         )}
         <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
       </motion.div>
-      {showTweetDialog && (
-        <TweetDialog tweetId={showTweetDialog} onClose={() => setShowTweetDialog(null)} />
-      )}
+      <AnimatePresence>
+        {showTweetDialog && (
+          <TweetDialog tweetId={showTweetDialog} onClose={() => setShowTweetDialog(null)} />
+        )}
+      </AnimatePresence>
     </>
     );
   },
