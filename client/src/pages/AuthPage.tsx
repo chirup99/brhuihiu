@@ -685,6 +685,68 @@ const TrendLine = () => (
   </div>
 );
 
+const PostCardInline = ({ content, onPlayStateChange }: { content: string; onPlayStateChange?: (b: boolean) => void }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  const handleExpand = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    setExpanded(true);
+    onPlayStateChange?.(true);
+  };
+
+  const handleReset = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpanded(false);
+    onPlayStateChange?.(false);
+  };
+
+  if (!expanded) {
+    return (
+      <div
+        className="w-full h-full absolute inset-0 overflow-hidden rounded-[24px] cursor-pointer"
+        onClick={handleExpand}
+      >
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", flexDirection: "column", padding: 14, gap: 10, borderRadius: 20 }}>
+          <div style={{ flex: 1, minHeight: 0, position: "relative", overflow: "hidden" }}>
+            <p style={{ color: "rgba(255,255,255,0.92)", fontSize: 13, lineHeight: 1.6, margin: 0, wordBreak: "break-word", whiteSpace: "pre-wrap" }}>
+              {content}
+            </p>
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 48, background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.55))", pointerEvents: "none" }} />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", flexShrink: 0 }}>
+            <div style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", color: "rgba(255,255,255,0.65)", fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.18em", padding: "4px 10px", borderRadius: 20 }}>
+              Tap to read
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{ position: "absolute", inset: 0, borderRadius: 20, background: "#0d0d0d", overflowY: "auto", WebkitOverflowScrolling: "touch" as any }}
+      onClick={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+    >
+      <div style={{ position: "sticky", top: 0, zIndex: 10, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 12px", background: "#0d0d0d", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+        <span style={{ color: "white", fontWeight: 700, fontSize: 12 }}>Post</span>
+        <button
+          onClick={handleReset}
+          style={{ width: 24, height: 24, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "none", color: "white", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}
+        >
+          <X style={{ width: 11, height: 11 }} />
+        </button>
+      </div>
+      <div style={{ padding: "14px 14px 20px" }}>
+        <p style={{ color: "white", fontSize: 14, lineHeight: 1.65, margin: 0, wordBreak: "break-word", whiteSpace: "pre-wrap" }}>{content}</p>
+      </div>
+    </div>
+  );
+};
+
 const TweetCardInline = ({ tweetId, xUrl, onPlayStateChange }: { tweetId: string; xUrl: string; onPlayStateChange?: (b: boolean) => void }) => {
   const [expanded, setExpanded] = useState(false);
 
@@ -1123,15 +1185,11 @@ const SwipeCardContent = forwardRef(
                   </div>
                 )
               ) : card.type === "post" ? (
-                <div className="text-center px-2">
-                  {(card as any).content ? (
-                    <p className="text-white/90 text-xs leading-relaxed">
-                      {(card as any).content}
-                    </p>
-                  ) : (
-                    <p className="text-white/30 text-[10px] uppercase tracking-widest">No content</p>
-                  )}
-                </div>
+                (card as any).content ? (
+                  <PostCardInline content={(card as any).content} onPlayStateChange={onVideoPlayStateChange} />
+                ) : (
+                  <p className="text-white/30 text-[10px] uppercase tracking-widest">No content</p>
+                )
               ) : card.type === "xpost" ? (
                 (() => {
                   const xUrl = (card as any).url || "";
