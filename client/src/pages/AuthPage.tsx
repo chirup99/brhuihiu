@@ -692,6 +692,7 @@ const SwipeCardContent = forwardRef(
     const opacity = useTransform(x, [-200, -150, 0, 150, 200], [0, 1, 1, 1, 0]);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
+    const [showTweetDialog, setShowTweetDialog] = useState<string | null>(null);
 
     const handleSpeak = async (text: string) => {
       if (isSpeaking) {
@@ -788,6 +789,7 @@ const SwipeCardContent = forwardRef(
     }, [card.type, (card as any).url]);
 
     return (
+      <>
       <motion.div
         ref={ref}
         key={currentIndex}
@@ -967,7 +969,10 @@ const SwipeCardContent = forwardRef(
                     <XVideoCard tweetId={tweetId} xUrl={xUrl} onPlayStateChange={onVideoPlayStateChange} />
                   );
                   return (
-                    <div className="w-full h-full absolute inset-0 overflow-hidden rounded-[24px]">
+                    <div
+                      className="w-full h-full absolute inset-0 overflow-hidden rounded-[24px] cursor-pointer"
+                      onClick={(e) => { e.stopPropagation(); setShowTweetDialog(tweetId); }}
+                    >
                       <iframe
                         src={`https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark&chrome=nofooter&conversation=none`}
                         className="w-full border-0"
@@ -976,6 +981,7 @@ const SwipeCardContent = forwardRef(
                         sandbox="allow-scripts allow-same-origin allow-popups allow-presentation"
                         scrolling="no"
                       />
+                      <div className="absolute inset-0 z-5" />
                       <a
                         href={xUrl}
                         target="_blank"
@@ -985,6 +991,9 @@ const SwipeCardContent = forwardRef(
                       >
                         <SiX className="w-3.5 h-3.5 text-white" />
                       </a>
+                      <div className="absolute bottom-3 left-3 bg-black/50 backdrop-blur-sm text-white/70 text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full z-10 pointer-events-none">
+                        Tap to read
+                      </div>
                     </div>
                   );
                 })()
@@ -1009,6 +1018,51 @@ const SwipeCardContent = forwardRef(
         )}
         <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
       </motion.div>
+      {showTweetDialog && (
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.82)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}
+          onClick={() => setShowTweetDialog(null)}
+        >
+          <div
+            style={{ width: "100%", maxWidth: 480, background: "#000", borderRadius: "20px 20px 0 0", overflow: "hidden", maxHeight: "88vh", display: "flex", flexDirection: "column" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <SiX style={{ width: 14, height: 14, color: "white" }} />
+                <span style={{ color: "white", fontWeight: 700, fontSize: 14 }}>X Post</span>
+              </div>
+              <button
+                onClick={() => setShowTweetDialog(null)}
+                style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "none", color: "white", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+              >
+                <X style={{ width: 14, height: 14 }} />
+              </button>
+            </div>
+            <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch" as any, padding: "12px 0" }}>
+              <iframe
+                src={`https://platform.twitter.com/embed/Tweet.html?id=${showTweetDialog}&theme=dark&chrome=nofooter&conversation=none`}
+                style={{ width: "100%", minHeight: 500, border: "none", display: "block" }}
+                allow="autoplay; encrypted-media"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-presentation"
+                scrolling="yes"
+              />
+            </div>
+            <div style={{ padding: "10px 16px 20px", flexShrink: 0, display: "flex", gap: 10 }}>
+              <a
+                href={`https://x.com/i/web/status/${showTweetDialog}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ flex: 1, background: "#000", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 24, color: "white", fontWeight: 700, fontSize: 13, padding: "10px 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, textDecoration: "none" }}
+              >
+                <SiX style={{ width: 12, height: 12 }} />
+                Open on X
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
     );
   },
 );
