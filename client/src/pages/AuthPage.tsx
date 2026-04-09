@@ -2849,10 +2849,11 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [pamphletTextCards, setPamphletTextCards] = useState<Array<{id: string; text: string; x: number; y: number; w: number; fontSize: number; color: string; bold: boolean}>>([]);
   const [editingTextCardId, setEditingTextCardId] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
-  const [pamphletDateBlocks, setPamphletDateBlocks] = useState<Array<{ id: string; x: number; y: number; date: Date }>>([]);
+  const [pamphletDateBlocks, setPamphletDateBlocks] = useState<Array<{ id: string; x: number; y: number; date: Date; mode: "all" | "month" | "year" }>>([]);
   const [editingDateBlockId, setEditingDateBlockId] = useState<string | null>(null);
   const [datePickerMonth, setDatePickerMonth] = useState(() => new Date());
   const [showYearPicker, setShowYearPicker] = useState(false);
+  const [datePickerMode, setDatePickerMode] = useState<"all" | "month" | "year">("all");
   const [pamphletQrSize, setPamphletQrSize] = useState(92);
   const [xpostPickerIdx, setXpostPickerIdx] = useState<number | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -6915,8 +6916,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     {/* ── DRAGGABLE DATE BLOCKS (multiple) ── */}
                     {pamphletDateBlocks.map((db) => {
                       const d = db.date;
+                      const blockMode = db.mode || "all";
                       const day = d.getDate().toString().padStart(2, "0");
                       const mon = d.toLocaleString("en", { month: "short" }).toUpperCase();
+                      const monLong = d.toLocaleString("en", { month: "long" });
                       const yr = d.getFullYear();
                       const dow = d.toLocaleString("en", { weekday: "short" }).toUpperCase();
                       return (
@@ -6931,7 +6934,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         >
                           <div
                             onPointerDown={(e) => e.stopPropagation()}
-                            onClick={(e) => { if (!isCapturingPamphlet) { e.stopPropagation(); setDatePickerMonth(new Date(d)); setShowYearPicker(false); setEditingDateBlockId(db.id); } }}
+                            onClick={(e) => { if (!isCapturingPamphlet) { e.stopPropagation(); setDatePickerMonth(new Date(d)); setShowYearPicker(false); setDatePickerMode(db.mode || "all"); setEditingDateBlockId(db.id); } }}
                             style={{
                               display: "flex",
                               alignItems: "center",
@@ -6947,10 +6950,21 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             <div style={{ background: pamphletTheme.headerBg, width: 6, alignSelf: "stretch", flexShrink: 0 }} />
                             {/* Content */}
                             <div style={{ background: "rgba(10,10,20,0.9)", padding: "5px 10px", display: "flex", alignItems: "baseline", gap: 4 }}>
-                              <span style={{ fontSize: 18, fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.02em" }}>{day}</span>
-                              <span style={{ fontSize: 9, fontWeight: 800, color: pamphletTheme.accentColor, letterSpacing: "0.1em", lineHeight: 1 }}>{mon}</span>
-                              <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: "0.04em", lineHeight: 1 }}>{yr}</span>
-                              <span style={{ fontSize: 7, fontWeight: 800, color: "rgba(255,255,255,0.35)", letterSpacing: "0.08em", lineHeight: 1 }}>({dow})</span>
+                              {blockMode === "year" ? (
+                                <span style={{ fontSize: 18, fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.02em" }}>{yr}</span>
+                              ) : blockMode === "month" ? (
+                                <>
+                                  <span style={{ fontSize: 15, fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.01em" }}>{monLong}</span>
+                                  <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: "0.04em", lineHeight: 1 }}>{yr}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span style={{ fontSize: 18, fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.02em" }}>{day}</span>
+                                  <span style={{ fontSize: 9, fontWeight: 800, color: pamphletTheme.accentColor, letterSpacing: "0.1em", lineHeight: 1 }}>{mon}</span>
+                                  <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: "0.04em", lineHeight: 1 }}>{yr}</span>
+                                  <span style={{ fontSize: 7, fontWeight: 800, color: "rgba(255,255,255,0.35)", letterSpacing: "0.08em", lineHeight: 1 }}>({dow})</span>
+                                </>
+                              )}
                             </div>
                           </div>
                           {!isCapturingPamphlet && (
@@ -7069,8 +7083,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
                               setShowAddMenu(false);
                               const today = new Date();
                               const newId = `db-${Date.now()}`;
-                              setPamphletDateBlocks(prev => [...prev, { id: newId, x: 60 + Math.floor(Math.random() * 140), y: 80 + Math.floor(Math.random() * 180), date: today }]);
+                              setPamphletDateBlocks(prev => [...prev, { id: newId, x: 60 + Math.floor(Math.random() * 140), y: 80 + Math.floor(Math.random() * 180), date: today, mode: "all" }]);
                               setDatePickerMonth(today);
+                              setDatePickerMode("all");
                             }}
                             style={{
                               width: 44, height: 44, borderRadius: "50%",
@@ -7457,37 +7472,43 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   transition={{ type: "spring", damping: 28, stiffness: 340 }}
                   style={{ position: "relative", background: "#111114", borderRadius: 20, padding: "20px 16px 16px", width: "100%", maxWidth: 300, boxShadow: "0 24px 60px rgba(0,0,0,0.8)", border: "1px solid rgba(255,255,255,0.07)" }}
                 >
-                  {/* Month nav */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                    <button
-                      onClick={() => { if (!showYearPicker) setDatePickerMonth(new Date(year, month - 1, 1)); }}
-                      style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: showYearPicker ? 0.2 : 1 }}
-                    >
-                      <svg viewBox="0 0 16 16" style={{ width: 12, height: 12, fill: "none", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2, strokeLinecap: "round" }}><polyline points="10,3 5,8 10,13"/></svg>
-                    </button>
-                    <button
-                      onClick={() => setShowYearPicker(v => !v)}
-                      style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, padding: "4px 8px", borderRadius: 8, transition: "background 0.15s" }}
-                    >
-                      <span style={{ fontSize: 14, fontWeight: 700, color: "white", letterSpacing: "0.01em" }}>{monthLabel}</span>
-                      <span style={{ fontSize: 14, fontWeight: 800, color: showYearPicker ? "#f59e0b" : "rgba(255,255,255,0.5)", letterSpacing: "0.01em", textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: 3 }}>{year}</span>
-                      <svg viewBox="0 0 12 12" style={{ width: 10, height: 10, fill: "none", stroke: showYearPicker ? "#f59e0b" : "rgba(255,255,255,0.35)", strokeWidth: 2, strokeLinecap: "round", transform: showYearPicker ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}><polyline points="2,4 6,8 10,4"/></svg>
-                    </button>
-                    <button
-                      onClick={() => { if (!showYearPicker) setDatePickerMonth(new Date(year, month + 1, 1)); }}
-                      style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: showYearPicker ? 0.2 : 1 }}
-                    >
-                      <svg viewBox="0 0 16 16" style={{ width: 12, height: 12, fill: "none", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2, strokeLinecap: "round" }}><polyline points="6,3 11,8 6,13"/></svg>
-                    </button>
+                  {/* Mode toggle: All / Month / Year */}
+                  <div style={{ display: "flex", background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: 3, marginBottom: 14, gap: 2 }}>
+                    {(["all", "month", "year"] as const).map((m) => (
+                      <button
+                        key={m}
+                        onClick={() => { setDatePickerMode(m); setShowYearPicker(false); }}
+                        style={{
+                          flex: 1,
+                          padding: "5px 0",
+                          borderRadius: 8,
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: 11,
+                          fontWeight: datePickerMode === m ? 800 : 500,
+                          background: datePickerMode === m ? "rgba(255,255,255,0.14)" : "transparent",
+                          color: datePickerMode === m ? "white" : "rgba(255,255,255,0.4)",
+                          transition: "all 0.15s",
+                          letterSpacing: "0.04em",
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        {m === "all" ? "All" : m === "month" ? "Month" : "Year"}
+                      </button>
+                    ))}
                   </div>
 
-                  {/* Year picker grid (replaces calendar when open) */}
-                  {showYearPicker ? (
+                  {/* Year-only mode */}
+                  {datePickerMode === "year" && (
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, padding: "4px 0 8px" }}>
                       {Array.from({ length: 20 }, (_, i) => 2020 + i).map((y) => (
                         <button
                           key={y}
-                          onClick={() => { setDatePickerMonth(new Date(y, month, 1)); setShowYearPicker(false); }}
+                          onClick={() => {
+                            const newDate = new Date(y, month, 1);
+                            setPamphletDateBlocks(prev => prev.map(b => b.id === editingDateBlockId ? { ...b, date: newDate, mode: "year" } : b));
+                            setEditingDateBlockId(null);
+                          }}
                           style={{
                             padding: "8px 0",
                             borderRadius: 10,
@@ -7505,51 +7526,121 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         </button>
                       ))}
                     </div>
-                  ) : (
+                  )}
+
+                  {/* Month-only mode */}
+                  {datePickerMode === "month" && (
                     <>
-                  {/* Day-of-week headers */}
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 6 }}>
-                    {["S","M","T","W","T","F","S"].map((d, i) => (
-                      <div key={i} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", paddingBottom: 6 }}>{d}</div>
-                    ))}
-                  </div>
-                  {/* Calendar grid */}
-                  {weeks.map((week, wi) => (
-                    <div key={wi} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 2 }}>
-                      {week.map((day, di) => (
+                      {/* Year nav for month mode */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                         <button
-                          key={di}
-                          onClick={() => {
-                            if (!day) return;
-                            const newDate = new Date(year, month, day);
-                            setPamphletDateBlocks(prev => prev.map(b => b.id === editingDateBlockId ? { ...b, date: newDate } : b));
-                            setEditingDateBlockId(null);
-                          }}
-                          disabled={!day}
-                          style={{
-                            width: "100%",
-                            aspectRatio: "1",
-                            borderRadius: 8,
-                            background: isSelected(day) ? "rgba(255,255,255,0.92)" : "transparent",
-                            border: "none",
-                            cursor: day ? "pointer" : "default",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: 13,
-                            fontWeight: isSelected(day) ? 800 : isToday(day) ? 700 : 400,
-                            color: isSelected(day) ? "#111114" : day ? (month === datePickerMonth.getMonth() ? "rgba(255,255,255,0.88)" : "rgba(255,255,255,0.2)") : "transparent",
-                            position: "relative",
-                          }}
+                          onClick={() => setDatePickerMonth(new Date(year - 1, month, 1))}
+                          style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
                         >
-                          {day || ""}
-                          {isToday(day) && !isSelected(day) && (
-                            <span style={{ position: "absolute", bottom: 3, left: "50%", transform: "translateX(-50%)", width: 4, height: 4, borderRadius: "50%", background: "rgba(255,255,255,0.5)" }} />
-                          )}
+                          <svg viewBox="0 0 16 16" style={{ width: 12, height: 12, fill: "none", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2, strokeLinecap: "round" }}><polyline points="10,3 5,8 10,13"/></svg>
                         </button>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: "white" }}>{year}</span>
+                        <button
+                          onClick={() => setDatePickerMonth(new Date(year + 1, month, 1))}
+                          style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                        >
+                          <svg viewBox="0 0 16 16" style={{ width: 12, height: 12, fill: "none", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2, strokeLinecap: "round" }}><polyline points="6,3 11,8 6,13"/></svg>
+                        </button>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, padding: "4px 0 8px" }}>
+                        {["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].map((mn, mi) => {
+                          const isSel = selected.getFullYear() === year && selected.getMonth() === mi;
+                          return (
+                            <button
+                              key={mi}
+                              onClick={() => {
+                                const newDate = new Date(year, mi, 1);
+                                setPamphletDateBlocks(prev => prev.map(b => b.id === editingDateBlockId ? { ...b, date: newDate, mode: "month" } : b));
+                                setEditingDateBlockId(null);
+                              }}
+                              style={{
+                                padding: "9px 0",
+                                borderRadius: 10,
+                                border: "none",
+                                cursor: "pointer",
+                                fontSize: 12,
+                                fontWeight: isSel ? 800 : 500,
+                                background: isSel ? "rgba(255,255,255,0.92)" : mi === month ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
+                                color: isSel ? "#111114" : "rgba(255,255,255,0.8)",
+                                outline: mi === month && !isSel ? "1px solid rgba(255,255,255,0.15)" : "none",
+                                transition: "background 0.12s",
+                              }}
+                            >
+                              {mn}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+
+                  {/* All (full date) mode */}
+                  {datePickerMode === "all" && (
+                    <>
+                      {/* Month nav */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                        <button
+                          onClick={() => setDatePickerMonth(new Date(year, month - 1, 1))}
+                          style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                        >
+                          <svg viewBox="0 0 16 16" style={{ width: 12, height: 12, fill: "none", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2, strokeLinecap: "round" }}><polyline points="10,3 5,8 10,13"/></svg>
+                        </button>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: "white", letterSpacing: "0.01em" }}>{monthLabel} <span style={{ color: "rgba(255,255,255,0.5)" }}>{year}</span></span>
+                        <button
+                          onClick={() => setDatePickerMonth(new Date(year, month + 1, 1))}
+                          style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                        >
+                          <svg viewBox="0 0 16 16" style={{ width: 12, height: 12, fill: "none", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2, strokeLinecap: "round" }}><polyline points="6,3 11,8 6,13"/></svg>
+                        </button>
+                      </div>
+                      {/* Day-of-week headers */}
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 6 }}>
+                        {["S","M","T","W","T","F","S"].map((d, i) => (
+                          <div key={i} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", paddingBottom: 6 }}>{d}</div>
+                        ))}
+                      </div>
+                      {/* Calendar grid */}
+                      {weeks.map((week, wi) => (
+                        <div key={wi} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 2 }}>
+                          {week.map((day, di) => (
+                            <button
+                              key={di}
+                              onClick={() => {
+                                if (!day) return;
+                                const newDate = new Date(year, month, day);
+                                setPamphletDateBlocks(prev => prev.map(b => b.id === editingDateBlockId ? { ...b, date: newDate, mode: "all" } : b));
+                                setEditingDateBlockId(null);
+                              }}
+                              disabled={!day}
+                              style={{
+                                width: "100%",
+                                aspectRatio: "1",
+                                borderRadius: 8,
+                                background: isSelected(day) ? "rgba(255,255,255,0.92)" : "transparent",
+                                border: "none",
+                                cursor: day ? "pointer" : "default",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 13,
+                                fontWeight: isSelected(day) ? 800 : isToday(day) ? 700 : 400,
+                                color: isSelected(day) ? "#111114" : day ? "rgba(255,255,255,0.88)" : "transparent",
+                                position: "relative",
+                              }}
+                            >
+                              {day || ""}
+                              {isToday(day) && !isSelected(day) && (
+                                <span style={{ position: "absolute", bottom: 3, left: "50%", transform: "translateX(-50%)", width: 4, height: 4, borderRadius: "50%", background: "rgba(255,255,255,0.5)" }} />
+                              )}
+                            </button>
+                          ))}
+                        </div>
                       ))}
-                    </div>
-                  ))}
                     </>
                   )}
                 </motion.div>
