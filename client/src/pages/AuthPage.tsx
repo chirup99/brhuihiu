@@ -2854,6 +2854,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [datePickerMonth, setDatePickerMonth] = useState(() => new Date());
   const [showYearPicker, setShowYearPicker] = useState(false);
   const [datePickerMode, setDatePickerMode] = useState<"all" | "month" | "year">("all");
+  const [showAllYearPicker, setShowAllYearPicker] = useState(false);
   const [pamphletQrSize, setPamphletQrSize] = useState(92);
   const [xpostPickerIdx, setXpostPickerIdx] = useState<number | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -6934,7 +6935,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         >
                           <div
                             onPointerDown={(e) => e.stopPropagation()}
-                            onClick={(e) => { if (!isCapturingPamphlet) { e.stopPropagation(); setDatePickerMonth(new Date(d)); setShowYearPicker(false); setDatePickerMode(db.mode || "all"); setEditingDateBlockId(db.id); } }}
+                            onClick={(e) => { if (!isCapturingPamphlet) { e.stopPropagation(); setDatePickerMonth(new Date(d)); setShowYearPicker(false); setShowAllYearPicker(false); setDatePickerMode(db.mode || "all"); setEditingDateBlockId(db.id); } }}
                             style={{
                               display: "flex",
                               alignItems: "center",
@@ -7477,7 +7478,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     {(["all", "month", "year"] as const).map((m) => (
                       <button
                         key={m}
-                        onClick={() => { setDatePickerMode(m); setShowYearPicker(false); }}
+                        onClick={() => { setDatePickerMode(m); setShowYearPicker(false); setShowAllYearPicker(false); }}
                         style={{
                           flex: 1,
                           padding: "5px 0",
@@ -7585,62 +7586,112 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       {/* Month nav */}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                         <button
-                          onClick={() => setDatePickerMonth(new Date(year, month - 1, 1))}
-                          style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                          onClick={() => { if (!showAllYearPicker) setDatePickerMonth(new Date(year, month - 1, 1)); }}
+                          style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: showAllYearPicker ? 0.25 : 1 }}
                         >
                           <svg viewBox="0 0 16 16" style={{ width: 12, height: 12, fill: "none", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2, strokeLinecap: "round" }}><polyline points="10,3 5,8 10,13"/></svg>
                         </button>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: "white", letterSpacing: "0.01em" }}>{monthLabel} <span style={{ color: "rgba(255,255,255,0.5)" }}>{year}</span></span>
                         <button
-                          onClick={() => setDatePickerMonth(new Date(year, month + 1, 1))}
-                          style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                          onClick={() => setShowAllYearPicker(v => !v)}
+                          style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, padding: "4px 8px", borderRadius: 8 }}
+                        >
+                          <span style={{ fontSize: 14, fontWeight: 700, color: "white", letterSpacing: "0.01em" }}>{monthLabel}</span>
+                          <span style={{ fontSize: 14, fontWeight: 800, color: showAllYearPicker ? "#f59e0b" : "rgba(255,255,255,0.5)", letterSpacing: "0.01em", textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: 3 }}>{year}</span>
+                          <svg viewBox="0 0 12 12" style={{ width: 10, height: 10, fill: "none", stroke: showAllYearPicker ? "#f59e0b" : "rgba(255,255,255,0.35)", strokeWidth: 2, strokeLinecap: "round", transform: showAllYearPicker ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}><polyline points="2,4 6,8 10,4"/></svg>
+                        </button>
+                        <button
+                          onClick={() => { if (!showAllYearPicker) setDatePickerMonth(new Date(year, month + 1, 1)); }}
+                          style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: showAllYearPicker ? 0.25 : 1 }}
                         >
                           <svg viewBox="0 0 16 16" style={{ width: 12, height: 12, fill: "none", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2, strokeLinecap: "round" }}><polyline points="6,3 11,8 6,13"/></svg>
                         </button>
                       </div>
-                      {/* Day-of-week headers */}
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 6 }}>
-                        {["S","M","T","W","T","F","S"].map((d, i) => (
-                          <div key={i} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", paddingBottom: 6 }}>{d}</div>
-                        ))}
-                      </div>
-                      {/* Calendar grid */}
-                      {weeks.map((week, wi) => (
-                        <div key={wi} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 2 }}>
-                          {week.map((day, di) => (
-                            <button
-                              key={di}
-                              onClick={() => {
-                                if (!day) return;
-                                const newDate = new Date(year, month, day);
-                                setPamphletDateBlocks(prev => prev.map(b => b.id === editingDateBlockId ? { ...b, date: newDate, mode: "all" } : b));
-                                setEditingDateBlockId(null);
-                              }}
-                              disabled={!day}
-                              style={{
-                                width: "100%",
-                                aspectRatio: "1",
-                                borderRadius: 8,
-                                background: isSelected(day) ? "rgba(255,255,255,0.92)" : "transparent",
-                                border: "none",
-                                cursor: day ? "pointer" : "default",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: 13,
-                                fontWeight: isSelected(day) ? 800 : isToday(day) ? 700 : 400,
-                                color: isSelected(day) ? "#111114" : day ? "rgba(255,255,255,0.88)" : "transparent",
-                                position: "relative",
-                              }}
-                            >
-                              {day || ""}
-                              {isToday(day) && !isSelected(day) && (
-                                <span style={{ position: "absolute", bottom: 3, left: "50%", transform: "translateX(-50%)", width: 4, height: 4, borderRadius: "50%", background: "rgba(255,255,255,0.5)" }} />
-                              )}
-                            </button>
+
+                      {/* Scrollable year picker (replaces calendar when open) */}
+                      {showAllYearPicker ? (() => {
+                        const START_YEAR = 1950;
+                        const END_YEAR = 2100;
+                        const thisYear = new Date().getFullYear();
+                        const COL_COUNT = 4;
+                        const ROW_H = 36;
+                        const allYears = Array.from({ length: END_YEAR - START_YEAR + 1 }, (_, i) => START_YEAR + i);
+                        const startVisibleRow = Math.max(0, Math.floor((thisYear - 12 - START_YEAR) / COL_COUNT));
+                        return (
+                          <div
+                            ref={(el) => { if (el) el.scrollTop = startVisibleRow * ROW_H; }}
+                            style={{ height: 180, overflowY: "auto", padding: "4px 0 8px", scrollbarWidth: "none" }}
+                          >
+                            <div style={{ display: "grid", gridTemplateColumns: `repeat(${COL_COUNT}, 1fr)`, gap: 6 }}>
+                              {allYears.map((y) => (
+                                <button
+                                  key={y}
+                                  onClick={() => { setDatePickerMonth(new Date(y, month, 1)); setShowAllYearPicker(false); }}
+                                  style={{
+                                    padding: "8px 0",
+                                    borderRadius: 10,
+                                    border: "none",
+                                    cursor: "pointer",
+                                    fontSize: 13,
+                                    fontWeight: y === year ? 800 : y === thisYear ? 600 : 500,
+                                    background: y === year ? "rgba(245,158,11,0.22)" : y === thisYear && y !== year ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.05)",
+                                    color: y === year ? "#f59e0b" : "rgba(255,255,255,0.75)",
+                                    outline: y === year ? "1.5px solid rgba(245,158,11,0.5)" : y === thisYear && y !== year ? "1px solid rgba(255,255,255,0.15)" : "none",
+                                    transition: "background 0.12s",
+                                  }}
+                                >
+                                  {y}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })() : (
+                        <>
+                          {/* Day-of-week headers */}
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 6 }}>
+                            {["S","M","T","W","T","F","S"].map((d, i) => (
+                              <div key={i} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", paddingBottom: 6 }}>{d}</div>
+                            ))}
+                          </div>
+                          {/* Calendar grid */}
+                          {weeks.map((week, wi) => (
+                            <div key={wi} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 2 }}>
+                              {week.map((day, di) => (
+                                <button
+                                  key={di}
+                                  onClick={() => {
+                                    if (!day) return;
+                                    const newDate = new Date(year, month, day);
+                                    setPamphletDateBlocks(prev => prev.map(b => b.id === editingDateBlockId ? { ...b, date: newDate, mode: "all" } : b));
+                                    setEditingDateBlockId(null);
+                                  }}
+                                  disabled={!day}
+                                  style={{
+                                    width: "100%",
+                                    aspectRatio: "1",
+                                    borderRadius: 8,
+                                    background: isSelected(day) ? "rgba(255,255,255,0.92)" : "transparent",
+                                    border: "none",
+                                    cursor: day ? "pointer" : "default",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: 13,
+                                    fontWeight: isSelected(day) ? 800 : isToday(day) ? 700 : 400,
+                                    color: isSelected(day) ? "#111114" : day ? "rgba(255,255,255,0.88)" : "transparent",
+                                    position: "relative",
+                                  }}
+                                >
+                                  {day || ""}
+                                  {isToday(day) && !isSelected(day) && (
+                                    <span style={{ position: "absolute", bottom: 3, left: "50%", transform: "translateX(-50%)", width: 4, height: 4, borderRadius: "50%", background: "rgba(255,255,255,0.5)" }} />
+                                  )}
+                                </button>
+                              ))}
+                            </div>
                           ))}
-                        </div>
-                      ))}
+                        </>
+                      )}
                     </>
                   )}
                 </motion.div>
