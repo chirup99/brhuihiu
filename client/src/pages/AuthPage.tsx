@@ -6681,7 +6681,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
                     {/* ── DRAGGABLE QR CODE ── */}
                     <motion.div
-                      drag
+                      drag={pamphletResizingId !== "qr"}
                       dragConstraints={pamphletCanvasRef}
                       dragElastic={0}
                       dragMomentum={false}
@@ -6711,6 +6711,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             <div
                               onPointerDown={(e) => {
                                 e.stopPropagation();
+                                e.preventDefault();
+                                setPamphletResizingId("qr");
                                 const startX = e.clientX;
                                 const startY = e.clientY;
                                 const startSize = pamphletQrSize;
@@ -6718,7 +6720,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                   const delta = ((me.clientX - startX) + (me.clientY - startY)) / 2;
                                   setPamphletQrSize(Math.max(48, Math.min(180, Math.round(startSize + delta))));
                                 };
-                                const onUp = () => { document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerup", onUp); };
+                                const onUp = () => { setPamphletResizingId(null); document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerup", onUp); };
                                 document.addEventListener("pointermove", onMove);
                                 document.addEventListener("pointerup", onUp);
                               }}
