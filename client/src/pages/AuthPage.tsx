@@ -7500,34 +7500,48 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   </div>
 
                   {/* Year-only mode */}
-                  {datePickerMode === "year" && (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, padding: "4px 0 8px" }}>
-                      {Array.from({ length: 20 }, (_, i) => 2020 + i).map((y) => (
-                        <button
-                          key={y}
-                          onClick={() => {
-                            const newDate = new Date(y, month, 1);
-                            setPamphletDateBlocks(prev => prev.map(b => b.id === editingDateBlockId ? { ...b, date: newDate, mode: "year" } : b));
-                            setEditingDateBlockId(null);
-                          }}
-                          style={{
-                            padding: "8px 0",
-                            borderRadius: 10,
-                            border: "none",
-                            cursor: "pointer",
-                            fontSize: 13,
-                            fontWeight: y === year ? 800 : 500,
-                            background: y === year ? "rgba(245,158,11,0.22)" : "rgba(255,255,255,0.05)",
-                            color: y === year ? "#f59e0b" : "rgba(255,255,255,0.75)",
-                            outline: y === year ? "1.5px solid rgba(245,158,11,0.5)" : "none",
-                            transition: "background 0.12s",
-                          }}
-                        >
-                          {y}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {datePickerMode === "year" && (() => {
+                    const START_YEAR = 1950;
+                    const END_YEAR = 2100;
+                    const thisYear = new Date().getFullYear();
+                    const COL_COUNT = 4;
+                    const ROW_H = 36;
+                    const allYears = Array.from({ length: END_YEAR - START_YEAR + 1 }, (_, i) => START_YEAR + i);
+                    const startVisibleRow = Math.max(0, Math.floor((thisYear - 12 - START_YEAR) / COL_COUNT));
+                    return (
+                      <div
+                        ref={(el) => { if (el) el.scrollTop = startVisibleRow * ROW_H; }}
+                        style={{ height: 180, overflowY: "auto", padding: "4px 0 8px", scrollbarWidth: "none" }}
+                      >
+                        <div style={{ display: "grid", gridTemplateColumns: `repeat(${COL_COUNT}, 1fr)`, gap: 6 }}>
+                          {allYears.map((y) => (
+                            <button
+                              key={y}
+                              onClick={() => {
+                                const newDate = new Date(y, month, 1);
+                                setPamphletDateBlocks(prev => prev.map(b => b.id === editingDateBlockId ? { ...b, date: newDate, mode: "year" } : b));
+                                setEditingDateBlockId(null);
+                              }}
+                              style={{
+                                padding: "8px 0",
+                                borderRadius: 10,
+                                border: "none",
+                                cursor: "pointer",
+                                fontSize: 13,
+                                fontWeight: y === year ? 800 : y === thisYear ? 600 : 500,
+                                background: y === year ? "rgba(245,158,11,0.22)" : y === thisYear && y !== year ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.05)",
+                                color: y === year ? "#f59e0b" : "rgba(255,255,255,0.75)",
+                                outline: y === year ? "1.5px solid rgba(245,158,11,0.5)" : y === thisYear && y !== year ? "1px solid rgba(255,255,255,0.15)" : "none",
+                                transition: "background 0.12s",
+                              }}
+                            >
+                              {y}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Month-only mode */}
                   {datePickerMode === "month" && (
