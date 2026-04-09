@@ -7034,35 +7034,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 {/* ── BOTTOM TOOLBAR ── */}
                 {!isCapturingPamphlet && (
                   <div className="flex-shrink-0 relative">
-                    {/* Pull-up / collapse tab */}
-                    <button
-                      onClick={() => setBottomSheetCollapsed(v => !v)}
-                      className="absolute -top-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 z-10 px-5 py-1 rounded-t-xl active:scale-95 transition-all"
-                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderBottom: "none" }}
-                    >
-                      <svg
-                        viewBox="0 0 20 10"
-                        style={{
-                          width: 20,
-                          height: 10,
-                          fill: "none",
-                          stroke: "rgba(255,255,255,0.4)",
-                          strokeWidth: 2,
-                          strokeLinecap: "round",
-                          transform: bottomSheetCollapsed ? "rotate(180deg)" : "none",
-                          transition: "transform 0.3s",
-                        }}
-                      >
-                        <polyline points="2,8 10,2 18,8" />
-                      </svg>
-                    </button>
                   <motion.div
                     initial={false}
                     animate={bottomSheetCollapsed ? { height: 0, opacity: 0 } : { height: "auto", opacity: 1 }}
                     transition={{ type: "spring", damping: 28, stiffness: 300 }}
                     style={{ overflow: "hidden" }}
                   >
-                  <div className="px-4 pb-5 pt-2 space-y-2">
+                  <div className="px-4 pt-2 space-y-2">
                     {/* Theme Carousel */}
                     <div>
                       <p className="text-[8px] text-white/30 uppercase tracking-[0.18em] font-bold mb-2">Campaign Theme</p>
@@ -7171,10 +7149,42 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         )}
                       </div>
                     )}
+                  </div>
+                  </motion.div>
 
+                  {/* ── ALWAYS-VISIBLE ACTION BAR ── */}
+                  <div className="px-4 pb-5 pt-2" style={{ borderTop: bottomSheetCollapsed ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
+                    {/* Toggle row */}
+                    <div className="flex justify-center mb-2">
+                      <button
+                        onClick={() => setBottomSheetCollapsed(v => !v)}
+                        className="flex items-center gap-1.5 px-4 py-1 rounded-full active:scale-95 transition-all"
+                        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                      >
+                        <svg
+                          viewBox="0 0 20 10"
+                          style={{
+                            width: 16,
+                            height: 8,
+                            fill: "none",
+                            stroke: "rgba(255,255,255,0.45)",
+                            strokeWidth: 2,
+                            strokeLinecap: "round",
+                            transform: bottomSheetCollapsed ? "none" : "rotate(180deg)",
+                            transition: "transform 0.3s",
+                          }}
+                        >
+                          <polyline points="2,8 10,2 18,8" />
+                        </svg>
+                        <span style={{ fontSize: 8, color: "rgba(255,255,255,0.3)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                          {bottomSheetCollapsed ? "Expand" : "Collapse"}
+                        </span>
+                      </button>
+                    </div>
+                    {/* Action buttons — always visible */}
                     <div className="flex gap-2">
                       <button
-                        onClick={() => setShowStickerTray(s => !s)}
+                        onClick={() => { setShowStickerTray(s => !s); setBottomSheetCollapsed(false); }}
                         className="flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-[11px] font-bold active:scale-95 transition-all border"
                         style={{
                           background: showStickerTray ? "rgba(190,24,93,0.25)" : "rgba(255,255,255,0.06)",
@@ -7211,11 +7221,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         Save
                       </button>
                     </div>
-                    <p className="text-center text-white/15 text-[8px] tracking-widest">
-                      కార్డులు, స్టిక్కర్లు &amp; QR కోడ్ తరలించండి · రీసైజ్ చేయండి
-                    </p>
                   </div>
-                  </motion.div>
                   </div>
                 )}
               </motion.div>
