@@ -687,8 +687,22 @@ const TrendLine = () => (
 
 const PostCardInline = ({ content, onPlayStateChange }: { content: string; onPlayStateChange?: (b: boolean) => void }) => {
   const [expanded, setExpanded] = useState(false);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const contentRef = useRef<HTMLParagraphElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const check = () => {
+      const el = containerRef.current;
+      if (el) setIsOverflowing(el.scrollHeight > el.clientHeight + 2);
+    };
+    check();
+    const t = setTimeout(check, 100);
+    return () => clearTimeout(t);
+  }, [content]);
 
   const handleExpand = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isOverflowing) return;
     e.stopPropagation();
     setExpanded(true);
     onPlayStateChange?.(true);
@@ -703,21 +717,26 @@ const PostCardInline = ({ content, onPlayStateChange }: { content: string; onPla
   if (!expanded) {
     return (
       <div
-        className="w-full h-full absolute inset-0 overflow-hidden rounded-[24px] cursor-pointer"
+        className="w-full h-full absolute inset-0 overflow-hidden rounded-[24px]"
+        style={{ cursor: isOverflowing ? "pointer" : "default" }}
         onClick={handleExpand}
       >
         <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", flexDirection: "column", padding: 14, gap: 10, borderRadius: 20 }}>
-          <div style={{ flex: 1, minHeight: 0, position: "relative", overflow: "hidden" }}>
-            <p style={{ color: "rgba(255,255,255,0.92)", fontSize: 13, lineHeight: 1.6, margin: 0, wordBreak: "break-word", whiteSpace: "pre-wrap" }}>
+          <div ref={containerRef} style={{ flex: 1, minHeight: 0, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: isOverflowing ? "flex-start" : "center" }}>
+            <p ref={contentRef} style={{ color: "rgba(255,255,255,0.92)", fontSize: 13, lineHeight: 1.6, margin: 0, wordBreak: "break-word", whiteSpace: "pre-wrap", textAlign: isOverflowing ? "left" : "center" }}>
               {content}
             </p>
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 48, background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.55))", pointerEvents: "none" }} />
+            {isOverflowing && (
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 48, background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.55))", pointerEvents: "none" }} />
+            )}
           </div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", flexShrink: 0 }}>
-            <div style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", color: "rgba(255,255,255,0.65)", fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.18em", padding: "4px 10px", borderRadius: 20 }}>
-              Tap to read
+          {isOverflowing && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", flexShrink: 0 }}>
+              <div style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", color: "rgba(255,255,255,0.65)", fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.18em", padding: "4px 10px", borderRadius: 20 }}>
+                Tap to read
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     );
