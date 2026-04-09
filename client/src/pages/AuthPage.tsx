@@ -2840,6 +2840,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [pamphletTheme, setPamphletTheme] = useState(CAMPAIGN_THEMES[0]);
   const [pamphletPostImages, setPamphletPostImages] = useState<Record<number, string>>({});
   const [pamphletCardSizes, setPamphletCardSizes] = useState<Record<number, {w: number; h: number}>>({});
+  const [pamphletResizingId, setPamphletResizingId] = useState<string | null>(null);
   const [pamphletStickers, setPamphletStickers] = useState<Array<{id: string; e: string; x: number; y: number; size: number; color?: string; bold?: boolean}>>([]);
   const [showStickerTray, setShowStickerTray] = useState(false);
   const [bottomSheetCollapsed, setBottomSheetCollapsed] = useState(false);
@@ -6445,7 +6446,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       return (
                         <motion.div
                           key={idx}
-                          drag
+                          drag={pamphletResizingId !== `card-${idx}`}
                           dragConstraints={pamphletCanvasRef}
                           dragElastic={0}
                           dragMomentum={false}
@@ -6639,6 +6640,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             <div
                               onPointerDown={(e) => {
                                 e.stopPropagation();
+                                e.preventDefault();
+                                setPamphletResizingId(`card-${idx}`);
                                 const startX = e.clientX;
                                 const startY = e.clientY;
                                 const startW = cardW;
@@ -6649,6 +6652,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                   setPamphletCardSizes(prev => ({ ...prev, [idx]: { w: newW, h: newH } }));
                                 };
                                 const onUp = () => {
+                                  setPamphletResizingId(null);
                                   document.removeEventListener("pointermove", onMove);
                                   document.removeEventListener("pointerup", onUp);
                                 };
@@ -6737,7 +6741,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     {pamphletGalleryImages.map((img) => (
                       <motion.div
                         key={img.id}
-                        drag
+                        drag={pamphletResizingId !== img.id}
                         dragConstraints={pamphletCanvasRef}
                         dragElastic={0}
                         dragMomentum={false}
@@ -6751,12 +6755,37 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           borderRadius: 10,
                           overflow: "hidden",
                           zIndex: 18,
-                          touchAction: "none",
+                          touchAction: pamphletResizingId === img.id ? "none" : "none",
                           cursor: isCapturingPamphlet ? "default" : "grab",
                           userSelect: "none",
                           boxShadow: "0 4px 18px rgba(0,0,0,0.45)",
                           border: "1.5px solid rgba(255,255,255,0.18)",
                           background: "#111",
+                        }}
+                        onTouchStart={(e) => {
+                          if (isCapturingPamphlet || e.touches.length !== 2) return;
+                          e.stopPropagation();
+                          const t0 = e.touches[0], t1 = e.touches[1];
+                          const startDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+                          const startW = img.w;
+                          const startH = img.h;
+                          const onTouchMove = (me: TouchEvent) => {
+                            if (me.touches.length !== 2) return;
+                            me.preventDefault();
+                            me.stopPropagation();
+                            const a = me.touches[0], b = me.touches[1];
+                            const dist = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+                            const scale = dist / startDist;
+                            setPamphletGalleryImages(prev => prev.map(i => i.id === img.id
+                              ? { ...i, w: Math.max(60, Math.round(startW * scale)), h: Math.max(50, Math.round(startH * scale)) }
+                              : i));
+                          };
+                          const onTouchEnd = () => {
+                            document.removeEventListener("touchmove", onTouchMove);
+                            document.removeEventListener("touchend", onTouchEnd);
+                          };
+                          document.addEventListener("touchmove", onTouchMove, { passive: false });
+                          document.addEventListener("touchend", onTouchEnd);
                         }}
                       >
                         {/* pointerEvents none so Framer Motion drag works on the outer div */}
@@ -6780,6 +6809,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             <div
                               onPointerDown={(e) => {
                                 e.stopPropagation();
+                                e.preventDefault();
+                                setPamphletResizingId(img.id);
                                 const startX = e.clientX;
                                 const startY = e.clientY;
                                 const startW = img.w;
@@ -6790,6 +6821,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                   setPamphletGalleryImages(prev => prev.map(i => i.id === img.id ? { ...i, w: newW, h: newH } : i));
                                 };
                                 const onUp = () => {
+                                  setPamphletResizingId(null);
                                   document.removeEventListener("pointermove", onMove);
                                   document.removeEventListener("pointerup", onUp);
                                 };
@@ -6812,7 +6844,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     {pamphletTextCards.map((tc) => (
                       <motion.div
                         key={tc.id}
-                        drag={editingTextCardId !== tc.id}
+                        drag={editingTextCardId !== tc.id && pamphletResizingId !== tc.id}
                         dragConstraints={pamphletCanvasRef}
                         dragElastic={0}
                         dragMomentum={false}
@@ -6890,6 +6922,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             <div
                               onPointerDown={(e) => {
                                 e.stopPropagation();
+                                e.preventDefault();
+                                setPamphletResizingId(tc.id);
                                 const startX = e.clientX;
                                 const startW = tc.w;
                                 const startFs = tc.fontSize;
@@ -6899,7 +6933,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                   const newFs = Math.max(8, Math.min(72, Math.round(startFs * ratio)));
                                   setPamphletTextCards(prev => prev.map(c => c.id === tc.id ? { ...c, w: newW, fontSize: newFs } : c));
                                 };
-                                const onUp = () => { document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerup", onUp); };
+                                const onUp = () => { setPamphletResizingId(null); document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerup", onUp); };
                                 document.addEventListener("pointermove", onMove);
                                 document.addEventListener("pointerup", onUp);
                               }}
