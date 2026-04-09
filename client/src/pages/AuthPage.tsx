@@ -2852,6 +2852,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [pamphletDateBlocks, setPamphletDateBlocks] = useState<Array<{ id: string; x: number; y: number; date: Date }>>([]);
   const [editingDateBlockId, setEditingDateBlockId] = useState<string | null>(null);
   const [datePickerMonth, setDatePickerMonth] = useState(() => new Date());
+  const [showYearPicker, setShowYearPicker] = useState(false);
   const [pamphletQrSize, setPamphletQrSize] = useState(92);
   const [xpostPickerIdx, setXpostPickerIdx] = useState<number | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -6930,7 +6931,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         >
                           <div
                             onPointerDown={(e) => e.stopPropagation()}
-                            onClick={(e) => { if (!isCapturingPamphlet) { e.stopPropagation(); setDatePickerMonth(new Date(d)); setEditingDateBlockId(db.id); } }}
+                            onClick={(e) => { if (!isCapturingPamphlet) { e.stopPropagation(); setDatePickerMonth(new Date(d)); setShowYearPicker(false); setEditingDateBlockId(db.id); } }}
                             style={{
                               display: "flex",
                               alignItems: "center",
@@ -7459,19 +7460,53 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   {/* Month nav */}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                     <button
-                      onClick={() => setDatePickerMonth(new Date(year, month - 1, 1))}
-                      style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                      onClick={() => { if (!showYearPicker) setDatePickerMonth(new Date(year, month - 1, 1)); }}
+                      style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: showYearPicker ? 0.2 : 1 }}
                     >
                       <svg viewBox="0 0 16 16" style={{ width: 12, height: 12, fill: "none", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2, strokeLinecap: "round" }}><polyline points="10,3 5,8 10,13"/></svg>
                     </button>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: "white", letterSpacing: "0.01em" }}>{monthLabel} {year}</span>
                     <button
-                      onClick={() => setDatePickerMonth(new Date(year, month + 1, 1))}
-                      style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                      onClick={() => setShowYearPicker(v => !v)}
+                      style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, padding: "4px 8px", borderRadius: 8, transition: "background 0.15s" }}
+                    >
+                      <span style={{ fontSize: 14, fontWeight: 700, color: "white", letterSpacing: "0.01em" }}>{monthLabel}</span>
+                      <span style={{ fontSize: 14, fontWeight: 800, color: showYearPicker ? "#f59e0b" : "rgba(255,255,255,0.5)", letterSpacing: "0.01em", textDecoration: "underline", textDecorationStyle: "dotted", textUnderlineOffset: 3 }}>{year}</span>
+                      <svg viewBox="0 0 12 12" style={{ width: 10, height: 10, fill: "none", stroke: showYearPicker ? "#f59e0b" : "rgba(255,255,255,0.35)", strokeWidth: 2, strokeLinecap: "round", transform: showYearPicker ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}><polyline points="2,4 6,8 10,4"/></svg>
+                    </button>
+                    <button
+                      onClick={() => { if (!showYearPicker) setDatePickerMonth(new Date(year, month + 1, 1)); }}
+                      style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: showYearPicker ? 0.2 : 1 }}
                     >
                       <svg viewBox="0 0 16 16" style={{ width: 12, height: 12, fill: "none", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2, strokeLinecap: "round" }}><polyline points="6,3 11,8 6,13"/></svg>
                     </button>
                   </div>
+
+                  {/* Year picker grid (replaces calendar when open) */}
+                  {showYearPicker ? (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, padding: "4px 0 8px" }}>
+                      {Array.from({ length: 20 }, (_, i) => 2020 + i).map((y) => (
+                        <button
+                          key={y}
+                          onClick={() => { setDatePickerMonth(new Date(y, month, 1)); setShowYearPicker(false); }}
+                          style={{
+                            padding: "8px 0",
+                            borderRadius: 10,
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: 13,
+                            fontWeight: y === year ? 800 : 500,
+                            background: y === year ? "rgba(245,158,11,0.22)" : "rgba(255,255,255,0.05)",
+                            color: y === year ? "#f59e0b" : "rgba(255,255,255,0.75)",
+                            outline: y === year ? "1.5px solid rgba(245,158,11,0.5)" : "none",
+                            transition: "background 0.12s",
+                          }}
+                        >
+                          {y}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <>
                   {/* Day-of-week headers */}
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 6 }}>
                     {["S","M","T","W","T","F","S"].map((d, i) => (
@@ -7515,6 +7550,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       ))}
                     </div>
                   ))}
+                    </>
+                  )}
                 </motion.div>
               </div>
             );
