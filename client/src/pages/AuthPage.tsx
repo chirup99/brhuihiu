@@ -2849,6 +2849,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [pamphletTextCards, setPamphletTextCards] = useState<Array<{id: string; text: string; x: number; y: number; w: number; fontSize: number; color: string; bold: boolean}>>([]);
   const [editingTextCardId, setEditingTextCardId] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [pamphletDateBlock, setPamphletDateBlock] = useState<{ x: number; y: number; date: Date } | null>(null);
+  const [showDatePickerDialog, setShowDatePickerDialog] = useState(false);
+  const [datePickerMonth, setDatePickerMonth] = useState(() => new Date());
   const [pamphletQrSize, setPamphletQrSize] = useState(92);
   const [xpostPickerIdx, setXpostPickerIdx] = useState<number | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -6908,6 +6911,57 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       </motion.div>
                     ))}
 
+                    {/* ── DRAGGABLE DATE BLOCK ── */}
+                    {pamphletDateBlock && (() => {
+                      const d = pamphletDateBlock.date;
+                      const day = d.getDate().toString().padStart(2, "0");
+                      const monthName = d.toLocaleString("en", { month: "long" }).toUpperCase();
+                      const year = d.getFullYear();
+                      const weekday = d.toLocaleString("en", { weekday: "long" }).toUpperCase();
+                      return (
+                        <motion.div
+                          drag
+                          dragConstraints={pamphletCanvasRef}
+                          dragElastic={0}
+                          dragMomentum={false}
+                          whileDrag={{ scale: 1.06, zIndex: 70 }}
+                          style={{ position: "absolute", left: pamphletDateBlock.x, top: pamphletDateBlock.y, zIndex: 20, touchAction: "none", cursor: isCapturingPamphlet ? "default" : "grab", userSelect: "none" }}
+                        >
+                          <div
+                            onPointerDown={(e) => e.stopPropagation()}
+                            onClick={(e) => { if (!isCapturingPamphlet) { e.stopPropagation(); setDatePickerMonth(new Date(pamphletDateBlock.date)); setShowDatePickerDialog(true); } }}
+                            style={{
+                              minWidth: 68,
+                              borderRadius: 12,
+                              overflow: "hidden",
+                              boxShadow: "0 4px 20px rgba(0,0,0,0.55)",
+                              border: `1.5px solid ${pamphletTheme.accentColor}55`,
+                              cursor: isCapturingPamphlet ? "default" : "pointer",
+                            }}
+                          >
+                            {/* Header band */}
+                            <div style={{ background: pamphletTheme.headerBg, padding: "4px 8px", textAlign: "center" }}>
+                              <span style={{ fontSize: 7, color: "rgba(255,255,255,0.9)", fontWeight: 800, letterSpacing: "0.18em" }}>{monthName} {year}</span>
+                            </div>
+                            {/* Day number */}
+                            <div style={{ background: "rgba(10,10,20,0.88)", padding: "6px 12px 4px", textAlign: "center" }}>
+                              <div style={{ fontSize: 30, fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.02em" }}>{day}</div>
+                              <div style={{ fontSize: 6, color: pamphletTheme.accentColor, fontWeight: 800, letterSpacing: "0.14em", marginTop: 2 }}>{weekday}</div>
+                            </div>
+                          </div>
+                          {!isCapturingPamphlet && (
+                            <button
+                              onPointerDown={(e) => e.stopPropagation()}
+                              onClick={(e) => { e.stopPropagation(); setPamphletDateBlock(null); }}
+                              style={{ position: "absolute", top: -6, right: -6, width: 14, height: 14, borderRadius: "50%", background: "#ef4444", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 30, padding: 0 }}
+                            >
+                              <svg viewBox="0 0 10 10" style={{ width: 8, height: 8 }}><path d="M2 2l6 6M8 2l-6 6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                            </button>
+                          )}
+                        </motion.div>
+                      );
+                    })()}
+
                     {/* ── DRAGGABLE STICKERS ── */}
                     {pamphletStickers.map((sticker, si) => (
                       <motion.div
@@ -7004,6 +7058,28 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           >
                             <span style={{ fontSize: 18, color: "white", fontWeight: 900, lineHeight: 1, fontFamily: "serif" }}>T</span>
                             <span style={{ fontSize: 6, color: "white", fontWeight: 800, letterSpacing: "0.05em", lineHeight: 1 }}>TEXT</span>
+                          </button>
+                          {/* Calendar / Date button */}
+                          <button
+                            onClick={() => {
+                              setShowAddMenu(false);
+                              const today = new Date();
+                              setPamphletDateBlock({ x: 100 + Math.floor(Math.random() * 80), y: 100 + Math.floor(Math.random() * 100), date: today });
+                              setDatePickerMonth(today);
+                            }}
+                            style={{
+                              width: 44, height: 44, borderRadius: "50%",
+                              background: "linear-gradient(135deg, #10b981, #065f46)",
+                              border: "2px solid rgba(255,255,255,0.25)",
+                              boxShadow: "0 4px 16px rgba(16,185,129,0.5)",
+                              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                              cursor: "pointer", gap: 1,
+                            }}
+                          >
+                            <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, fill: "none", stroke: "white", strokeWidth: 2, strokeLinecap: "round" }}>
+                              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            <span style={{ fontSize: 6, color: "white", fontWeight: 800, letterSpacing: "0.05em", lineHeight: 1 }}>DATE</span>
                           </button>
                         </>
                       )}
@@ -7338,6 +7414,105 @@ export default function AuthPage({ slug }: { slug?: string }) {
               </motion.div>
             </div>
           )}
+        </AnimatePresence>
+
+        {/* ── DATE PICKER DIALOG ── */}
+        <AnimatePresence>
+          {showDatePickerDialog && pamphletDateBlock && (() => {
+            const selected = pamphletDateBlock.date;
+            const year = datePickerMonth.getFullYear();
+            const month = datePickerMonth.getMonth();
+            const monthLabel = datePickerMonth.toLocaleString("en", { month: "long" });
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const cells: (number | null)[] = [];
+            for (let i = 0; i < firstDay; i++) cells.push(null);
+            for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+            while (cells.length % 7 !== 0) cells.push(null);
+            const weeks: (number | null)[][] = [];
+            for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+            const isSelected = (d: number | null) => d !== null && selected.getFullYear() === year && selected.getMonth() === month && selected.getDate() === d;
+            const isToday = (d: number | null) => { const t = new Date(); return d !== null && t.getFullYear() === year && t.getMonth() === month && t.getDate() === d; };
+            return (
+              <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setShowDatePickerDialog(false)}
+                  className="absolute inset-0"
+                  style={{ background: "rgba(0,0,0,0.72)", backdropFilter: "blur(6px)" }}
+                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.88, y: 16 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.88, y: 16 }}
+                  transition={{ type: "spring", damping: 28, stiffness: 340 }}
+                  style={{ position: "relative", background: "#111114", borderRadius: 20, padding: "20px 16px 16px", width: "100%", maxWidth: 300, boxShadow: "0 24px 60px rgba(0,0,0,0.8)", border: "1px solid rgba(255,255,255,0.07)" }}
+                >
+                  {/* Month nav */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                    <button
+                      onClick={() => setDatePickerMonth(new Date(year, month - 1, 1))}
+                      style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    >
+                      <svg viewBox="0 0 16 16" style={{ width: 12, height: 12, fill: "none", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2, strokeLinecap: "round" }}><polyline points="10,3 5,8 10,13"/></svg>
+                    </button>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "white", letterSpacing: "0.01em" }}>{monthLabel} {year}</span>
+                    <button
+                      onClick={() => setDatePickerMonth(new Date(year, month + 1, 1))}
+                      style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    >
+                      <svg viewBox="0 0 16 16" style={{ width: 12, height: 12, fill: "none", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2, strokeLinecap: "round" }}><polyline points="6,3 11,8 6,13"/></svg>
+                    </button>
+                  </div>
+                  {/* Day-of-week headers */}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 6 }}>
+                    {["S","M","T","W","T","F","S"].map((d, i) => (
+                      <div key={i} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", paddingBottom: 6 }}>{d}</div>
+                    ))}
+                  </div>
+                  {/* Calendar grid */}
+                  {weeks.map((week, wi) => (
+                    <div key={wi} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 2 }}>
+                      {week.map((day, di) => (
+                        <button
+                          key={di}
+                          onClick={() => {
+                            if (!day) return;
+                            const newDate = new Date(year, month, day);
+                            setPamphletDateBlock(prev => prev ? { ...prev, date: newDate } : null);
+                            setShowDatePickerDialog(false);
+                          }}
+                          disabled={!day}
+                          style={{
+                            width: "100%",
+                            aspectRatio: "1",
+                            borderRadius: 8,
+                            background: isSelected(day) ? "rgba(255,255,255,0.92)" : "transparent",
+                            border: "none",
+                            cursor: day ? "pointer" : "default",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 13,
+                            fontWeight: isSelected(day) ? 800 : isToday(day) ? 700 : 400,
+                            color: isSelected(day) ? "#111114" : day ? (month === datePickerMonth.getMonth() ? "rgba(255,255,255,0.88)" : "rgba(255,255,255,0.2)") : "transparent",
+                            position: "relative",
+                          }}
+                        >
+                          {day || ""}
+                          {isToday(day) && !isSelected(day) && (
+                            <span style={{ position: "absolute", bottom: 3, left: "50%", transform: "translateX(-50%)", width: 4, height: 4, borderRadius: "50%", background: "rgba(255,255,255,0.5)" }} />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+                </motion.div>
+              </div>
+            );
+          })()}
         </AnimatePresence>
 
         <AnimatePresence>
