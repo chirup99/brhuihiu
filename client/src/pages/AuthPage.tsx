@@ -3573,6 +3573,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const pamphletBgInputRef = useRef<HTMLInputElement>(null);
   const pamphletPostImgRef = useRef<HTMLInputElement>(null);
   const pamphletGalleryInputRef = useRef<HTMLInputElement>(null);
+  const pamphletAvatarInputRef = useRef<HTMLInputElement>(null);
   const pamphletCanvasRef = useRef<HTMLDivElement>(null);
 
   // Preload all videos when component mounts for instant playback
@@ -6499,6 +6500,21 @@ export default function AuthPage({ slug }: { slug?: string }) {
           }}
         />
         <input
+          ref={pamphletAvatarInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = (ev) => setAvatarDataUrl(ev.target?.result as string);
+              reader.readAsDataURL(file);
+            }
+            e.target.value = "";
+          }}
+        />
+        <input
           ref={pamphletGalleryInputRef}
           type="file"
           accept="image/*"
@@ -6670,14 +6686,20 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       }}
                     >
                       {/* Avatar */}
-                      <div style={{ width: 34, height: 34, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: "2px solid rgba(255,255,255,0.35)", background: "#fce7f3" }}>
-                        {isCapturingPamphlet ? (
+                      <div
+                        style={{ width: 34, height: 34, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: "2px solid rgba(255,255,255,0.35)", background: "#fce7f3", position: "relative", cursor: isCapturingPamphlet ? "default" : "pointer" }}
+                        onClick={(e) => { if (!isCapturingPamphlet) { e.stopPropagation(); pamphletAvatarInputRef.current?.click(); } }}
+                      >
+                        {(avatarDataUrl || displayAvatarSrc) ? (
                           <img src={avatarDataUrl || displayAvatarSrc} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                        ) : displayAvatarSrc ? (
-                          <img src={displayAvatarSrc} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                         ) : (
                           <div style={{ width: "100%", height: "100%", background: "#ec4899", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 900, fontSize: 14 }}>
                             {displayName[0]?.toUpperCase()}
+                          </div>
+                        )}
+                        {!isCapturingPamphlet && (
+                          <div style={{ position: "absolute", bottom: -1, right: -1, width: 14, height: 14, borderRadius: "50%", background: "#be185d", border: "1.5px solid rgba(255,255,255,0.9)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 5 }}>
+                            <svg viewBox="0 0 24 24" style={{ width: 7, height: 7, fill: "white" }}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                           </div>
                         )}
                       </div>
