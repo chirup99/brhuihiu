@@ -7102,6 +7102,32 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             </svg>
                             <span style={{ fontSize: 6, color: "white", fontWeight: 800, letterSpacing: "0.05em", lineHeight: 1 }}>DATE</span>
                           </button>
+                          {/* Before / After button */}
+                          <button
+                            onClick={() => {
+                              setShowAddMenu(false);
+                              const now = Date.now();
+                              const beforeCard = { id: `tc-ba-before-${now}`, text: "BEFORE", x: 14, y: 180, w: 120, fontSize: 18, color: "#ffffff", bold: true };
+                              const afterCard = { id: `tc-ba-after-${now}`, text: "AFTER", x: 220, y: 180, w: 120, fontSize: 18, color: "#ffffff", bold: true };
+                              setPamphletTextCards(prev => [...prev, beforeCard, afterCard]);
+                            }}
+                            style={{
+                              width: 44, height: 44, borderRadius: "50%",
+                              background: "linear-gradient(135deg, #f59e0b, #b45309)",
+                              border: "2px solid rgba(255,255,255,0.25)",
+                              boxShadow: "0 4px 16px rgba(245,158,11,0.5)",
+                              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                              cursor: "pointer", gap: 1,
+                            }}
+                          >
+                            <svg viewBox="0 0 24 10" style={{ width: 20, height: 9, fill: "none", stroke: "white", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }}>
+                              <polyline points="7,1 2,5 7,9"/>
+                              <line x1="2" y1="5" x2="11" y2="5"/>
+                              <line x1="13" y1="5" x2="22" y2="5"/>
+                              <polyline points="17,1 22,5 17,9"/>
+                            </svg>
+                            <span style={{ fontSize: 6, color: "white", fontWeight: 800, letterSpacing: "0.05em", lineHeight: 1 }}>B / A</span>
+                          </button>
                         </>
                       )}
                       {/* Main + toggle button */}
