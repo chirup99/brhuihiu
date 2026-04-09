@@ -735,7 +735,7 @@ const TweetCardInline = ({ tweetId, xUrl, onPlayStateChange }: { tweetId: string
         onClick={handleExpand}
       >
         <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.65)", display: "flex", flexDirection: "column", padding: 14, gap: 10, borderRadius: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             {data?.author.profileImageUrl ? (
               <img src={data.author.profileImageUrl} alt="" style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
             ) : (
@@ -755,12 +755,15 @@ const TweetCardInline = ({ tweetId, xUrl, onPlayStateChange }: { tweetId: string
           </div>
 
           {data && (
-            <p style={{ color: "rgba(255,255,255,0.9)", fontSize: 13, lineHeight: 1.55, margin: 0, display: "-webkit-box", WebkitLineClamp: 5, WebkitBoxOrient: "vertical", overflow: "hidden", wordBreak: "break-word" }}>
-              {data.text}
-            </p>
+            <div style={{ flex: 1, minHeight: 0, position: "relative", overflow: "hidden" }}>
+              <p style={{ color: "rgba(255,255,255,0.9)", fontSize: 13, lineHeight: 1.55, margin: 0, wordBreak: "break-word", whiteSpace: "pre-wrap" }}>
+                {data.text}
+              </p>
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 48, background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.65))", pointerEvents: "none" }} />
+            </div>
           )}
 
-          <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
             <div style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", color: "rgba(255,255,255,0.65)", fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.18em", padding: "4px 10px", borderRadius: 20 }}>
               Tap to read
             </div>
