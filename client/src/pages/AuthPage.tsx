@@ -2850,6 +2850,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [editingTextCardId, setEditingTextCardId] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [pamphletDateBlocks, setPamphletDateBlocks] = useState<Array<{ id: string; x: number; y: number; date: Date; mode: "all" | "month" | "year" }>>([]);
+  const [pamphletBABlocks, setPamphletBABlocks] = useState<Array<{ id: string; label: "before" | "after"; x: number; y: number }>>([]);
   const [editingDateBlockId, setEditingDateBlockId] = useState<string | null>(null);
   const [datePickerMonth, setDatePickerMonth] = useState(() => new Date());
   const [showYearPicker, setShowYearPicker] = useState(false);
@@ -6981,6 +6982,64 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       );
                     })}
 
+                    {/* ── DRAGGABLE BEFORE/AFTER BLOCKS ── */}
+                    {pamphletBABlocks.map((bab) => {
+                      const isBefore = bab.label === "before";
+                      const accentColor = isBefore ? "#f59e0b" : "#38bdf8";
+                      const accentBg = isBefore ? "linear-gradient(135deg,#f59e0b,#b45309)" : "linear-gradient(135deg,#38bdf8,#0369a1)";
+                      return (
+                        <motion.div
+                          key={bab.id}
+                          drag
+                          dragConstraints={pamphletCanvasRef}
+                          dragElastic={0}
+                          dragMomentum={false}
+                          whileDrag={{ scale: 1.06, zIndex: 70 }}
+                          style={{ position: "absolute", left: bab.x, top: bab.y, zIndex: 20, touchAction: "none", cursor: isCapturingPamphlet ? "default" : "grab", userSelect: "none" }}
+                        >
+                          <div
+                            onPointerDown={(e) => e.stopPropagation()}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0,
+                              borderRadius: 10,
+                              overflow: "hidden",
+                              boxShadow: "0 4px 18px rgba(0,0,0,0.55)",
+                              border: `1.5px solid ${accentColor}55`,
+                            }}
+                          >
+                            {/* Accent left strip */}
+                            <div style={{ background: accentBg, width: 6, alignSelf: "stretch", flexShrink: 0 }} />
+                            {/* Content */}
+                            <div style={{ background: "rgba(10,10,20,0.92)", padding: "5px 10px", display: "flex", alignItems: "center", gap: 5 }}>
+                              {isBefore ? (
+                                <svg viewBox="0 0 12 12" style={{ width: 10, height: 10, fill: "none", stroke: accentColor, strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", flexShrink: 0 }}>
+                                  <polyline points="7,2 2,6 7,10"/><line x1="2" y1="6" x2="10" y2="6"/>
+                                </svg>
+                              ) : (
+                                <svg viewBox="0 0 12 12" style={{ width: 10, height: 10, fill: "none", stroke: accentColor, strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", flexShrink: 0 }}>
+                                  <polyline points="5,2 10,6 5,10"/><line x1="10" y1="6" x2="2" y2="6"/>
+                                </svg>
+                              )}
+                              <span style={{ fontSize: 13, fontWeight: 900, color: "white", letterSpacing: "0.08em", lineHeight: 1 }}>
+                                {isBefore ? "BEFORE" : "AFTER"}
+                              </span>
+                            </div>
+                          </div>
+                          {!isCapturingPamphlet && (
+                            <button
+                              onPointerDown={(e) => e.stopPropagation()}
+                              onClick={(e) => { e.stopPropagation(); setPamphletBABlocks(prev => prev.filter(b => b.id !== bab.id)); }}
+                              style={{ position: "absolute", top: -6, right: -6, width: 14, height: 14, borderRadius: "50%", background: "#ef4444", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 30, padding: 0 }}
+                            >
+                              <svg viewBox="0 0 10 10" style={{ width: 8, height: 8 }}><path d="M2 2l6 6M8 2l-6 6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                            </button>
+                          )}
+                        </motion.div>
+                      );
+                    })}
+
                     {/* ── DRAGGABLE STICKERS ── */}
                     {pamphletStickers.map((sticker, si) => (
                       <motion.div
@@ -7107,9 +7166,11 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             onClick={() => {
                               setShowAddMenu(false);
                               const now = Date.now();
-                              const beforeCard = { id: `tc-ba-before-${now}`, text: "BEFORE", x: 14, y: 180, w: 120, fontSize: 18, color: "#ffffff", bold: true };
-                              const afterCard = { id: `tc-ba-after-${now}`, text: "AFTER", x: 220, y: 180, w: 120, fontSize: 18, color: "#ffffff", bold: true };
-                              setPamphletTextCards(prev => [...prev, beforeCard, afterCard]);
+                              setPamphletBABlocks(prev => [
+                                ...prev,
+                                { id: `bab-before-${now}`, label: "before" as const, x: 14, y: 180 },
+                                { id: `bab-after-${now}`, label: "after" as const, x: 220, y: 180 },
+                              ]);
                             }}
                             style={{
                               width: 44, height: 44, borderRadius: "50%",
