@@ -716,14 +716,20 @@ const TweetDialog = ({ tweetId, onClose }: { tweetId: string; onClose: () => voi
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}>
+    <div
+      style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}
+      onClick={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+    >
       {/* Animated backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        onClick={onClose}
+        onClick={(e) => { e.stopPropagation(); onClose(); }}
         style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.82)" }}
       />
       {/* Animated sheet — slides up */}
