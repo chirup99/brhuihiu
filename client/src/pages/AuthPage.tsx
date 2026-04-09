@@ -2842,6 +2842,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [pamphletCardSizes, setPamphletCardSizes] = useState<Record<number, {w: number; h: number}>>({});
   const [pamphletStickers, setPamphletStickers] = useState<Array<{id: string; e: string; x: number; y: number; size: number; color?: string; bold?: boolean}>>([]);
   const [showStickerTray, setShowStickerTray] = useState(false);
+  const [bottomSheetCollapsed, setBottomSheetCollapsed] = useState(false);
   const [stickerCategory, setStickerCategory] = useState(0);
   const [activePamphletPostIdx, setActivePamphletPostIdx] = useState<number | null>(null);
   const [pamphletGalleryImages, setPamphletGalleryImages] = useState<Array<{id: string; src: string; x: number; y: number; w: number; h: number}>>([]);
@@ -6351,7 +6352,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 )}
 
                 {/* Canvas scroll area */}
-                <div className="flex-1 overflow-y-auto flex items-start justify-center py-5 px-4 relative">
+                <div
+                  className="flex-1 overflow-y-auto flex items-start justify-center py-5 px-4 relative"
+                  onClick={() => { if (!bottomSheetCollapsed) setBottomSheetCollapsed(true); }}
+                >
                   {/* ── THE POSTER CANVAS ── */}
                   <div
                     id="pamphlet-fullscreen"
@@ -7029,7 +7033,36 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
                 {/* ── BOTTOM TOOLBAR ── */}
                 {!isCapturingPamphlet && (
-                  <div className="flex-shrink-0 px-4 pb-5 pt-2 space-y-2">
+                  <div className="flex-shrink-0 relative">
+                    {/* Pull-up / collapse tab */}
+                    <button
+                      onClick={() => setBottomSheetCollapsed(v => !v)}
+                      className="absolute -top-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 z-10 px-5 py-1 rounded-t-xl active:scale-95 transition-all"
+                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderBottom: "none" }}
+                    >
+                      <svg
+                        viewBox="0 0 20 10"
+                        style={{
+                          width: 20,
+                          height: 10,
+                          fill: "none",
+                          stroke: "rgba(255,255,255,0.4)",
+                          strokeWidth: 2,
+                          strokeLinecap: "round",
+                          transform: bottomSheetCollapsed ? "rotate(180deg)" : "none",
+                          transition: "transform 0.3s",
+                        }}
+                      >
+                        <polyline points="2,8 10,2 18,8" />
+                      </svg>
+                    </button>
+                  <motion.div
+                    initial={false}
+                    animate={bottomSheetCollapsed ? { height: 0, opacity: 0 } : { height: "auto", opacity: 1 }}
+                    transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                    style={{ overflow: "hidden" }}
+                  >
+                  <div className="px-4 pb-5 pt-2 space-y-2">
                     {/* Theme Carousel */}
                     <div>
                       <p className="text-[8px] text-white/30 uppercase tracking-[0.18em] font-bold mb-2">Campaign Theme</p>
@@ -7181,6 +7214,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     <p className="text-center text-white/15 text-[8px] tracking-widest">
                       కార్డులు, స్టిక్కర్లు &amp; QR కోడ్ తరలించండి · రీసైజ్ చేయండి
                     </p>
+                  </div>
+                  </motion.div>
                   </div>
                 )}
               </motion.div>
