@@ -755,11 +755,18 @@ const TweetCardInline = ({ tweetId, xUrl, onPlayStateChange }: { tweetId: string
           </div>
 
           {data && (
-            <div style={{ flex: 1, minHeight: 0, position: "relative", overflow: "hidden" }}>
-              <p style={{ color: "rgba(255,255,255,0.9)", fontSize: 13, lineHeight: 1.55, margin: 0, wordBreak: "break-word", whiteSpace: "pre-wrap" }}>
+            <div style={{ flex: 1, minHeight: 0, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", gap: 8 }}>
+              <p style={{ color: "rgba(255,255,255,0.9)", fontSize: 13, lineHeight: 1.55, margin: 0, wordBreak: "break-word", whiteSpace: "pre-wrap", flexShrink: 0 }}>
                 {data.text}
               </p>
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 48, background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.65))", pointerEvents: "none" }} />
+              {data.photos.length > 0 && (
+                <div style={{ display: "grid", gridTemplateColumns: data.photos.length === 1 ? "1fr" : "1fr 1fr", gap: 3, borderRadius: 10, overflow: "hidden", flexShrink: 0 }}>
+                  {data.photos.slice(0, 4).map((photo, i) => (
+                    <img key={i} src={photo} alt="" style={{ width: "100%", aspectRatio: data.photos.length === 1 ? "16/9" : "1/1", objectFit: "cover", display: "block" }} />
+                  ))}
+                </div>
+              )}
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 36, background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.65))", pointerEvents: "none" }} />
             </div>
           )}
 
