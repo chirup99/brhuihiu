@@ -685,6 +685,161 @@ const TrendLine = () => (
   </div>
 );
 
+const TweetDialog = ({ tweetId, onClose }: { tweetId: string; onClose: () => void }) => {
+  const { data, isLoading, isError } = useQuery<{
+    id: string; text: string; createdAt: string | null;
+    author: { name: string; screenName: string; profileImageUrl: string | null; verified: boolean };
+    photos: string[]; hasVideo: boolean;
+    likeCount: number | null; replyCount: number | null; retweetCount: number | null;
+  }>({
+    queryKey: ["/api/tweet-content", tweetId],
+    queryFn: async () => {
+      const res = await fetch(`/api/tweet-content/${tweetId}`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    staleTime: 1000 * 60 * 30,
+  });
+
+  const formatDate = (iso: string | null) => {
+    if (!iso) return "";
+    try {
+      return new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+    } catch { return ""; }
+  };
+
+  const formatCount = (n: number | null) => {
+    if (n == null) return null;
+    if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
+    if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+    return String(n);
+  };
+
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.85)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}
+      onClick={onClose}
+    >
+      <div
+        style={{ width: "100%", maxWidth: 480, background: "#0d0d0d", borderRadius: "20px 20px 0 0", maxHeight: "88vh", display: "flex", flexDirection: "column", border: "1px solid rgba(255,255,255,0.08)", borderBottom: "none" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 12px", borderBottom: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <SiX style={{ width: 15, height: 15, color: "white" }} />
+            <span style={{ color: "white", fontWeight: 700, fontSize: 15 }}>X Post</span>
+          </div>
+          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "none", color: "white", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <X style={{ width: 14, height: 14 }} />
+          </button>
+        </div>
+
+        {/* Scrollable body */}
+        <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch" as any }}>
+          {isLoading ? (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "48px 16px", gap: 10 }}>
+              <div style={{ width: 20, height: 20, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.2)", borderTopColor: "white", animation: "spin 0.8s linear infinite" }} />
+              <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>Loading tweet…</span>
+            </div>
+          ) : isError || !data ? (
+            <div style={{ padding: "32px 16px", textAlign: "center" }}>
+              <SiX style={{ width: 32, height: 32, color: "rgba(255,255,255,0.2)", margin: "0 auto 12px" }} />
+              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, margin: 0 }}>Could not load tweet</p>
+            </div>
+          ) : (
+            <div style={{ padding: "16px" }}>
+              {/* Author row */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                {data.author.profileImageUrl ? (
+                  <img src={data.author.profileImageUrl} alt={data.author.name} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                ) : (
+                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#1d1d1f", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <SiX style={{ width: 18, height: 18, color: "rgba(255,255,255,0.3)" }} />
+                  </div>
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <span style={{ color: "white", fontWeight: 800, fontSize: 15, lineHeight: 1.2 }}>{data.author.name}</span>
+                    {data.author.verified && (
+                      <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, fill: "#1d9bf0", flexShrink: 0 }}><path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.26 3.92.81c.66 1.31 1.9 2.19 3.33 2.19s2.68-.88 3.34-2.19c1.39.45 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"/></svg>
+                    )}
+                  </div>
+                  <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 13 }}>@{data.author.screenName}</span>
+                </div>
+                <SiX style={{ width: 18, height: 18, color: "white", flexShrink: 0 }} />
+              </div>
+
+              {/* Tweet text */}
+              <p style={{ color: "white", fontSize: 17, lineHeight: 1.6, margin: "0 0 14px", wordBreak: "break-word", whiteSpace: "pre-wrap" }}>{data.text}</p>
+
+              {/* Photos */}
+              {data.photos.length > 0 && (
+                <div style={{ display: "grid", gridTemplateColumns: data.photos.length === 1 ? "1fr" : "1fr 1fr", gap: 4, marginBottom: 14, borderRadius: 14, overflow: "hidden" }}>
+                  {data.photos.map((photo, i) => (
+                    <img key={i} src={photo} alt="" style={{ width: "100%", aspectRatio: data.photos.length === 1 ? "16/9" : "1/1", objectFit: "cover", display: "block" }} />
+                  ))}
+                </div>
+              )}
+
+              {/* Video indicator */}
+              {data.hasVideo && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: "10px 12px", marginBottom: 14 }}>
+                  <Play style={{ width: 16, height: 16, color: "rgba(255,255,255,0.5)", fill: "rgba(255,255,255,0.5)" }} />
+                  <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 13 }}>Video included — tap "Open on X" to watch</span>
+                </div>
+              )}
+
+              {/* Timestamp */}
+              {data.createdAt && (
+                <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, margin: "0 0 14px" }}>{formatDate(data.createdAt)}</p>
+              )}
+
+              {/* Stats row */}
+              {(data.likeCount != null || data.retweetCount != null || data.replyCount != null) && (
+                <div style={{ display: "flex", gap: 20, padding: "12px 0", borderTop: "1px solid rgba(255,255,255,0.08)", borderBottom: "1px solid rgba(255,255,255,0.08)", marginBottom: 4 }}>
+                  {data.replyCount != null && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, fill: "none", stroke: "rgba(255,255,255,0.4)", strokeWidth: 1.8, strokeLinecap: "round" }}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                      <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, fontWeight: 600 }}>{formatCount(data.replyCount)}</span>
+                    </div>
+                  )}
+                  {data.retweetCount != null && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, fill: "rgba(255,255,255,0.4)" }}><path d="M23.77 15.67c-.292-.293-.767-.293-1.06 0l-2.22 2.22V7.65c0-2.068-1.683-3.75-3.75-3.75h-5.85c-.414 0-.75.336-.75.75s.336.75.75.75h5.85c1.24 0 2.25 1.01 2.25 2.25v10.24l-2.22-2.22c-.293-.293-.768-.293-1.06 0s-.294.768 0 1.06l3.5 3.5c.145.147.337.22.53.22s.383-.072.53-.22l3.5-3.5c.294-.292.294-.767 0-1.06zm-10.66 3.28H7.26c-1.24 0-2.25-1.01-2.25-2.25V6.46l2.22 2.22c.148.147.34.22.532.22s.384-.073.53-.22c.293-.293.293-.768 0-1.06l-3.5-3.5c-.293-.294-.768-.294-1.06 0l-3.5 3.5c-.294.292-.294.767 0 1.06s.767.293 1.06 0l2.22-2.22V16.7c0 2.068 1.683 3.75 3.75 3.75h5.85c.414 0 .75-.336.75-.75s-.336-.75-.75-.75z"/></svg>
+                      <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, fontWeight: 600 }}>{formatCount(data.retweetCount)}</span>
+                    </div>
+                  )}
+                  {data.likeCount != null && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, fill: "rgba(255,255,255,0.4)" }}><path d="M12 21.638h-.014C9.403 21.59 1.95 14.856 1.95 8.478c0-3.064 2.525-5.754 5.403-5.754 2.29 0 3.83 1.58 4.646 2.73.814-1.148 2.354-2.73 4.645-2.73 2.88 0 5.404 2.69 5.404 5.755 0 6.376-7.454 13.11-10.037 13.157H12z"/></svg>
+                      <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, fontWeight: 600 }}>{formatCount(data.likeCount)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: "10px 16px 28px", flexShrink: 0, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <a
+            href={`https://x.com/i/web/status/${tweetId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "white", color: "black", fontWeight: 700, fontSize: 14, padding: "11px 0", borderRadius: 24, textDecoration: "none" }}
+          >
+            <SiX style={{ width: 13, height: 13 }} />
+            Open on X
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const SwipeCardContent = forwardRef(
   ({ card, currentIndex, totalCards, onSwipeLeft, onSwipeRight, onVideoPlayStateChange, isVideoPlaying, disableDrag }: SwipeCardProps, ref) => {
     const x = useMotionValue(0);
@@ -1019,48 +1174,7 @@ const SwipeCardContent = forwardRef(
         <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
       </motion.div>
       {showTweetDialog && (
-        <div
-          style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.82)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}
-          onClick={() => setShowTweetDialog(null)}
-        >
-          <div
-            style={{ width: "100%", maxWidth: 480, background: "#000", borderRadius: "20px 20px 0 0", overflow: "hidden", maxHeight: "88vh", display: "flex", flexDirection: "column" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <SiX style={{ width: 14, height: 14, color: "white" }} />
-                <span style={{ color: "white", fontWeight: 700, fontSize: 14 }}>X Post</span>
-              </div>
-              <button
-                onClick={() => setShowTweetDialog(null)}
-                style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "none", color: "white", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-              >
-                <X style={{ width: 14, height: 14 }} />
-              </button>
-            </div>
-            <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch" as any, padding: "12px 0" }}>
-              <iframe
-                src={`https://platform.twitter.com/embed/Tweet.html?id=${showTweetDialog}&theme=dark&chrome=nofooter&conversation=none`}
-                style={{ width: "100%", minHeight: 500, border: "none", display: "block" }}
-                allow="autoplay; encrypted-media"
-                sandbox="allow-scripts allow-same-origin allow-popups allow-presentation"
-                scrolling="yes"
-              />
-            </div>
-            <div style={{ padding: "10px 16px 20px", flexShrink: 0, display: "flex", gap: 10 }}>
-              <a
-                href={`https://x.com/i/web/status/${showTweetDialog}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ flex: 1, background: "#000", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 24, color: "white", fontWeight: 700, fontSize: 13, padding: "10px 0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, textDecoration: "none" }}
-              >
-                <SiX style={{ width: 12, height: 12 }} />
-                Open on X
-              </a>
-            </div>
-          </div>
-        </div>
+        <TweetDialog tweetId={showTweetDialog} onClose={() => setShowTweetDialog(null)} />
       )}
     </>
     );

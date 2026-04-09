@@ -363,6 +363,59 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/tweet-content/:tweetId", async (req, res) => {
+    try {
+      const { tweetId } = req.params;
+      if (!/^\d+$/.test(tweetId)) return res.status(400).json({ error: "Invalid tweet ID" });
+
+      const token = Math.floor(Number(tweetId) / 1e15 * Math.PI).toString();
+      const url = `https://cdn.syndication.twimg.com/tweet-result?id=${tweetId}&lang=en&token=${token}`;
+
+      const response = await fetch(url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Accept": "application/json",
+          "Referer": "https://platform.twitter.com/",
+          "Origin": "https://platform.twitter.com"
+        }
+      });
+
+      if (!response.ok) return res.status(404).json({ error: "Tweet not found" });
+
+      const data = await response.json() as any;
+
+      const text = data.text || data.full_text || "";
+      const user = data.user || {};
+      const mediaDetails: any[] = data.mediaDetails || data.extended_entities?.media || [];
+
+      const photos = mediaDetails
+        .filter((m: any) => m.type === "photo")
+        .map((m: any) => m.media_url_https || m.media_url);
+
+      const createdAt = data.created_at || null;
+
+      res.json({
+        id: tweetId,
+        text,
+        createdAt,
+        author: {
+          name: user.name || "",
+          screenName: user.screen_name || "",
+          profileImageUrl: user.profile_image_url_https || user.profile_image_url || null,
+          verified: user.verified || false,
+        },
+        photos,
+        hasVideo: mediaDetails.some((m: any) => m.type === "video" || m.type === "animated_gif"),
+        likeCount: data.favorite_count ?? null,
+        replyCount: data.conversation_count ?? null,
+        retweetCount: data.retweet_count ?? null,
+      });
+    } catch (err) {
+      console.error("Tweet content error:", err);
+      res.status(500).json({ error: "Failed to fetch tweet" });
+    }
+  });
+
   app.get("/api/tweet-video/:tweetId", async (req, res) => {
     try {
       const { tweetId } = req.params;
