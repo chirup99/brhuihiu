@@ -6451,6 +6451,35 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           dragElastic={0}
                           dragMomentum={false}
                           whileDrag={{ scale: 1.03, zIndex: 60 }}
+                          onTouchStart={(e) => {
+                            if (isCapturingPamphlet || e.touches.length !== 2) return;
+                            e.stopPropagation();
+                            const t0 = e.touches[0], t1 = e.touches[1];
+                            const startDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+                            const startW = cardW;
+                            const startH = cardH;
+                            const onTouchMove = (me: TouchEvent) => {
+                              if (me.touches.length !== 2) return;
+                              me.preventDefault();
+                              me.stopPropagation();
+                              const a = me.touches[0], b = me.touches[1];
+                              const dist = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+                              const scale = dist / startDist;
+                              setPamphletCardSizes(prev => ({
+                                ...prev,
+                                [idx]: {
+                                  w: Math.max(60, Math.round(startW * scale)),
+                                  h: Math.max(50, Math.round(startH * scale)),
+                                }
+                              }));
+                            };
+                            const onTouchEnd = () => {
+                              document.removeEventListener("touchmove", onTouchMove);
+                              document.removeEventListener("touchend", onTouchEnd);
+                            };
+                            document.addEventListener("touchmove", onTouchMove, { passive: false });
+                            document.addEventListener("touchend", onTouchEnd);
+                          }}
                           style={{
                             position: "absolute",
                             left: initPos.x,
