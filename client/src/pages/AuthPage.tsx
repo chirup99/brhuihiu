@@ -2849,8 +2849,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [pamphletTextCards, setPamphletTextCards] = useState<Array<{id: string; text: string; x: number; y: number; w: number; fontSize: number; color: string; bold: boolean}>>([]);
   const [editingTextCardId, setEditingTextCardId] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
-  const [pamphletDateBlock, setPamphletDateBlock] = useState<{ x: number; y: number; date: Date } | null>(null);
-  const [showDatePickerDialog, setShowDatePickerDialog] = useState(false);
+  const [pamphletDateBlocks, setPamphletDateBlocks] = useState<Array<{ id: string; x: number; y: number; date: Date }>>([]);
+  const [editingDateBlockId, setEditingDateBlockId] = useState<string | null>(null);
   const [datePickerMonth, setDatePickerMonth] = useState(() => new Date());
   const [pamphletQrSize, setPamphletQrSize] = useState(92);
   const [xpostPickerIdx, setXpostPickerIdx] = useState<number | null>(null);
@@ -6911,48 +6911,51 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       </motion.div>
                     ))}
 
-                    {/* ── DRAGGABLE DATE BLOCK ── */}
-                    {pamphletDateBlock && (() => {
-                      const d = pamphletDateBlock.date;
+                    {/* ── DRAGGABLE DATE BLOCKS (multiple) ── */}
+                    {pamphletDateBlocks.map((db) => {
+                      const d = db.date;
                       const day = d.getDate().toString().padStart(2, "0");
-                      const monthName = d.toLocaleString("en", { month: "long" }).toUpperCase();
-                      const year = d.getFullYear();
-                      const weekday = d.toLocaleString("en", { weekday: "long" }).toUpperCase();
+                      const mon = d.toLocaleString("en", { month: "short" }).toUpperCase();
+                      const yr = d.getFullYear();
+                      const dow = d.toLocaleString("en", { weekday: "short" }).toUpperCase();
                       return (
                         <motion.div
+                          key={db.id}
                           drag
                           dragConstraints={pamphletCanvasRef}
                           dragElastic={0}
                           dragMomentum={false}
                           whileDrag={{ scale: 1.06, zIndex: 70 }}
-                          style={{ position: "absolute", left: pamphletDateBlock.x, top: pamphletDateBlock.y, zIndex: 20, touchAction: "none", cursor: isCapturingPamphlet ? "default" : "grab", userSelect: "none" }}
+                          style={{ position: "absolute", left: db.x, top: db.y, zIndex: 20, touchAction: "none", cursor: isCapturingPamphlet ? "default" : "grab", userSelect: "none" }}
                         >
                           <div
                             onPointerDown={(e) => e.stopPropagation()}
-                            onClick={(e) => { if (!isCapturingPamphlet) { e.stopPropagation(); setDatePickerMonth(new Date(pamphletDateBlock.date)); setShowDatePickerDialog(true); } }}
+                            onClick={(e) => { if (!isCapturingPamphlet) { e.stopPropagation(); setDatePickerMonth(new Date(d)); setEditingDateBlockId(db.id); } }}
                             style={{
-                              minWidth: 68,
-                              borderRadius: 12,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0,
+                              borderRadius: 10,
                               overflow: "hidden",
-                              boxShadow: "0 4px 20px rgba(0,0,0,0.55)",
+                              boxShadow: "0 4px 18px rgba(0,0,0,0.55)",
                               border: `1.5px solid ${pamphletTheme.accentColor}55`,
                               cursor: isCapturingPamphlet ? "default" : "pointer",
                             }}
                           >
-                            {/* Header band */}
-                            <div style={{ background: pamphletTheme.headerBg, padding: "4px 8px", textAlign: "center" }}>
-                              <span style={{ fontSize: 7, color: "rgba(255,255,255,0.9)", fontWeight: 800, letterSpacing: "0.18em" }}>{monthName} {year}</span>
-                            </div>
-                            {/* Day number */}
-                            <div style={{ background: "rgba(10,10,20,0.88)", padding: "6px 12px 4px", textAlign: "center" }}>
-                              <div style={{ fontSize: 30, fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.02em" }}>{day}</div>
-                              <div style={{ fontSize: 6, color: pamphletTheme.accentColor, fontWeight: 800, letterSpacing: "0.14em", marginTop: 2 }}>{weekday}</div>
+                            {/* Accent left strip */}
+                            <div style={{ background: pamphletTheme.headerBg, width: 6, alignSelf: "stretch", flexShrink: 0 }} />
+                            {/* Content */}
+                            <div style={{ background: "rgba(10,10,20,0.9)", padding: "5px 10px", display: "flex", alignItems: "baseline", gap: 4 }}>
+                              <span style={{ fontSize: 18, fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.02em" }}>{day}</span>
+                              <span style={{ fontSize: 9, fontWeight: 800, color: pamphletTheme.accentColor, letterSpacing: "0.1em", lineHeight: 1 }}>{mon}</span>
+                              <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: "0.04em", lineHeight: 1 }}>{yr}</span>
+                              <span style={{ fontSize: 7, fontWeight: 800, color: "rgba(255,255,255,0.35)", letterSpacing: "0.08em", lineHeight: 1 }}>({dow})</span>
                             </div>
                           </div>
                           {!isCapturingPamphlet && (
                             <button
                               onPointerDown={(e) => e.stopPropagation()}
-                              onClick={(e) => { e.stopPropagation(); setPamphletDateBlock(null); }}
+                              onClick={(e) => { e.stopPropagation(); setPamphletDateBlocks(prev => prev.filter(b => b.id !== db.id)); }}
                               style={{ position: "absolute", top: -6, right: -6, width: 14, height: 14, borderRadius: "50%", background: "#ef4444", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 30, padding: 0 }}
                             >
                               <svg viewBox="0 0 10 10" style={{ width: 8, height: 8 }}><path d="M2 2l6 6M8 2l-6 6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
@@ -6960,7 +6963,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           )}
                         </motion.div>
                       );
-                    })()}
+                    })}
 
                     {/* ── DRAGGABLE STICKERS ── */}
                     {pamphletStickers.map((sticker, si) => (
@@ -7064,7 +7067,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             onClick={() => {
                               setShowAddMenu(false);
                               const today = new Date();
-                              setPamphletDateBlock({ x: 100 + Math.floor(Math.random() * 80), y: 100 + Math.floor(Math.random() * 100), date: today });
+                              const newId = `db-${Date.now()}`;
+                              setPamphletDateBlocks(prev => [...prev, { id: newId, x: 60 + Math.floor(Math.random() * 140), y: 80 + Math.floor(Math.random() * 180), date: today }]);
                               setDatePickerMonth(today);
                             }}
                             style={{
@@ -7418,8 +7422,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
         {/* ── DATE PICKER DIALOG ── */}
         <AnimatePresence>
-          {showDatePickerDialog && pamphletDateBlock && (() => {
-            const selected = pamphletDateBlock.date;
+          {editingDateBlockId && (() => {
+            const editingBlock = pamphletDateBlocks.find(b => b.id === editingDateBlockId);
+            if (!editingBlock) return null;
+            const selected = editingBlock.date;
             const year = datePickerMonth.getFullYear();
             const month = datePickerMonth.getMonth();
             const monthLabel = datePickerMonth.toLocaleString("en", { month: "long" });
@@ -7439,7 +7445,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  onClick={() => setShowDatePickerDialog(false)}
+                  onClick={() => setEditingDateBlockId(null)}
                   className="absolute inset-0"
                   style={{ background: "rgba(0,0,0,0.72)", backdropFilter: "blur(6px)" }}
                 />
@@ -7481,8 +7487,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           onClick={() => {
                             if (!day) return;
                             const newDate = new Date(year, month, day);
-                            setPamphletDateBlock(prev => prev ? { ...prev, date: newDate } : null);
-                            setShowDatePickerDialog(false);
+                            setPamphletDateBlocks(prev => prev.map(b => b.id === editingDateBlockId ? { ...b, date: newDate } : b));
+                            setEditingDateBlockId(null);
                           }}
                           disabled={!day}
                           style={{
