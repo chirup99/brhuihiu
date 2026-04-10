@@ -5,6 +5,7 @@ import { api } from "@shared/routes";
 import { insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
+import { seedDefaultProfiles } from "./seed";
 
 const SALT_ROUNDS = 12;
 
@@ -12,6 +13,7 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  seedDefaultProfiles().catch((e) => console.error("[seed] Error:", e));
   
   app.post("/api/auth/verify-persona", async (req, res) => {
     try {

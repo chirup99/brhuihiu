@@ -126,6 +126,67 @@ const CAMPAIGN_THEMES = [
     cardStyle: "light" as const,
     textColor: "#111",
     accentColor: "#be185d",
+    badge: null as string | null,
+  },
+  {
+    id: "victory-gold",
+    label: "Victory Gold",
+    category: "Premium",
+    preview: "linear-gradient(135deg,#1a1200,#3a2800,#c9962a)",
+    canvasBg: "linear-gradient(160deg,#0d0b00,#1c1500)",
+    headerBg: "linear-gradient(135deg,#c9962a,#9a6e10)",
+    cardStyle: "dark" as const,
+    textColor: "#fff",
+    accentColor: "#f0c040",
+    badge: "✨ Best",
+  },
+  {
+    id: "ktr-blue",
+    label: "KTR Official",
+    category: "Premium",
+    preview: "linear-gradient(135deg,#0a2472,#0e5fb5)",
+    canvasBg: "linear-gradient(160deg,#040d2e,#061d4a)",
+    headerBg: "linear-gradient(135deg,#0a2472,#0e5fb5)",
+    cardStyle: "dark" as const,
+    textColor: "#fff",
+    accentColor: "#4da6ff",
+    badge: "🔥 Popular",
+  },
+  {
+    id: "telangana-pride",
+    label: "Telangana Pride",
+    category: "Premium",
+    preview: "linear-gradient(135deg,#c2185b,#e65100,#f57c00)",
+    canvasBg: "linear-gradient(160deg,#1a0010,#2d1200)",
+    headerBg: "linear-gradient(135deg,#c2185b,#e65100)",
+    cardStyle: "dark" as const,
+    textColor: "#fff",
+    accentColor: "#ff8a50",
+    badge: "⭐ Top",
+  },
+  {
+    id: "news-flash",
+    label: "News Flash",
+    category: "Media",
+    preview: "linear-gradient(135deg,#1a1a1a,#2d0000)",
+    canvasBg: "linear-gradient(160deg,#111,#1a0000)",
+    headerBg: "linear-gradient(90deg,#cc0000,#990000)",
+    cardStyle: "dark" as const,
+    textColor: "#fff",
+    accentColor: "#ff1111",
+    badge: "📰 News",
+  },
+  {
+    id: "digital-wave",
+    label: "Digital Wave",
+    category: "Modern",
+    preview: "linear-gradient(135deg,#0f0c29,#302b63,#24243e)",
+    canvasBg: "linear-gradient(160deg,#060416,#0d0933)",
+    headerBg: "linear-gradient(135deg,#7c3aed,#2563eb)",
+    cardStyle: "dark" as const,
+    textColor: "#fff",
+    accentColor: "#a78bfa",
+    badge: null,
   },
   {
     id: "before-after",
@@ -137,10 +198,11 @@ const CAMPAIGN_THEMES = [
     cardStyle: "dark" as const,
     textColor: "#fff",
     accentColor: "#4caf50",
+    badge: null,
   },
   {
     id: "opposition-expose",
-    label: "Opposition Expose",
+    label: "Expose",
     category: "Opposition",
     preview: "linear-gradient(135deg,#1a0a0a,#3a0a0a)",
     canvasBg: "linear-gradient(160deg,#0d0d0d,#2a0808)",
@@ -148,10 +210,11 @@ const CAMPAIGN_THEMES = [
     cardStyle: "dark" as const,
     textColor: "#fff",
     accentColor: "#e53935",
+    badge: null,
   },
   {
     id: "growth-metrics",
-    label: "Growth Analytics",
+    label: "Growth Data",
     category: "Analytics",
     preview: "linear-gradient(135deg,#0a0a1a,#1a1500)",
     canvasBg: "linear-gradient(160deg,#050510,#0a0f00)",
@@ -159,10 +222,11 @@ const CAMPAIGN_THEMES = [
     cardStyle: "dark" as const,
     textColor: "#fff",
     accentColor: "#f59e0b",
+    badge: null,
   },
   {
     id: "farmers",
-    label: "Farmers Rights",
+    label: "Farmers",
     category: "Agriculture",
     preview: "linear-gradient(135deg,#0f2e0f,#1a4a0a)",
     canvasBg: "linear-gradient(160deg,#091a09,#0f2e0f)",
@@ -170,6 +234,7 @@ const CAMPAIGN_THEMES = [
     cardStyle: "dark" as const,
     textColor: "#fff",
     accentColor: "#66bb6a",
+    badge: null,
   },
   {
     id: "public-issues",
@@ -181,6 +246,7 @@ const CAMPAIGN_THEMES = [
     cardStyle: "dark" as const,
     textColor: "#fff",
     accentColor: "#f44336",
+    badge: null,
   },
   {
     id: "telangana-model",
@@ -192,10 +258,11 @@ const CAMPAIGN_THEMES = [
     cardStyle: "dark" as const,
     textColor: "#fff",
     accentColor: "#26a69a",
+    badge: null,
   },
   {
     id: "financial",
-    label: "Financial Report",
+    label: "Finance",
     category: "Analytics",
     preview: "linear-gradient(135deg,#2a1a00,#1a0a0a)",
     canvasBg: "linear-gradient(160deg,#1a1000,#1a0000)",
@@ -203,6 +270,7 @@ const CAMPAIGN_THEMES = [
     cardStyle: "dark" as const,
     textColor: "#fff",
     accentColor: "#ffd54f",
+    badge: null,
   },
   {
     id: "infrastructure",
@@ -214,6 +282,7 @@ const CAMPAIGN_THEMES = [
     cardStyle: "dark" as const,
     textColor: "#fff",
     accentColor: "#29b6f6",
+    badge: null,
   },
   {
     id: "peoples-voice",
@@ -225,6 +294,7 @@ const CAMPAIGN_THEMES = [
     cardStyle: "dark" as const,
     textColor: "#fff",
     accentColor: "#ce93d8",
+    badge: null,
   },
 ];
 
@@ -7654,11 +7724,31 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                   <svg viewBox="0 0 12 12" style={{ width: 6, height: 6, fill: "white" }}><path d="M2 6l3 3 5-5"/></svg>
                                 </div>
                               )}
+                              {/* Badge ribbon */}
+                              {(theme as any).badge && pamphletTheme.id !== theme.id && (
+                                <div style={{
+                                  position: "absolute",
+                                  bottom: 0,
+                                  left: 0,
+                                  right: 0,
+                                  background: `${theme.accentColor}cc`,
+                                  backdropFilter: "blur(4px)",
+                                  fontSize: 6,
+                                  fontWeight: 800,
+                                  color: "white",
+                                  textAlign: "center",
+                                  padding: "2px 0",
+                                  letterSpacing: "0.02em",
+                                  lineHeight: 1.2,
+                                }}>
+                                  {(theme as any).badge}
+                                </div>
+                              )}
                             </div>
-                            <span style={{ fontSize: 7, color: pamphletTheme.id === theme.id ? theme.accentColor : "rgba(255,255,255,0.35)", fontWeight: 700, textAlign: "center", maxWidth: 48, lineHeight: 1.2, letterSpacing: "0.04em" }}>
+                            <span style={{ fontSize: 7, color: pamphletTheme.id === theme.id ? theme.accentColor : "rgba(255,255,255,0.45)", fontWeight: 700, textAlign: "center", maxWidth: 52, lineHeight: 1.2, letterSpacing: "0.03em" }}>
                               {theme.label}
                             </span>
-                            <span style={{ fontSize: 6, color: "rgba(255,255,255,0.2)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                            <span style={{ fontSize: 5.5, color: (theme as any).badge && pamphletTheme.id !== theme.id ? `${theme.accentColor}99` : "rgba(255,255,255,0.18)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                               {theme.category}
                             </span>
                           </button>
