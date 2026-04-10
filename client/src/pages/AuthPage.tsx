@@ -61,6 +61,7 @@ import pinkCarSrc from "@assets/pink-car.png";
 import brsLogoSlider from "@assets/brs-logo-slider.png";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type AuthMode = "login" | "register" | "customize" | "swipe";
 
@@ -2767,13 +2768,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditingPin, setIsEditingPin] = useState(false);
-  const [appLanguage, setAppLanguage] = useState<"en" | "te" | "hi" | "ur">(() => {
-    return (localStorage.getItem("brs_language") as "en" | "te" | "hi" | "ur") || "en";
-  });
-  const handleLanguageChange = (lang: "en" | "te" | "hi" | "ur") => {
-    setAppLanguage(lang);
-    localStorage.setItem("brs_language", lang);
-  };
+  const { language: appLanguage, setLanguage: handleLanguageChange, t } = useLanguage();
   const LANG_OPTIONS: { code: "en" | "te" | "hi" | "ur"; label: string; native: string }[] = [
     { code: "en", label: "English", native: "EN" },
     { code: "te", label: "Telugu", native: "తె" },
@@ -4024,7 +4019,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     </div>
                   </div>
                   <span className="text-[8px] text-white/40 uppercase tracking-[0.2em] font-bold">
-                    Logout
+                    {t("logout")}
                   </span>
                 </div>
               </button>
@@ -4227,24 +4222,24 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       <div className="px-4 pt-4 pb-3 flex items-center justify-between border-b border-white/5">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-pink-500 animate-pulse shadow-[0_0_6px_#ec4899]" />
-                          <span className="text-[9px] text-pink-400 uppercase tracking-[0.22em] font-black">Voice Reach</span>
+                          <span className="text-[9px] text-pink-400 uppercase tracking-[0.22em] font-black">{t("voiceReach")}</span>
                         </div>
                         <span className={`text-[9px] font-bold flex items-center gap-0.5 px-1.5 py-0.5 rounded-full ${isRising ? "text-emerald-400 bg-emerald-400/10" : "text-red-400 bg-red-400/10"}`}>
                           {isRising ? <TrendingUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />}
-                          {isRising ? "Rising" : "Slowing"}
+                          {isRising ? t("rising") : t("slowing")}
                         </span>
                       </div>
 
                       {/* Reach count hero */}
                       <div className="px-4 pt-3 pb-1 flex items-end justify-between">
                         <div>
-                          <p className="text-[8px] text-white/30 uppercase tracking-[0.18em] font-bold mb-0.5">Total Reach</p>
+                          <p className="text-[8px] text-white/30 uppercase tracking-[0.18em] font-bold mb-0.5">{t("totalReach")}</p>
                           <p className="text-3xl font-black text-white leading-none" style={{ fontVariantNumeric: "tabular-nums" }}>
                             {(loggedInUser.reachCount || 0).toLocaleString()}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-[8px] text-white/30 uppercase tracking-widest font-bold mb-0.5">Today's Reach</p>
+                          <p className="text-[8px] text-white/30 uppercase tracking-widest font-bold mb-0.5">{t("todaysReach")}</p>
                           <p className="text-sm font-bold text-pink-400">
                             {history
                               .filter((h) => new Date(h.timestamp).toDateString() === new Date().toDateString())
@@ -4294,8 +4289,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           </svg>
                         </div>
                         <div className="flex justify-between px-0.5 pb-2">
-                          <span className="text-[7px] text-white/20 uppercase font-bold">Start</span>
-                          <span className="text-[7px] text-white/20 uppercase font-bold">Today</span>
+                          <span className="text-[7px] text-white/20 uppercase font-bold">{t("start")}</span>
+                          <span className="text-[7px] text-white/20 uppercase font-bold">{t("today")}</span>
                         </div>
                       </div>
 
@@ -4316,12 +4311,12 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
                       {/* Tips section */}
                       <div className="px-4 py-3 border-t border-white/5 space-y-2">
-                        <p className="text-[8px] text-pink-400/70 uppercase tracking-[0.18em] font-black">Grow Your Reach</p>
+                        <p className="text-[8px] text-pink-400/70 uppercase tracking-[0.18em] font-black">{t("growYourReach")}</p>
                         <div className="space-y-1.5">
                           {[
-                            "Share your QR at local BRS events.",
-                            "Connect with leaders & party workers.",
-                            "Post your voice card to spread your message.",
+                            t("tip1"),
+                            t("tip2"),
+                            t("tip3"),
                           ].map((tip, i) => (
                             <div key={i} className="flex items-start gap-2">
                               <div className="w-1 h-1 rounded-full bg-pink-500 mt-1.5 shrink-0 shadow-[0_0_4px_#ec4899]" />
@@ -4345,7 +4340,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
             >
               <User className="w-4 h-4 text-pink-400" />
               <span className="font-bold text-[10px] tracking-widest uppercase">
-                My BRS
+                {t("myBrs")}
               </span>
             </button>
           )}
@@ -4394,7 +4389,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
           onClick={handleNearbyVoices}
           data-testid="button-nearby-voices"
           className="absolute top-8-safe right-16 z-50 p-2 group"
-          title="Nearby Voices"
+          title={t("nearbyVoices")}
         >
           <MapPin
             className={`w-5 h-5 transition-colors duration-200 ${showNearbyDropdown ? "text-pink-400" : "text-white/80 group-hover:text-white"}`}
@@ -4411,7 +4406,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <Navigation className="w-4 h-4 text-pink-400" />
-                  <span className="text-white font-semibold text-sm">Nearby Voices</span>
+                  <span className="text-white font-semibold text-sm">{t("nearbyVoices")}</span>
                 </div>
                 {nearbyLocationLabel && (
                   <p className="text-white/50 text-[10px] mt-0.5 ml-6 leading-tight truncate max-w-[170px]">
@@ -4431,7 +4426,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
             {/* BRS Regional Voice Card */}
             {nearbyRegionalCard && (
               <div className="px-2 pt-2">
-                <p className="text-[9px] text-pink-300/80 uppercase tracking-widest font-semibold px-2 mb-1.5">Your Local BRS Voice</p>
+                <p className="text-[9px] text-pink-300/80 uppercase tracking-widest font-semibold px-2 mb-1.5">{t("yourLocalBrsVoice")}</p>
                 <button
                   onClick={() => { setShowNearbyDropdown(false); setLocation("/" + nearbyRegionalCard.uniqueSlug); }}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-pink-500/20 border border-pink-400/30 hover:bg-pink-500/30 transition-colors text-left"
@@ -4462,7 +4457,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
               {nearbyLoading && (
                 <div className="flex items-center justify-center py-8 gap-2">
                   <Loader2 className="w-5 h-5 text-white/60 animate-spin" />
-                  <span className="text-white/60 text-sm">Finding voices near you…</span>
+                  <span className="text-white/60 text-sm">{t("findingVoices")}</span>
                 </div>
               )}
               {!nearbyLoading && nearbyError && (
@@ -4474,14 +4469,14 @@ export default function AuthPage({ slug }: { slug?: string }) {
               {!nearbyLoading && !nearbyError && nearbyVoices.length === 0 && constituencyVoices.length === 0 && (
                 <div className="text-center py-6 px-3">
                   <MapPin className="w-8 h-8 text-white/30 mx-auto mb-2" />
-                  <p className="text-white/60 text-xs leading-relaxed">No BRS voices found within 75 km of your location.</p>
+                  <p className="text-white/60 text-xs leading-relaxed">{t("noVoicesFound")}</p>
                 </div>
               )}
 
               {/* Geo-nearby voices */}
               {!nearbyLoading && nearbyVoices.length > 0 && (
                 <p className="text-[9px] text-white/40 uppercase tracking-widest font-semibold px-2 mb-1">
-                  {nearbyVoices.length} voice{nearbyVoices.length !== 1 ? "s" : ""} near you
+                  {nearbyVoices.length} {nearbyVoices.length !== 1 ? t("voicesNearYou") : t("voice")}
                 </p>
               )}
               {!nearbyLoading && nearbyVoices.map((voice, idx) => (
@@ -4515,7 +4510,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 <>
                   {nearbyVoices.length > 0 && <div className="mx-2 my-2 border-t border-white/10" />}
                   <p className="text-[9px] text-amber-300/80 uppercase tracking-widest font-semibold px-2 mb-1">
-                    🗳️ {nearbyDetectedDistrict ? nearbyDetectedDistrict.charAt(0).toUpperCase() + nearbyDetectedDistrict.slice(1) : "Your"} Constituency Voices
+                    🗳️ {nearbyDetectedDistrict ? nearbyDetectedDistrict.charAt(0).toUpperCase() + nearbyDetectedDistrict.slice(1) : ""} {t("constituencyVoices")}
                   </p>
                   {constituencyVoices.map((voice, idx) => (
                     <button
@@ -4617,10 +4612,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 <div className="flex items-center justify-between p-6 pb-4">
                   <div className="flex flex-col gap-1">
                     <h3 className="text-lg font-bold text-white">
-                      BRS Voice Cards
+                      {t("voiceCards")}
                     </h3>
                     <p className="text-[10px] text-white/40 uppercase tracking-wider">
-                      Rise Your Voice · Share Your Story
+                      {t("riseYourVoiceTagline")}
                     </p>
                   </div>
                   <button
@@ -4637,7 +4632,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                     <input
                       value={voiceCardSearch}
                       onChange={(e) => setVoiceCardSearch(e.target.value)}
-                      placeholder="Search voice cards..."
+                      placeholder={t("searchVoiceCards")}
                       className="flex-1 bg-transparent text-white text-sm placeholder:text-white/25 outline-none"
                     />
                     {voiceCardSearch && (
@@ -4983,15 +4978,15 @@ export default function AuthPage({ slug }: { slug?: string }) {
             BRS Connect
           </h2>
           <p className="text-white/70 text-xs mb-3 max-w-xs mx-auto leading-relaxed">
-            Voice of the people. Strength of the nation.
+            {t("appTagline")}
           </p>
 
           <div className="flex items-center justify-center gap-3 mb-3">
             <span className="text-[9px] font-semibold text-white bg-white/20 border border-white/30 px-2.5 py-0.5 rounded-full">
-              People's Voice
+              {t("peoplesVoice")}
             </span>
             <span className="text-[9px] font-semibold text-white bg-white/20 border border-white/30 px-2.5 py-0.5 rounded-full">
-              Speed. Action. Change.
+              {t("speedActionChange")}
             </span>
           </div>
         </motion.div>
@@ -5356,7 +5351,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                             : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200",
                         )}
                       >
-                        {hasWebsite ? "View Website" : "No Website Available"}
+                        {hasWebsite ? t("viewWebsite") : t("noWebsite")}
                         <ArrowRight
                           className={clsx(
                             "w-3.5 h-3.5 transition-transform",
@@ -6089,7 +6084,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 }}
                 className="w-full bg-pink-500 text-white hover:bg-pink-600 rounded-lg py-3 font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg mt-2"
               >
-                Rise Your Voice
+                {t("riseYourVoice")}
               </button>
             )}
           </div>

@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/AuthPage";
 import Dashboard from "@/pages/Dashboard";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 function Router() {
   return (
@@ -25,10 +26,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <LanguageProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }
