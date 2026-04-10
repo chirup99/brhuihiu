@@ -2767,6 +2767,19 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditingPin, setIsEditingPin] = useState(false);
+  const [appLanguage, setAppLanguage] = useState<"en" | "te" | "hi" | "ur">(() => {
+    return (localStorage.getItem("brs_language") as "en" | "te" | "hi" | "ur") || "en";
+  });
+  const handleLanguageChange = (lang: "en" | "te" | "hi" | "ur") => {
+    setAppLanguage(lang);
+    localStorage.setItem("brs_language", lang);
+  };
+  const LANG_OPTIONS: { code: "en" | "te" | "hi" | "ur"; label: string; native: string }[] = [
+    { code: "en", label: "English", native: "EN" },
+    { code: "te", label: "Telugu", native: "తె" },
+    { code: "hi", label: "Hindi", native: "हि" },
+    { code: "ur", label: "Urdu", native: "اردو" },
+  ];
 
   type NearbyVoice = {
     name: string | null;
@@ -4336,6 +4349,26 @@ export default function AuthPage({ slug }: { slug?: string }) {
               </span>
             </button>
           )}
+
+          {/* Language Switcher */}
+          <div className="flex items-center gap-1 mt-2 ml-auto">
+            {LANG_OPTIONS.map((lang) => (
+              <button
+                key={lang.code}
+                data-testid={`button-lang-${lang.code}`}
+                onClick={() => handleLanguageChange(lang.code)}
+                title={lang.label}
+                className={clsx(
+                  "px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all border",
+                  appLanguage === lang.code
+                    ? "bg-pink-500/30 border-pink-400/60 text-pink-300"
+                    : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white/80"
+                )}
+              >
+                {lang.native}
+              </button>
+            ))}
+          </div>
         </motion.div>
       </div>
       <motion.div
