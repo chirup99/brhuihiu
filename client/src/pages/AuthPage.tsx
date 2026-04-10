@@ -2814,6 +2814,54 @@ export default function AuthPage({ slug }: { slug?: string }) {
     }
   };
 
+  const fetchNearbyByCoords = async (lat: number, lng: number, locationDisplay: string | null, district: string | null) => {
+    if (locationDisplay) setNearbyLocationLabel(locationDisplay);
+    if (district) setNearbyDetectedDistrict(district);
+
+    if (district) {
+      const districtLower = district.toLowerCase();
+      const match = featuredProfiles.find((p) => {
+        const nameLower = (p.name || "").toLowerCase();
+        const industryLower = (p.industry || "").toLowerCase();
+        return nameLower.includes(districtLower) || industryLower.includes(districtLower) ||
+          districtLower.includes(nameLower.replace(/^brs\s*/i, "").trim());
+      });
+      if (match) setNearbyRegionalCard(match);
+    }
+
+    if (user?.id) {
+      await fetch(`/api/user/${user.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ latitude: lat, longitude: lng, locationName: locationDisplay || null }),
+      });
+    }
+
+    const excludeSlug = user?.uniqueSlug || "";
+    const districtParam = district ? `&district=${encodeURIComponent(district)}` : "";
+    const res = await fetch(`/api/users/nearby?lat=${lat}&lng=${lng}&radius=75${excludeSlug ? `&exclude=${excludeSlug}` : ""}${districtParam}`);
+    if (!res.ok) throw new Error("Failed to fetch nearby users");
+    const data = await res.json();
+    setNearbyVoices(data.users || []);
+    setConstituencyVoices(data.constituencyVoices || []);
+  };
+
+  const getLocationByIP = async (): Promise<{ lat: number; lng: number; display: string; district: string | null }> => {
+    const res = await fetch("https://ipapi.co/json/");
+    if (!res.ok) throw new Error("IP location unavailable");
+    const data = await res.json();
+    if (!data.latitude || !data.longitude) throw new Error("No coordinates from IP");
+    const city = data.city || "";
+    const region = data.region || "";
+    const display = [city, region].filter(Boolean).join(", ");
+    return {
+      lat: data.latitude,
+      lng: data.longitude,
+      display: display ? `${display} (approx.)` : "Approximate location",
+      district: city || region || null,
+    };
+  };
+
   const handleNearbyVoices = async () => {
     if (showNearbyDropdown) {
       setShowNearbyDropdown(false);
@@ -2828,9 +2876,19 @@ export default function AuthPage({ slug }: { slug?: string }) {
     setNearbyDetectedDistrict(null);
     setNearbyRegionalCard(null);
 
+    const fallbackToIP = async () => {
+      try {
+        const { lat, lng, display, district } = await getLocationByIP();
+        await fetchNearbyByCoords(lat, lng, display, district);
+      } catch {
+        setNearbyError("Could not determine your location.");
+      } finally {
+        setNearbyLoading(false);
+      }
+    };
+
     if (!navigator.geolocation) {
-      setNearbyError("Location not supported on this device.");
-      setNearbyLoading(false);
+      await fallbackToIP();
       return;
     }
 
@@ -2839,54 +2897,18 @@ export default function AuthPage({ slug }: { slug?: string }) {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
         try {
-          // Reverse geocode to get location name + district
           const { display: locationDisplay, district } = await reverseGeocode(lat, lng);
-          if (locationDisplay) setNearbyLocationLabel(locationDisplay);
-          if (district) setNearbyDetectedDistrict(district);
-
-          // Find matching BRS regional card from featured profiles
-          if (district) {
-            const districtLower = district.toLowerCase();
-            const match = featuredProfiles.find((p) => {
-              const nameLower = (p.name || "").toLowerCase();
-              const industryLower = (p.industry || "").toLowerCase();
-              return nameLower.includes(districtLower) || industryLower.includes(districtLower) ||
-                districtLower.includes(nameLower.replace(/^brs\s*/i, "").trim());
-            });
-            if (match) setNearbyRegionalCard(match);
-          }
-
-          // Save location for logged-in users
-          if (user?.id) {
-            await fetch(`/api/user/${user.id}`, {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ latitude: lat, longitude: lng, locationName: locationDisplay || null }),
-            });
-          }
-
-          const excludeSlug = user?.uniqueSlug || "";
-          const districtParam = district ? `&district=${encodeURIComponent(district)}` : "";
-          const res = await fetch(`/api/users/nearby?lat=${lat}&lng=${lng}&radius=75${excludeSlug ? `&exclude=${excludeSlug}` : ""}${districtParam}`);
-          if (!res.ok) throw new Error("Failed to fetch nearby users");
-          const data = await res.json();
-          setNearbyVoices(data.users || []);
-          setConstituencyVoices(data.constituencyVoices || []);
+          await fetchNearbyByCoords(lat, lng, locationDisplay, district);
         } catch {
           setNearbyError("Could not load nearby voices.");
         } finally {
           setNearbyLoading(false);
         }
       },
-      (err) => {
-        if (err.code === 1) {
-          setNearbyError("Please allow location access to see nearby voices.");
-        } else {
-          setNearbyError("Unable to get your location.");
-        }
-        setNearbyLoading(false);
+      async () => {
+        await fallbackToIP();
       },
-      { timeout: 10000, maximumAge: 60000 }
+      { timeout: 8000, maximumAge: 60000 }
     );
   };
   const [newPinValue, setNewPinValue] = useState("");
