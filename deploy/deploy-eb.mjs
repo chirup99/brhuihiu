@@ -143,6 +143,7 @@ async function deployToEB() {
     Key: s3Key,
     Body: createReadStream(ZIP_PATH),
     ContentType: "application/zip",
+    ACL: "bucket-owner-full-control",
   }));
   console.log("  Upload complete.");
 
