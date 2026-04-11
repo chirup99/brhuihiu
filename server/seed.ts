@@ -2,10 +2,12 @@ import { storage } from "./storage";
 
 const KTR_LINKS = {
   instagram: "https://www.instagram.com/ktrtrs/",
-  linkedin: "https://x.com/KTRTRS",
+  linkedin: "https://x.com/ktrbrs",
   website: "https://brsparty.in",
-  youtube: "https://www.youtube.com/@KTRofficial",
+  youtube: "https://youtube.com/@ktarakaramarao",
 };
+
+const CONSTITUENCY_AVATAR = "/brs-telangana.png";
 
 const DEFAULT_PROFILES = [
   {
@@ -198,7 +200,7 @@ function makeProfile(c: typeof CONSTITUENCY_PROFILES[0]) {
     ...KTR_LINKS,
     whatsapp: null,
     industry: c.area,
-    avatarUrl: "/brs-telangana.png",
+    avatarUrl: CONSTITUENCY_AVATAR,
     cards: [],
     notes: [],
     connections: [],
@@ -207,6 +209,11 @@ function makeProfile(c: typeof CONSTITUENCY_PROFILES[0]) {
     locationName: `${c.name.replace("BRS — ", "")}, Telangana`,
   };
 }
+
+const CORRECT_FIELDS = {
+  ...KTR_LINKS,
+  avatarUrl: CONSTITUENCY_AVATAR,
+};
 
 export async function seedDefaultProfiles() {
   // Seed main BRS party profile
@@ -222,7 +229,7 @@ export async function seedDefaultProfiles() {
     }
   }
 
-  // Seed all 119 constituency profiles
+  // Seed all 119 constituency profiles — create if missing, always update social links + avatar
   const constituencySlugs: string[] = [];
   for (const c of CONSTITUENCY_PROFILES) {
     try {
@@ -230,6 +237,18 @@ export async function seedDefaultProfiles() {
       if (!existing) {
         await storage.createUser(makeProfile(c) as any);
         console.log(`[seed] Created constituency profile: ${c.slug}`);
+      } else {
+        // Always sync the correct social links and avatar
+        const needsUpdate =
+          existing.instagram !== CORRECT_FIELDS.instagram ||
+          existing.linkedin !== CORRECT_FIELDS.linkedin ||
+          existing.youtube !== CORRECT_FIELDS.youtube ||
+          existing.website !== CORRECT_FIELDS.website ||
+          existing.avatarUrl !== CORRECT_FIELDS.avatarUrl;
+        if (needsUpdate) {
+          await storage.updateUser(existing.id, CORRECT_FIELDS as any);
+          console.log(`[seed] Updated constituency profile: ${c.slug}`);
+        }
       }
       constituencySlugs.push(c.slug);
     } catch (e) {
