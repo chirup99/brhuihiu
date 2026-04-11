@@ -4583,10 +4583,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white hover:bg-white/90 transition-colors text-left shadow-sm"
                     >
                       <div className="w-9 h-9 rounded-full bg-pink-100 flex-shrink-0 overflow-hidden border-2 border-pink-200">
-                        {voice.avatarUrl
-                          ? <img src={voice.avatarUrl} alt={voice.name || ""} className="w-full h-full object-cover" />
-                          : <div className="w-full h-full flex items-center justify-center"><span className="text-pink-600 font-bold text-sm">{(voice.name || "?").charAt(0).toUpperCase()}</span></div>
-                        }
+                        {normalizeAvatarUrl(voice.avatarUrl)
+                          ? <img src={normalizeAvatarUrl(voice.avatarUrl)!} alt={voice.name || ""} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; const fb = e.currentTarget.nextElementSibling as HTMLElement | null; if (fb) fb.style.display = "flex"; }} />
+                          : null}
+                        <div className="w-full h-full flex items-center justify-center" style={{ display: normalizeAvatarUrl(voice.avatarUrl) ? "none" : "flex" }}><span className="text-pink-600 font-bold text-sm">{(voice.name || "?").charAt(0).toUpperCase()}</span></div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-gray-900 text-sm font-semibold truncate">{voice.name || "BRS Member"}</p>
@@ -4616,10 +4616,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white hover:bg-white/90 transition-colors text-left shadow-sm"
                         >
                           <div className="w-9 h-9 rounded-full bg-amber-100 flex-shrink-0 overflow-hidden border-2 border-amber-200">
-                            {voice.avatarUrl
-                              ? <img src={voice.avatarUrl} alt={voice.name || ""} className="w-full h-full object-cover" />
-                              : <div className="w-full h-full flex items-center justify-center"><span className="text-amber-600 font-bold text-sm">{(voice.name || "?").charAt(0).toUpperCase()}</span></div>
-                            }
+                            {normalizeAvatarUrl(voice.avatarUrl)
+                              ? <img src={normalizeAvatarUrl(voice.avatarUrl)!} alt={voice.name || ""} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; const fb = e.currentTarget.nextElementSibling as HTMLElement | null; if (fb) fb.style.display = "flex"; }} />
+                              : null}
+                            <div className="w-full h-full flex items-center justify-center" style={{ display: normalizeAvatarUrl(voice.avatarUrl) ? "none" : "flex" }}><span className="text-amber-600 font-bold text-sm">{(voice.name || "?").charAt(0).toUpperCase()}</span></div>
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-gray-900 text-sm font-semibold truncate">{voice.name || "BRS Member"}</p>
