@@ -6604,11 +6604,11 @@ export default function AuthPage({ slug }: { slug?: string }) {
                   </div>
                   <button
                     type="button"
-                    disabled={updateProfileMutation.isPending}
+                    disabled={updateProfileMutation.isPending || registerMutation.isPending}
                     onClick={() => form.handleSubmit(onSubmit)()}
                     className="w-full bg-pink-500 text-white hover:bg-pink-600 rounded-lg py-3 font-bold text-sm flex items-center justify-center gap-2 transition-all"
                   >
-                    {updateProfileMutation.isPending ? (
+                    {(updateProfileMutation.isPending || registerMutation.isPending) ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       "Save All"
@@ -6658,9 +6658,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       youtube: "",
                       cards: [],
                       email: "",
-                      uniqueSlug: "",
-                      pin: "",
-                      avatarUrl: "",
+                      uniqueSlug: null,
+                      pin: null,
+                      avatarUrl: null,
                       latitude: null,
                       longitude: null,
                       locationName: "",
