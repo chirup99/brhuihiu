@@ -33,6 +33,8 @@ export interface IStorage {
   getAllUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, user: Partial<InsertUser>): Promise<User>;
+  incrementLike(id: string): Promise<number>;
+  incrementDislike(id: string): Promise<number>;
   getEvents(): Promise<BRSEvent[]>;
   saveEvents(events: BRSEvent[]): Promise<void>;
   getFeaturedSlugs(): Promise<string[]>;
@@ -90,6 +92,8 @@ export class MemStorage implements IStorage {
       linkedinClicks: 0,
       whatsappClicks: 0,
       websiteClicks: 0,
+      likeCount: 0,
+      dislikeCount: 0,
       reachHistory: [],
     };
     this.users.set(id, newUser);
@@ -102,6 +106,22 @@ export class MemStorage implements IStorage {
     const updatedUser = { ...user, ...partialUser };
     this.users.set(id, updatedUser);
     return updatedUser;
+  }
+
+  async incrementLike(id: string): Promise<number> {
+    const user = this.users.get(id);
+    if (!user) throw new Error("User not found");
+    const newCount = (user.likeCount || 0) + 1;
+    this.users.set(id, { ...user, likeCount: newCount });
+    return newCount;
+  }
+
+  async incrementDislike(id: string): Promise<number> {
+    const user = this.users.get(id);
+    if (!user) throw new Error("User not found");
+    const newCount = (user.dislikeCount || 0) + 1;
+    this.users.set(id, { ...user, dislikeCount: newCount });
+    return newCount;
   }
 
   async getEvents(): Promise<BRSEvent[]> {
@@ -219,6 +239,8 @@ export class DynamoDBStorage implements IStorage {
       linkedinClicks: 0,
       whatsappClicks: 0,
       websiteClicks: 0,
+      likeCount: 0,
+      dislikeCount: 0,
       reachHistory: [],
     };
     try {
@@ -274,6 +296,40 @@ export class DynamoDBStorage implements IStorage {
     }));
 
     return Attributes as User;
+  }
+
+  async incrementLike(id: string): Promise<number> {
+    try {
+      const { Attributes } = await ddbDocClient.send(new UpdateCommand({
+        TableName: TABLE_NAME,
+        Key: { id },
+        UpdateExpression: "ADD #likeCount :inc",
+        ExpressionAttributeNames: { "#likeCount": "likeCount" },
+        ExpressionAttributeValues: { ":inc": 1 },
+        ReturnValues: "ALL_NEW",
+      }));
+      return (Attributes?.likeCount as number) || 1;
+    } catch (e) {
+      console.error("DynamoDB incrementLike error:", e);
+      throw e;
+    }
+  }
+
+  async incrementDislike(id: string): Promise<number> {
+    try {
+      const { Attributes } = await ddbDocClient.send(new UpdateCommand({
+        TableName: TABLE_NAME,
+        Key: { id },
+        UpdateExpression: "ADD #dislikeCount :inc",
+        ExpressionAttributeNames: { "#dislikeCount": "dislikeCount" },
+        ExpressionAttributeValues: { ":inc": 1 },
+        ReturnValues: "ALL_NEW",
+      }));
+      return (Attributes?.dislikeCount as number) || 1;
+    } catch (e) {
+      console.error("DynamoDB incrementDislike error:", e);
+      throw e;
+    }
   }
 
   async getEvents(): Promise<BRSEvent[]> {

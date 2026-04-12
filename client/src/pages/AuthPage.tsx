@@ -34,6 +34,8 @@ import {
   Download,
   MapPin,
   Navigation,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import {
   motion,
@@ -2748,6 +2750,35 @@ export default function AuthPage({ slug }: { slug?: string }) {
     }
   };
 
+  useEffect(() => {
+    const profileId = user?.id;
+    if (!profileId) return;
+    setLocalLikeCount(user?.likeCount || 0);
+    setLocalDislikeCount(user?.dislikeCount || 0);
+    const stored = localStorage.getItem(`vote_${loggedInUser?.id}_${profileId}`);
+    setHasVoted((stored as "like" | "dislike" | null) || null);
+  }, [user?.id, user?.likeCount, user?.dislikeCount, loggedInUser?.id]);
+
+  const handleVote = async (type: "like" | "dislike") => {
+    if (!loggedInUser?.id) return;
+    const profileId = user?.id;
+    if (!profileId) return;
+    if (hasVoted || voteLoading) return;
+    setVoteLoading(true);
+    try {
+      const res = await apiRequest("POST", `/api/user/${profileId}/${type}`, { voterId: loggedInUser.id });
+      const data = await res.json();
+      if (type === "like") setLocalLikeCount(data.likeCount ?? localLikeCount + 1);
+      else setLocalDislikeCount(data.dislikeCount ?? localDislikeCount + 1);
+      setHasVoted(type);
+      localStorage.setItem(`vote_${loggedInUser.id}_${profileId}`, type);
+    } catch (err) {
+      console.error("Vote failed:", err);
+    } finally {
+      setVoteLoading(false);
+    }
+  };
+
   const onSubmit = async (values: InsertUser) => {
     try {
       let result;
@@ -3202,6 +3233,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
   );
 
   const [showQRDialog, setShowQRDialog] = useState(false);
+  const [localLikeCount, setLocalLikeCount] = useState<number>(0);
+  const [localDislikeCount, setLocalDislikeCount] = useState<number>(0);
+  const [hasVoted, setHasVoted] = useState<"like" | "dislike" | null>(null);
+  const [voteLoading, setVoteLoading] = useState(false);
   const [showPamphletDialog, setShowPamphletDialog] = useState(false);
   const [isCapturingPamphlet, setIsCapturingPamphlet] = useState(false);
   const [pamphletBgImage, setPamphletBgImage] = useState<string | null>(null);
@@ -5233,6 +5268,38 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         title="Campaign Pamphlet"
                       >
                         <Newspaper className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!loggedInUser || hasVoted === "like" || voteLoading}
+                        onClick={() => handleVote("like")}
+                        title={loggedInUser ? (hasVoted ? "Already voted" : "Like") : "Login to like"}
+                        className={`flex items-center gap-0.5 px-1.5 py-1 rounded-md text-[10px] font-bold transition-all ${
+                          hasVoted === "like"
+                            ? "bg-green-100 text-green-600 border border-green-200"
+                            : loggedInUser && !hasVoted
+                            ? "bg-pink-50 hover:bg-green-50 text-pink-400 hover:text-green-600 border border-transparent hover:border-green-200"
+                            : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                        }`}
+                      >
+                        <ThumbsUp className="w-3 h-3 flex-shrink-0" />
+                        <span>{localLikeCount}</span>
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!loggedInUser || hasVoted === "dislike" || voteLoading}
+                        onClick={() => handleVote("dislike")}
+                        title={loggedInUser ? (hasVoted ? "Already voted" : "Dislike") : "Login to dislike"}
+                        className={`flex items-center gap-0.5 px-1.5 py-1 rounded-md text-[10px] font-bold transition-all ${
+                          hasVoted === "dislike"
+                            ? "bg-red-100 text-red-500 border border-red-200"
+                            : loggedInUser && !hasVoted
+                            ? "bg-pink-50 hover:bg-red-50 text-pink-400 hover:text-red-500 border border-transparent hover:border-red-200"
+                            : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                        }`}
+                      >
+                        <ThumbsDown className="w-3 h-3 flex-shrink-0" />
+                        <span>{localDislikeCount}</span>
                       </button>
                     </div>
                     {(() => {
