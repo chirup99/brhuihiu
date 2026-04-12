@@ -8610,35 +8610,35 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full opacity-20 blur-2xl pointer-events-none" style={{ background: "radial-gradient(circle, #fce7f3, transparent)" }} />
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-5 pt-6 pb-4 relative z-10">
+                <div className="flex items-center justify-between px-4 pt-4 pb-2 relative z-10">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-white overflow-hidden shadow">
+                    <div className="w-6 h-6 rounded-full bg-white overflow-hidden shadow">
                       <img src="/brs-logo.png" alt="BRS" className="w-full h-full object-cover" />
                     </div>
-                    <p className="text-white font-black text-sm tracking-tight">BRS Connect</p>
+                    <p className="text-white font-black text-xs tracking-tight">BRS Connect</p>
                   </div>
                   <button
                     onClick={() => setShowPersonaDialog(false)}
-                    className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center active:scale-90 transition-all"
+                    className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center active:scale-90 transition-all"
                   >
-                    <X className="w-4 h-4 text-white" />
+                    <X className="w-3.5 h-3.5 text-white" />
                   </button>
                 </div>
 
-                <div className="px-5 pb-6 relative z-10 space-y-5">
+                <div className="px-4 pb-4 relative z-10 space-y-3">
                   {/* Title */}
-                  <div className="text-center space-y-1">
-                    <h3 className="text-2xl font-black text-white tracking-tight">
+                  <div className="text-center space-y-0.5">
+                    <h3 className="text-lg font-black text-white tracking-tight">
                       Welcome Back
                     </h3>
-                    <p className="text-white/70 text-xs">
+                    <p className="text-white/70 text-[10px]">
                       Enter your Voice Code and PIN to continue.
                     </p>
                   </div>
 
                   {/* Inputs */}
-                  <div className="space-y-3">
-                    <div className="space-y-1.5">
+                  <div className="space-y-2">
+                    <div className="space-y-1">
                       <label className="text-[9px] text-white/70 uppercase tracking-widest font-bold ml-1">
                         Voice Code
                       </label>
@@ -8649,12 +8649,12 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         onChange={(e) =>
                           setPersonaCode(e.target.value.toLowerCase())
                         }
-                        className="w-full rounded-2xl px-4 py-3 text-pink-800 font-mono font-bold placeholder:text-pink-300 focus:outline-none transition-all shadow-inner"
+                        className="w-full rounded-xl px-3 py-2 text-pink-800 font-mono font-bold placeholder:text-pink-300 focus:outline-none transition-all shadow-inner text-sm"
                         style={{ background: "rgba(255,255,255,0.92)", border: "1.5px solid rgba(255,255,255,0.5)" }}
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       <label className="text-[9px] text-white/70 uppercase tracking-widest font-bold ml-1">
                         5-Digit PIN
                       </label>
@@ -8667,7 +8667,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           const val = e.target.value.replace(/\D/g, "");
                           if (val.length <= 5) setVerifyPin(val);
                         }}
-                        className="w-full rounded-2xl px-4 py-3 text-center text-xl font-mono tracking-[1em] text-pink-700 font-black placeholder:text-pink-300 focus:outline-none transition-all shadow-inner"
+                        className="w-full rounded-xl px-3 py-2 text-center text-lg font-mono tracking-[1em] text-pink-700 font-black placeholder:text-pink-300 focus:outline-none transition-all shadow-inner"
                         style={{ background: "rgba(255,255,255,0.92)", border: "1.5px solid rgba(255,255,255,0.5)" }}
                       />
                     </div>
@@ -8728,7 +8728,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           }
                         }
                       }}
-                      className="w-full bg-white text-pink-600 rounded-2xl py-3.5 font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg hover:bg-pink-50"
+                      className="w-full bg-white text-pink-600 rounded-xl py-2.5 font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg hover:bg-pink-50"
                     >
                       Sign In <ArrowRight className="w-4 h-4" />
                     </button>
@@ -8736,7 +8736,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
                   <button
                     onClick={() => setShowPersonaDialog(false)}
-                    className="w-full py-1 text-[10px] text-white/60 hover:text-white uppercase tracking-[0.3em] font-bold transition-colors text-center"
+                    className="w-full py-0.5 text-[10px] text-white/60 hover:text-white uppercase tracking-[0.3em] font-bold transition-colors text-center"
                   >
                     Dismiss
                   </button>
