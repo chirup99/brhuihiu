@@ -3335,9 +3335,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
   useEffect(() => {
     if (adminFeaturedSlugs.length === 0) { setFeaturedProfiles([]); return; }
+    const PINNED_ORDER = ["brs", "brsparty", "ktrbrs", "brslegalteam", "musi", "hydra", "ktroffice"];
     const BATCH_FIRST = 10;
-    const first = adminFeaturedSlugs.slice(0, BATCH_FIRST);
-    const rest = adminFeaturedSlugs.slice(BATCH_FIRST);
+    const pinnedInList = PINNED_ORDER.filter((s) => adminFeaturedSlugs.includes(s));
+    const nonPinned = adminFeaturedSlugs.filter((s) => !PINNED_ORDER.includes(s));
+    const ordered = [...pinnedInList, ...nonPinned];
+    const first = ordered.slice(0, BATCH_FIRST);
+    const rest = ordered.slice(BATCH_FIRST);
     Promise.all(
       first.map((s) =>
         fetch(`/api/user/slug/${s}`).then((r) => (r.ok ? r.json() : null)).catch(() => null)
