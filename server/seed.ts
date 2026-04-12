@@ -3,7 +3,7 @@ import { storage } from "./storage";
 const KTR_LINKS = {
   instagram: "https://www.instagram.com/ktrtrs/",
   linkedin: "https://x.com/ktrbrs",
-  website: "https://brsparty.in",
+  website: "https://brsonline.in/",
   youtube: "https://www.youtube.com/@ktarakaramarao",
   whatsapp: "https://www.whatsapp.com/channel/0029Va5KG2d6GcGMHa7jRy1i",
 };
