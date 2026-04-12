@@ -218,6 +218,7 @@ export async function seedDefaultProfiles() {
         console.log(`[seed] Created constituency profile: ${c.slug}`);
       } else {
         // Always sync the correct social links and avatar
+        const correctLocationName = `${c.name.replace("BRS — ", "")}, Telangana`;
         const needsUpdate =
           existing.instagram !== CORRECT_FIELDS.instagram ||
           existing.linkedin !== CORRECT_FIELDS.linkedin ||
@@ -226,9 +227,10 @@ export async function seedDefaultProfiles() {
           existing.whatsapp !== CORRECT_FIELDS.whatsapp ||
           existing.avatarUrl !== CORRECT_FIELDS.avatarUrl ||
           existing.bio !== CORRECT_FIELDS.bio ||
-          (existing.email || "") !== CORRECT_FIELDS.email;
+          (existing.email || "") !== CORRECT_FIELDS.email ||
+          existing.locationName !== correctLocationName;
         if (needsUpdate) {
-          await storage.updateUser(existing.id, CORRECT_FIELDS as any);
+          await storage.updateUser(existing.id, { ...CORRECT_FIELDS, locationName: correctLocationName } as any);
           console.log(`[seed] Updated constituency profile: ${c.slug}`);
         }
       }
