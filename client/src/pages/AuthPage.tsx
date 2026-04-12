@@ -2755,23 +2755,26 @@ export default function AuthPage({ slug }: { slug?: string }) {
     if (!profileId) return;
     setLocalLikeCount(user?.likeCount || 0);
     setLocalDislikeCount(user?.dislikeCount || 0);
-    const stored = localStorage.getItem(`vote_${loggedInUser?.id}_${profileId}`);
+    const stored = localStorage.getItem(`vote_anon_${profileId}`);
     setHasVoted((stored as "like" | "dislike" | null) || null);
   }, [user?.id, user?.likeCount, user?.dislikeCount, loggedInUser?.id]);
 
   const handleVote = async (type: "like" | "dislike") => {
-    if (!loggedInUser?.id) return;
     const profileId = user?.id;
     if (!profileId) return;
     if (hasVoted || voteLoading) return;
     setVoteLoading(true);
     try {
-      const res = await apiRequest("POST", `/api/user/${profileId}/${type}`, { voterId: loggedInUser.id });
+      const res = await fetch(`/api/user/${profileId}/${type}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ voterId: "anonymous" }),
+      });
       const data = await res.json();
       if (type === "like") setLocalLikeCount(data.likeCount ?? localLikeCount + 1);
       else setLocalDislikeCount(data.dislikeCount ?? localDislikeCount + 1);
       setHasVoted(type);
-      localStorage.setItem(`vote_${loggedInUser.id}_${profileId}`, type);
+      localStorage.setItem(`vote_anon_${profileId}`, type);
     } catch (err) {
       console.error("Vote failed:", err);
     } finally {
@@ -5271,35 +5274,33 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       </button>
                       <button
                         type="button"
-                        disabled={!loggedInUser || hasVoted === "like" || voteLoading}
+                        disabled={hasVoted !== null || voteLoading}
                         onClick={() => handleVote("like")}
-                        title={loggedInUser ? (hasVoted ? "Already voted" : "Like") : "Login to like"}
-                        className={`flex items-center gap-0.5 px-1.5 py-1 rounded-md text-[10px] font-bold transition-all ${
+                        className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold transition-all border ${
                           hasVoted === "like"
-                            ? "bg-green-100 text-green-600 border border-green-200"
-                            : loggedInUser && !hasVoted
-                            ? "bg-pink-50 hover:bg-green-50 text-pink-400 hover:text-green-600 border border-transparent hover:border-green-200"
-                            : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                            ? "bg-green-100 text-green-600 border-green-200"
+                            : hasVoted !== null
+                            ? "bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed"
+                            : "bg-pink-50 hover:bg-green-50 text-pink-400 hover:text-green-600 border-pink-100 hover:border-green-200 cursor-pointer"
                         }`}
                       >
                         <ThumbsUp className="w-3 h-3 flex-shrink-0" />
-                        <span>{localLikeCount}</span>
+                        <span>{hasVoted === "like" ? "Unlike" : "Like"}</span>
                       </button>
                       <button
                         type="button"
-                        disabled={!loggedInUser || hasVoted === "dislike" || voteLoading}
+                        disabled={hasVoted !== null || voteLoading}
                         onClick={() => handleVote("dislike")}
-                        title={loggedInUser ? (hasVoted ? "Already voted" : "Dislike") : "Login to dislike"}
-                        className={`flex items-center gap-0.5 px-1.5 py-1 rounded-md text-[10px] font-bold transition-all ${
+                        className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold transition-all border ${
                           hasVoted === "dislike"
-                            ? "bg-red-100 text-red-500 border border-red-200"
-                            : loggedInUser && !hasVoted
-                            ? "bg-pink-50 hover:bg-red-50 text-pink-400 hover:text-red-500 border border-transparent hover:border-red-200"
-                            : "bg-gray-100 text-gray-300 cursor-not-allowed"
+                            ? "bg-red-100 text-red-500 border-red-200"
+                            : hasVoted !== null
+                            ? "bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed"
+                            : "bg-pink-50 hover:bg-red-50 text-pink-400 hover:text-red-500 border-pink-100 hover:border-red-200 cursor-pointer"
                         }`}
                       >
                         <ThumbsDown className="w-3 h-3 flex-shrink-0" />
-                        <span>{localDislikeCount}</span>
+                        <span>{hasVoted === "dislike" ? "Voted" : "Dislike"}</span>
                       </button>
                     </div>
                     {(() => {

@@ -137,26 +137,18 @@ export async function registerRoutes(
 
   app.post("/api/user/:id/like", async (req, res) => {
     try {
-      const { voterId } = z.object({ voterId: z.string().min(1) }).parse(req.body);
-      const voter = await storage.getUser(voterId);
-      if (!voter) return res.status(401).json({ message: "Authentication required" });
       const newCount = await storage.incrementLike(req.params.id);
       res.json({ likeCount: newCount });
     } catch (e) {
-      if (e instanceof z.ZodError) return res.status(401).json({ message: "Authentication required" });
       res.status(500).json({ message: "Failed to save like" });
     }
   });
 
   app.post("/api/user/:id/dislike", async (req, res) => {
     try {
-      const { voterId } = z.object({ voterId: z.string().min(1) }).parse(req.body);
-      const voter = await storage.getUser(voterId);
-      if (!voter) return res.status(401).json({ message: "Authentication required" });
       const newCount = await storage.incrementDislike(req.params.id);
       res.json({ dislikeCount: newCount });
     } catch (e) {
-      if (e instanceof z.ZodError) return res.status(401).json({ message: "Authentication required" });
       res.status(500).json({ message: "Failed to save dislike" });
     }
   });
