@@ -3308,6 +3308,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [voiceCardSearch, setVoiceCardSearch] = useState("");
   const [adminFeaturedSlugs, setAdminFeaturedSlugs] = useState<string[]>([]);
   const [featuredProfiles, setFeaturedProfiles] = useState<any[]>([]);
+  const [featuredProfilesLoading, setFeaturedProfilesLoading] = useState(false);
   const [showAddProfileDialog, setShowAddProfileDialog] = useState(false);
   const [addProfileSearch, setAddProfileSearch] = useState("");
   const [addProfileResult, setAddProfileResult] = useState<any | "not_found" | null>(null);
@@ -3342,6 +3343,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
     const ordered = [...pinnedInList, ...nonPinned];
     const first = ordered.slice(0, BATCH_FIRST);
     const rest = ordered.slice(BATCH_FIRST);
+    setFeaturedProfiles([]);
+    setFeaturedProfilesLoading(true);
     Promise.all(
       first.map((s) =>
         fetch(`/api/user/slug/${s}`).then((r) => (r.ok ? r.json() : null)).catch(() => null)
@@ -3349,6 +3352,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
     ).then((profiles) => {
       const valid = profiles.filter(Boolean);
       setFeaturedProfiles(valid);
+      setFeaturedProfilesLoading(false);
       if (rest.length === 0) return;
       const BATCH_SIZE = 25;
       let i = 0;
@@ -4846,7 +4850,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
                 <div className="overflow-x-auto scrollbar-hide px-6 pb-6">
                   <div className="flex gap-4">
-                    {(() => {
+                    {featuredProfilesLoading && (
+                      <div className="flex items-center justify-center w-full py-10 gap-3">
+                        <Loader2 className="w-6 h-6 text-pink-400 animate-spin" />
+                        <span className="text-white/40 text-xs">Loading profiles...</span>
+                      </div>
+                    )}
+                    {!featuredProfilesLoading && (() => {
                       const PINNED_ORDER = ["brs", "brsparty", "ktrbrs", "brslegalteam", "musi", "hydra", "ktroffice"];
                       const q = voiceCardSearch.toLowerCase();
                       return featuredProfiles.filter((p) => {
