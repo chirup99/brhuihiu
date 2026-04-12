@@ -9,30 +9,7 @@ const KTR_LINKS = {
 
 const CONSTITUENCY_AVATAR = "/assets/brs-car-logo.png";
 
-const DEFAULT_PROFILES = [
-  {
-    uniqueSlug: "brsparty",
-    name: "BRS — Bharat Rashtra Samithi",
-    role: "people",
-    bio: "Voice of the People. Strength of the Nation. Building a prosperous Telangana for every citizen.",
-    email: "brsparty@brsconnect.in",
-    password: "",
-    pin: "00000",
-    instagram: "https://www.instagram.com/brspartyofficial/",
-    linkedin: "https://x.com/BRSparty",
-    whatsapp: null,
-    website: "https://brsparty.in",
-    youtube: "https://www.youtube.com/@KTRofficial",
-    industry: "Hyderabad",
-    avatarUrl: "/brs-telangana.png",
-    cards: [],
-    notes: [],
-    connections: [],
-    latitude: 17.385044,
-    longitude: 78.486671,
-    locationName: "Hyderabad, Telangana",
-  },
-];
+const DEFAULT_PROFILES: any[] = [];
 
 // All 119 Telangana Assembly Constituencies
 const CONSTITUENCY_PROFILES = [
