@@ -4282,8 +4282,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: Partial<InsertUser>) => {
-      if (!user?.id) throw new Error("Not authenticated");
-      const res = await apiRequest("PATCH", `/api/user/${user.id}`, data);
+      const targetId = loggedInUser?.id || user?.id;
+      if (!targetId) throw new Error("Not authenticated");
+      const res = await apiRequest("PATCH", `/api/user/${targetId}`, data);
       return res.json();
     },
     onSuccess: (updatedUser, variables) => {
@@ -6656,6 +6657,15 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       website: "",
                       youtube: "",
                       cards: [],
+                      email: "",
+                      uniqueSlug: "",
+                      pin: "",
+                      avatarUrl: "",
+                      latitude: null,
+                      longitude: null,
+                      locationName: "",
+                      connections: [],
+                      notes: [],
                     });
                     setSelectedCards([]);
                   } else {
@@ -8948,6 +8958,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         setShowHomeDialog(false);
                         setHomeSlugEditing(false);
                         setShowQRDialog(true);
+                        const redirectSlug = homeSlugEditing && homeSlugValue && homeSlugStatus === "available"
+                          ? homeSlugValue
+                          : loggedInUser?.uniqueSlug;
+                        if (redirectSlug) setLocation(`/${redirectSlug}`);
                         toast({ title: "Profile Secured", description: "Your PIN and Voice Code have been saved." });
                       } catch (e) {
                         toast({ title: "Error", description: "Failed to save. Please try again.", variant: "destructive" });
