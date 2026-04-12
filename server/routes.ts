@@ -135,6 +135,19 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/users/by-slugs", async (req, res) => {
+    try {
+      const { slugs } = z.object({ slugs: z.array(z.string()) }).parse(req.body);
+      if (!slugs.length) return res.json([]);
+      const allUsers = await storage.getAllUsers();
+      const slugSet = new Set(slugs);
+      const profiles = allUsers.filter((u) => u.uniqueSlug && slugSet.has(u.uniqueSlug));
+      res.json(profiles);
+    } catch (e) {
+      res.status(500).json([]);
+    }
+  });
+
   app.post("/api/user/:id/vote-status", async (req, res) => {
     try {
       const voterId = req.body?.voterId as string | undefined;
