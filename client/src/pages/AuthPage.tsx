@@ -6537,27 +6537,6 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    const currentCards = [...selectedCards];
-                                    currentCards[idx] = JSON.stringify({ type: "xpost", subtype: "connect", title: "X Connect", username: "" });
-                                    setSelectedCards(currentCards);
-                                    setXpostPickerIdx(null);
-                                  }}
-                                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 transition-all border border-blue-200"
-                                >
-                                  <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center flex-shrink-0 relative">
-                                    <SiX className="w-3.5 h-3.5 text-white" />
-                                    <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-blue-500 flex items-center justify-center">
-                                      <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                                    </div>
-                                  </div>
-                                  <div className="text-left">
-                                    <p className="text-[10px] font-black text-gray-800 uppercase tracking-wide">X Connect</p>
-                                    <p className="text-[8px] text-gray-400">Auto-updates with latest post</p>
-                                  </div>
-                                </button>
-                                <button
-                                  type="button"
                                   onClick={() => setXpostPickerIdx(null)}
                                   className="w-full text-[8px] text-pink-400 uppercase tracking-widest font-bold py-1 hover:text-pink-600 transition-colors"
                                 >
