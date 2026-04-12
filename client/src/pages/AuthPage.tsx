@@ -8857,7 +8857,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         <button
                           type="button"
                           onClick={() => {
-                            setHomeSlugValue(user?.uniqueSlug || "");
+                            setHomeSlugValue(loggedInUser?.uniqueSlug || "");
                             setHomeSlugStatus("idle");
                             setHomeSlugEditing(true);
                           }}
@@ -8901,7 +8901,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       </div>
                     ) : (
                       <p className="text-xl font-black font-mono text-white tracking-[0.3em] uppercase text-center">
-                        {user?.uniqueSlug || "—"}
+                        {loggedInUser?.uniqueSlug || "—"}
                       </p>
                     )}
                   </div>
@@ -8933,7 +8933,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         return;
                       }
                       try {
-                        if (homeSlugEditing && homeSlugValue && homeSlugValue !== user?.uniqueSlug && homeSlugStatus === "available") {
+                        if (homeSlugEditing && homeSlugValue && homeSlugValue !== loggedInUser?.uniqueSlug && homeSlugStatus === "available") {
                           await updateSlugMutation.mutateAsync(homeSlugValue);
                         }
                         await updateProfileMutation.mutateAsync({ pin });
