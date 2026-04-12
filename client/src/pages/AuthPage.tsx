@@ -3028,6 +3028,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
         // If it's a new registration or missing pin, show the PIN setup dialog
         if (isRegistering || (isCustomizing && !result.pin && !isUpdatingProfile)) {
+          if (isRegistering && result.uniqueSlug) {
+            setDisplaySlug(result.uniqueSlug);
+          }
           setShowHomeDialog(true);
           setMode("login");
         } else if (result.uniqueSlug && (isCustomizing || isRegistering) && (result.pin || isUpdatingProfile)) {
@@ -3812,11 +3815,14 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [newNote, setNewNote] = useState("");
 
   // Sync displaySlug with user whenever user changes
+  // Skip when in register mode for a new account — avoid leaking the viewed profile's slug
   useEffect(() => {
-    if (user?.uniqueSlug) {
+    if (mode === "register" && !loggedInUser) {
+      setDisplaySlug("");
+    } else if (user?.uniqueSlug) {
       setDisplaySlug(user.uniqueSlug);
     }
-  }, [user?.uniqueSlug]);
+  }, [user?.uniqueSlug, mode, loggedInUser]);
 
   // Sync notes from user object
   useEffect(() => {
