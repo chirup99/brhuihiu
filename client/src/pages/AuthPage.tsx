@@ -36,6 +36,7 @@ import {
   Navigation,
   ThumbsUp,
   ThumbsDown,
+  BarChart2,
 } from "lucide-react";
 import {
   motion,
@@ -3302,6 +3303,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const [isTradersExpanded, setIsTradersExpanded] = useState(false);
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
   const [showTradersModal, setShowTradersModal] = useState(false);
+  const [showAnalyticsDialog, setShowAnalyticsDialog] = useState(false);
+  const [analyticsTab, setAnalyticsTab] = useState<"likes" | "dislikes">("likes");
   const [voiceCardSearch, setVoiceCardSearch] = useState("");
   const [adminFeaturedSlugs, setAdminFeaturedSlugs] = useState<string[]>([]);
   const [featuredProfiles, setFeaturedProfiles] = useState<any[]>([]);
@@ -5120,6 +5123,125 @@ export default function AuthPage({ slug }: { slug?: string }) {
           )}
         </AnimatePresence>
 
+        {/* Analytics Insights Dialog — admin only */}
+        <AnimatePresence>
+          {showAnalyticsDialog && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowAnalyticsDialog(false)}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70]"
+              />
+              <motion.div
+                initial={{ opacity: 0, y: 60 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 60 }}
+                transition={{ type: "spring", damping: 30, stiffness: 300 }}
+                className="fixed inset-x-0 bottom-0 z-[71] bg-gray-950 rounded-t-3xl shadow-2xl max-h-[80dvh] flex flex-col"
+                style={{ touchAction: "auto" }}
+              >
+                {/* Handle */}
+                <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+                  <div className="w-10 h-1 bg-white/20 rounded-full" />
+                </div>
+
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 pt-2 pb-3 flex-shrink-0">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-pink-500/20 flex items-center justify-center">
+                      <BarChart2 className="w-4 h-4 text-pink-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-bold text-sm leading-tight">Analytics Insights</h3>
+                      <p className="text-white/40 text-[10px]">{featuredProfiles.length} profiles tracked</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowAnalyticsDialog(false)}
+                    className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white/50 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Tab switcher */}
+                <div className="px-5 pb-3 flex-shrink-0">
+                  <div className="flex p-1 bg-white/8 border border-white/10 rounded-xl">
+                    <button
+                      onClick={() => setAnalyticsTab("likes")}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all ${
+                        analyticsTab === "likes"
+                          ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                          : "text-white/40 hover:text-white/60"
+                      }`}
+                    >
+                      <ThumbsUp className="w-3.5 h-3.5" />
+                      Likes
+                    </button>
+                    <button
+                      onClick={() => setAnalyticsTab("dislikes")}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all ${
+                        analyticsTab === "dislikes"
+                          ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                          : "text-white/40 hover:text-white/60"
+                      }`}
+                    >
+                      <ThumbsDown className="w-3.5 h-3.5" />
+                      Dislikes
+                    </button>
+                  </div>
+                </div>
+
+                {/* Profile list */}
+                <div className="overflow-y-auto flex-1 px-5 pb-6 space-y-2">
+                  {[...featuredProfiles]
+                    .sort((a, b) =>
+                      analyticsTab === "likes"
+                        ? (b.likeCount || 0) - (a.likeCount || 0)
+                        : (b.dislikeCount || 0) - (a.dislikeCount || 0)
+                    )
+                    .map((profile, idx) => {
+                      const count = analyticsTab === "likes" ? (profile.likeCount || 0) : (profile.dislikeCount || 0);
+                      const maxCount = Math.max(...featuredProfiles.map(p => analyticsTab === "likes" ? (p.likeCount || 0) : (p.dislikeCount || 0)), 1);
+                      const barWidth = Math.max(4, Math.round((count / maxCount) * 100));
+                      const avatarSrc = normalizeAvatarUrl(profile.avatarUrl);
+                      return (
+                        <div key={profile.uniqueSlug || idx} className="flex items-center gap-3 bg-white/5 border border-white/8 rounded-2xl px-3 py-2.5">
+                          {/* Rank */}
+                          <span className="text-[10px] font-black text-white/30 w-5 text-center flex-shrink-0">#{idx + 1}</span>
+                          {/* Avatar */}
+                          <div className="w-9 h-9 rounded-full flex-shrink-0 bg-pink-500 flex items-center justify-center text-white text-xs font-bold overflow-hidden border-2 border-white/10 relative">
+                            {avatarSrc ? (
+                              <img src={avatarSrc} alt={profile.name} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                            ) : null}
+                            {!avatarSrc && <span>{profile.name?.[0]?.toUpperCase() || "?"}</span>}
+                          </div>
+                          {/* Info + bar */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                              <p className="text-white text-xs font-semibold truncate leading-tight">{profile.name}</p>
+                              <span className={`text-xs font-black ml-2 flex-shrink-0 ${analyticsTab === "likes" ? "text-green-400" : "text-red-400"}`}>{count}</span>
+                            </div>
+                            <p className="text-white/35 text-[9px] truncate uppercase tracking-wider mb-1.5">{profile.uniqueSlug}</p>
+                            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all ${analyticsTab === "likes" ? "bg-green-500" : "bg-red-500"}`}
+                                style={{ width: `${barWidth}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  }
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -5283,6 +5405,16 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 >
                   <div className="flex flex-col items-center text-center space-y-4 py-2 relative">
                     <div className="absolute top-0 right-0 flex flex-col gap-1.5 z-10">
+                      {loggedInUser?.uniqueSlug === ADMIN_SLUG && (
+                        <button
+                          type="button"
+                          onClick={() => { setAnalyticsTab("likes"); setShowAnalyticsDialog(true); }}
+                          className="p-2 bg-pink-500 hover:bg-pink-600 rounded-lg text-white transition-all shadow-md"
+                          title="Analytics Insights"
+                        >
+                          <BarChart2 className="w-4 h-4" />
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => setShowQRDialog(true)}
