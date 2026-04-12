@@ -4751,19 +4751,26 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
                 <div className="overflow-x-auto scrollbar-hide px-6 pb-6">
                   <div className="flex gap-4">
-                    {featuredProfiles.filter((p) => {
+                    {(() => {
+                      const PINNED_ORDER = ["brs", "ktroffice", "brslegalteam", "musi", "hydra"];
                       const q = voiceCardSearch.toLowerCase();
-                      return !q || (p.name || "").toLowerCase().includes(q) || (p.uniqueSlug || "").toLowerCase().includes(q) || (p.role || "").toLowerCase().includes(q);
-                    }).slice().sort((a, b) => {
-                      const aIdx = nearbyVoices.findIndex(v => v.uniqueSlug === a.uniqueSlug);
-                      const bIdx = nearbyVoices.findIndex(v => v.uniqueSlug === b.uniqueSlug);
-                      const aIsNearby = aIdx !== -1;
-                      const bIsNearby = bIdx !== -1;
-                      if (aIsNearby && bIsNearby) return aIdx - bIdx;
-                      if (aIsNearby) return -1;
-                      if (bIsNearby) return 1;
-                      return 0;
-                    }).map((profile, idx) => (
+                      return featuredProfiles.filter((p) => {
+                        return !q || (p.name || "").toLowerCase().includes(q) || (p.uniqueSlug || "").toLowerCase().includes(q) || (p.role || "").toLowerCase().includes(q);
+                      }).slice().sort((a, b) => {
+                        const aPinned = PINNED_ORDER.indexOf(a.uniqueSlug ?? "");
+                        const bPinned = PINNED_ORDER.indexOf(b.uniqueSlug ?? "");
+                        if (aPinned !== -1 && bPinned !== -1) return aPinned - bPinned;
+                        if (aPinned !== -1) return -1;
+                        if (bPinned !== -1) return 1;
+                        const aIdx = nearbyVoices.findIndex(v => v.uniqueSlug === a.uniqueSlug);
+                        const bIdx = nearbyVoices.findIndex(v => v.uniqueSlug === b.uniqueSlug);
+                        const aIsNearby = aIdx !== -1;
+                        const bIsNearby = bIdx !== -1;
+                        if (aIsNearby && bIsNearby) return aIdx - bIdx;
+                        if (aIsNearby) return -1;
+                        if (bIsNearby) return 1;
+                        return 0;
+                      }).map((profile, idx) => (
                       <motion.div
                         key={profile.uniqueSlug || idx}
                         initial={{ opacity: 0, y: 20 }}
@@ -4832,7 +4839,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           </button>
                         )}
                       </motion.div>
-                    ))}
+                    ))})()}
                   </div>
                 </div>
               </motion.div>
