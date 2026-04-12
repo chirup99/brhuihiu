@@ -3819,10 +3819,12 @@ export default function AuthPage({ slug }: { slug?: string }) {
   useEffect(() => {
     if (mode === "register" && !loggedInUser) {
       setDisplaySlug("");
+    } else if (loggedInUser?.uniqueSlug) {
+      setDisplaySlug(loggedInUser.uniqueSlug);
     } else if (user?.uniqueSlug) {
       setDisplaySlug(user.uniqueSlug);
     }
-  }, [user?.uniqueSlug, mode, loggedInUser]);
+  }, [user?.uniqueSlug, loggedInUser?.uniqueSlug, mode]);
 
   // Sync notes from user object
   useEffect(() => {
@@ -6943,8 +6945,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
                       {/* Avatar */}
                       {(() => {
-                        const displayAvatarSrc = normalizeAvatarUrl(user?.avatarUrl || loggedInUser?.avatarUrl) || avatarUrl;
-                        const displayName = user?.name || loggedInUser?.name || "P";
+                        const displayAvatarSrc = normalizeAvatarUrl(loggedInUser?.avatarUrl || user?.avatarUrl) || avatarUrl;
+                        const displayName = loggedInUser?.name || user?.name || "P";
                         return isCapturing ? (
                           <div style={{ width: 72, height: 72, borderRadius: "50%", padding: 3, background: "linear-gradient(135deg, #ec4899, #be185d)", flexShrink: 0 }}>
                             <div style={{ width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", background: "#ffffff" }}>
@@ -6993,11 +6995,11 @@ export default function AuthPage({ slug }: { slug?: string }) {
                       {/* Name + role */}
                       <div className="text-center space-y-1">
                         <h5 className="text-gray-900 text-base font-black tracking-tight leading-none">
-                          {user?.name || form.watch("name") || "Your Name"}
+                          {loggedInUser?.name || user?.name || form.watch("name") || "Your Name"}
                         </h5>
-                        {(user?.role || form.watch("role")) && (
+                        {(loggedInUser?.role || user?.role || form.watch("role")) && (
                           <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-3 py-0.5 rounded-full text-pink-600 whitespace-nowrap" style={{ background: "rgba(236,72,153,0.12)", border: "1px solid rgba(236,72,153,0.25)" }}>
-                            {ROLES.find((r) => r.value === (user?.role || form.watch("role")))?.label || (user?.role || form.watch("role") || "").replace(/[_-]/g, " ")}
+                            {ROLES.find((r) => r.value === (loggedInUser?.role || user?.role || form.watch("role")))?.label || (loggedInUser?.role || user?.role || form.watch("role") || "").replace(/[_-]/g, " ")}
                           </span>
                         )}
                       </div>
@@ -7011,7 +7013,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                           value={
                             window.location.origin +
                             "/" +
-                            (displaySlug || user?.uniqueSlug || window.location.pathname.split("/")[1] || "")
+                            (displaySlug || loggedInUser?.uniqueSlug || user?.uniqueSlug || "")
                           }
                           size={140}
                           level="H"
@@ -7026,7 +7028,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-pink-400">Voice Code</p>
                         <div className="bg-pink-50 border border-pink-200 rounded-xl py-1.5 px-4">
                           <p className="text-pink-700 font-black font-mono text-sm tracking-[0.25em] uppercase">
-                            {displaySlug || user?.uniqueSlug || "—"}
+                            {displaySlug || loggedInUser?.uniqueSlug || user?.uniqueSlug || "—"}
                           </p>
                         </div>
                       </div>
