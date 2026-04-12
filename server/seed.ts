@@ -7,7 +7,7 @@ const KTR_LINKS = {
   youtube: "https://youtube.com/@ktarakaramarao",
 };
 
-const CONSTITUENCY_AVATAR = "/brs-telangana.png";
+const CONSTITUENCY_AVATAR = "/assets/brs-car-logo.png";
 
 const DEFAULT_PROFILES = [
   {
@@ -193,7 +193,7 @@ function makeProfile(c: typeof CONSTITUENCY_PROFILES[0]) {
     uniqueSlug: c.slug,
     name: c.name,
     role: "people",
-    bio: `${c.name.replace("BRS — ", "")} Constituency | Voice of the People. Strength of the Nation. Building a prosperous Telangana.`,
+    bio: null,
     email: `${c.slug}@brsconnect.in`,
     password: "",
     pin: "12345",
@@ -213,6 +213,7 @@ function makeProfile(c: typeof CONSTITUENCY_PROFILES[0]) {
 const CORRECT_FIELDS = {
   ...KTR_LINKS,
   avatarUrl: CONSTITUENCY_AVATAR,
+  bio: null,
 };
 
 export async function seedDefaultProfiles() {
@@ -244,7 +245,8 @@ export async function seedDefaultProfiles() {
           existing.linkedin !== CORRECT_FIELDS.linkedin ||
           existing.youtube !== CORRECT_FIELDS.youtube ||
           existing.website !== CORRECT_FIELDS.website ||
-          existing.avatarUrl !== CORRECT_FIELDS.avatarUrl;
+          existing.avatarUrl !== CORRECT_FIELDS.avatarUrl ||
+          existing.bio !== CORRECT_FIELDS.bio;
         if (needsUpdate) {
           await storage.updateUser(existing.id, CORRECT_FIELDS as any);
           console.log(`[seed] Updated constituency profile: ${c.slug}`);
