@@ -4817,7 +4817,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                 <div className="overflow-x-auto scrollbar-hide px-6 pb-6">
                   <div className="flex gap-4">
                     {(() => {
-                      const PINNED_ORDER = ["brsparty", "ktrbrs", "brslegalteam", "musi", "hydra", "ktroffice"];
+                      const PINNED_ORDER = ["brs", "brsparty", "ktrbrs", "brslegalteam", "musi", "hydra", "ktroffice"];
                       const q = voiceCardSearch.toLowerCase();
                       return featuredProfiles.filter((p) => {
                         return !q || (p.name || "").toLowerCase().includes(q) || (p.uniqueSlug || "").toLowerCase().includes(q) || (p.role || "").toLowerCase().includes(q);
