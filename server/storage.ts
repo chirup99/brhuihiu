@@ -35,6 +35,8 @@ export interface IStorage {
   updateUser(id: string, user: Partial<InsertUser>): Promise<User>;
   incrementLike(id: string): Promise<number>;
   incrementDislike(id: string): Promise<number>;
+  getVoteStatus(userId: string, voterId: string): Promise<"like" | "dislike" | null>;
+  recordVote(userId: string, voterId: string, type: "like" | "dislike"): Promise<{ likeCount: number; dislikeCount: number; alreadyVoted: boolean }>;
   getEvents(): Promise<BRSEvent[]>;
   saveEvents(events: BRSEvent[]): Promise<void>;
   getFeaturedSlugs(): Promise<string[]>;
@@ -44,6 +46,7 @@ export interface IStorage {
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private events: BRSEvent[] = [];
+  private votes: Map<string, Map<string, "like" | "dislike">> = new Map();
 
   constructor() {
     this.users = new Map();
@@ -122,6 +125,28 @@ export class MemStorage implements IStorage {
     const newCount = (user.dislikeCount || 0) + 1;
     this.users.set(id, { ...user, dislikeCount: newCount });
     return newCount;
+  }
+
+  async getVoteStatus(userId: string, voterId: string): Promise<"like" | "dislike" | null> {
+    return this.votes.get(userId)?.get(voterId) ?? null;
+  }
+
+  async recordVote(userId: string, voterId: string, type: "like" | "dislike"): Promise<{ likeCount: number; dislikeCount: number; alreadyVoted: boolean }> {
+    const user = this.users.get(userId);
+    if (!user) throw new Error("User not found");
+    const existing = await this.getVoteStatus(userId, voterId);
+    if (existing) {
+      return { likeCount: user.likeCount || 0, dislikeCount: user.dislikeCount || 0, alreadyVoted: true };
+    }
+    if (!this.votes.has(userId)) this.votes.set(userId, new Map());
+    this.votes.get(userId)!.set(voterId, type);
+    const updated = {
+      ...user,
+      likeCount: type === "like" ? (user.likeCount || 0) + 1 : (user.likeCount || 0),
+      dislikeCount: type === "dislike" ? (user.dislikeCount || 0) + 1 : (user.dislikeCount || 0),
+    };
+    this.users.set(userId, updated);
+    return { likeCount: updated.likeCount, dislikeCount: updated.dislikeCount, alreadyVoted: false };
   }
 
   async getEvents(): Promise<BRSEvent[]> {
@@ -328,6 +353,54 @@ export class DynamoDBStorage implements IStorage {
       return (Attributes?.dislikeCount as number) || 1;
     } catch (e) {
       console.error("DynamoDB incrementDislike error:", e);
+      throw e;
+    }
+  }
+
+  async getVoteStatus(userId: string, voterId: string): Promise<"like" | "dislike" | null> {
+    try {
+      const safeKey = "voter_" + voterId.replace(/[^a-zA-Z0-9]/g, "_");
+      const { Item } = await ddbDocClient.send(new GetCommand({
+        TableName: TABLE_NAME,
+        Key: { id: userId },
+        ProjectionExpression: "#vk",
+        ExpressionAttributeNames: { "#vk": safeKey },
+      }));
+      return (Item?.[safeKey] as "like" | "dislike") || null;
+    } catch (e) {
+      console.error("DynamoDB getVoteStatus error:", e);
+      return null;
+    }
+  }
+
+  async recordVote(userId: string, voterId: string, type: "like" | "dislike"): Promise<{ likeCount: number; dislikeCount: number; alreadyVoted: boolean }> {
+    const safeKey = "voter_" + voterId.replace(/[^a-zA-Z0-9]/g, "_");
+    const countField = type === "like" ? "likeCount" : "dislikeCount";
+    try {
+      const { Attributes } = await ddbDocClient.send(new UpdateCommand({
+        TableName: TABLE_NAME,
+        Key: { id: userId },
+        UpdateExpression: "ADD #count :inc SET #voterKey = :voteType",
+        ConditionExpression: "attribute_not_exists(#voterKey)",
+        ExpressionAttributeNames: { "#count": countField, "#voterKey": safeKey },
+        ExpressionAttributeValues: { ":inc": 1, ":voteType": type },
+        ReturnValues: "ALL_NEW",
+      }));
+      return {
+        likeCount: (Attributes?.likeCount as number) || 0,
+        dislikeCount: (Attributes?.dislikeCount as number) || 0,
+        alreadyVoted: false,
+      };
+    } catch (e: any) {
+      if (e.name === "ConditionalCheckFailedException") {
+        const user = await this.getUser(userId);
+        return {
+          likeCount: user?.likeCount || 0,
+          dislikeCount: user?.dislikeCount || 0,
+          alreadyVoted: true,
+        };
+      }
+      console.error("DynamoDB recordVote error:", e);
       throw e;
     }
   }

@@ -2756,7 +2756,18 @@ export default function AuthPage({ slug }: { slug?: string }) {
     setLocalLikeCount(user?.likeCount || 0);
     setLocalDislikeCount(user?.dislikeCount || 0);
     const stored = localStorage.getItem(`vote_anon_${profileId}`);
-    setHasVoted((stored as "like" | "dislike" | null) || null);
+    if (stored) {
+      setHasVoted(stored as "like" | "dislike");
+    }
+    fetch(`/api/user/${profileId}/vote-status`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.vote) {
+          setHasVoted(data.vote as "like" | "dislike");
+          localStorage.setItem(`vote_anon_${profileId}`, data.vote);
+        }
+      })
+      .catch(() => {});
   }, [user?.id, user?.likeCount, user?.dislikeCount, loggedInUser?.id]);
 
   const handleVote = async (type: "like" | "dislike") => {
@@ -2768,13 +2779,13 @@ export default function AuthPage({ slug }: { slug?: string }) {
       const res = await fetch(`/api/user/${profileId}/${type}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ voterId: "anonymous" }),
       });
       const data = await res.json();
-      if (type === "like") setLocalLikeCount(data.likeCount ?? localLikeCount + 1);
-      else setLocalDislikeCount(data.dislikeCount ?? localDislikeCount + 1);
-      setHasVoted(type);
-      localStorage.setItem(`vote_anon_${profileId}`, type);
+      if (data.likeCount !== undefined) setLocalLikeCount(data.likeCount);
+      if (data.dislikeCount !== undefined) setLocalDislikeCount(data.dislikeCount);
+      const voted = data.alreadyVoted ? (data.vote ?? type) : type;
+      setHasVoted(voted);
+      localStorage.setItem(`vote_anon_${profileId}`, voted);
     } catch (err) {
       console.error("Vote failed:", err);
     } finally {
@@ -5276,7 +5287,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         type="button"
                         disabled={hasVoted !== null || voteLoading}
                         onClick={() => handleVote("like")}
-                        className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold transition-all border ${
+                        className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold transition-all border mt-3 ${
                           hasVoted === "like"
                             ? "bg-green-100 text-green-600 border-green-200"
                             : hasVoted !== null

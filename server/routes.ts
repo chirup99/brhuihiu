@@ -135,10 +135,21 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/user/:id/vote-status", async (req, res) => {
+    try {
+      const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.ip || "unknown";
+      const vote = await storage.getVoteStatus(req.params.id, ip);
+      res.json({ vote });
+    } catch (e) {
+      res.json({ vote: null });
+    }
+  });
+
   app.post("/api/user/:id/like", async (req, res) => {
     try {
-      const newCount = await storage.incrementLike(req.params.id);
-      res.json({ likeCount: newCount });
+      const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.ip || "unknown";
+      const result = await storage.recordVote(req.params.id, ip, "like");
+      res.json({ likeCount: result.likeCount, dislikeCount: result.dislikeCount, alreadyVoted: result.alreadyVoted, vote: result.alreadyVoted ? "like" : null });
     } catch (e) {
       res.status(500).json({ message: "Failed to save like" });
     }
@@ -146,8 +157,9 @@ export async function registerRoutes(
 
   app.post("/api/user/:id/dislike", async (req, res) => {
     try {
-      const newCount = await storage.incrementDislike(req.params.id);
-      res.json({ dislikeCount: newCount });
+      const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.ip || "unknown";
+      const result = await storage.recordVote(req.params.id, ip, "dislike");
+      res.json({ likeCount: result.likeCount, dislikeCount: result.dislikeCount, alreadyVoted: result.alreadyVoted, vote: result.alreadyVoted ? "dislike" : null });
     } catch (e) {
       res.status(500).json({ message: "Failed to save dislike" });
     }
