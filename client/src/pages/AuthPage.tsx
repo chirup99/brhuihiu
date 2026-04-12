@@ -1323,6 +1323,10 @@ const SwipeCardContent = forwardRef(
                       </p>
                     </div>
                   );
+                  const connectUsername = (card as any).username || "";
+                  if (subtype === "connect") return (
+                    <XConnectCard username={connectUsername} onPlayStateChange={onVideoPlayStateChange} />
+                  );
                   if (subtype === "video") return (
                     <XVideoCard tweetId={tweetId} xUrl={xUrl} onPlayStateChange={onVideoPlayStateChange} />
                   );
@@ -1356,6 +1360,147 @@ const SwipeCardContent = forwardRef(
 );
 
 SwipeCardContent.displayName = "SwipeCardContent";
+
+const XConnectCard = ({ username, onPlayStateChange }: { username: string; onPlayStateChange?: (b: boolean) => void }) => {
+  const [expanded, setExpanded] = useState(false);
+  const { data, isLoading, isError } = useQuery<{
+    id: string; text: string; createdAt: string | null; tweetUrl: string;
+    author: { name: string; screenName: string; profileImageUrl: string | null; verified: boolean };
+    photos: string[]; hasVideo: boolean;
+    likeCount: number | null; replyCount: number | null; retweetCount: number | null;
+  }>({
+    queryKey: ["/api/x-latest", username],
+    queryFn: async () => {
+      const res = await fetch(`/api/x-latest/${username}`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    staleTime: 1000 * 60 * 5,
+    enabled: !!username,
+  });
+
+  const formatCount = (n: number | null) => {
+    if (n == null) return null;
+    if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
+    if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+    return String(n);
+  };
+  const formatDate = (iso: string | null) => {
+    if (!iso) return "";
+    try { return new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }); }
+    catch { return ""; }
+  };
+
+  if (!username) return (
+    <div className="text-center space-y-3">
+      <SiX className="w-10 h-10 text-white/30 mx-auto" />
+      <p className="text-white/40 text-[10px] uppercase tracking-widest font-bold">No handle set</p>
+    </div>
+  );
+
+  if (isError) return (
+    <div className="w-full h-full absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 rounded-[24px]">
+      <SiX className="w-8 h-8 text-white/30" />
+      <p className="text-white/40 text-[10px] uppercase tracking-widest font-bold text-center px-4">Could not load posts from @{username}</p>
+    </div>
+  );
+
+  if (!expanded) {
+    return (
+      <div className="w-full h-full absolute inset-0 overflow-hidden rounded-[24px] cursor-pointer" onClick={() => { setExpanded(true); onPlayStateChange?.(true); }}>
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.72)", display: "flex", flexDirection: "column", padding: 14, gap: 10, borderRadius: 20 }}>
+          {/* Live badge */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              {data?.author.profileImageUrl ? (
+                <img src={data.author.profileImageUrl} alt="" style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+              ) : (
+                <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <SiX style={{ width: 13, height: 13, color: "white" }} />
+                </div>
+              )}
+              {data ? (
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ color: "white", fontWeight: 700, fontSize: 13, lineHeight: 1.2 }}>{data.author.name}</div>
+                  <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }}>@{data.author.screenName}</div>
+                </div>
+              ) : isLoading ? (
+                <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 12 }}>Loading…</div>
+              ) : null}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(29,161,242,0.15)", border: "1px solid rgba(29,161,242,0.3)", borderRadius: 20, padding: "3px 8px" }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#1da1f2", animation: "pulse 2s infinite" }} />
+              <span style={{ color: "#1da1f2", fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>Live</span>
+            </div>
+          </div>
+
+          {data && (
+            <>
+              <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
+                <p style={{ color: "rgba(255,255,255,0.9)", fontSize: 13, lineHeight: 1.55, margin: 0, display: "-webkit-box", WebkitLineClamp: 5, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{data.text}</p>
+              </div>
+              {data.photos.length > 0 && (
+                <div style={{ flexShrink: 0, borderRadius: 12, overflow: "hidden", height: 80 }}>
+                  <img src={data.photos[0]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+              )}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+                <div style={{ display: "flex", gap: 12 }}>
+                  {[
+                    { icon: "♥", val: formatCount(data.likeCount) },
+                    { icon: "↩", val: formatCount(data.replyCount) },
+                    { icon: "↻", val: formatCount(data.retweetCount) },
+                  ].filter(x => x.val !== null).map(({ icon, val }) => (
+                    <span key={icon} style={{ color: "rgba(255,255,255,0.4)", fontSize: 11 }}>{icon} {val}</span>
+                  ))}
+                </div>
+                <span style={{ color: "rgba(255,255,255,0.25)", fontSize: 10 }}>{formatDate(data.createdAt)}</span>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full h-full absolute inset-0 rounded-[24px] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full h-full bg-black flex flex-col" style={{ borderRadius: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", flexShrink: 0, borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {data?.author.profileImageUrl ? <img src={data.author.profileImageUrl} alt="" style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover" }} /> : null}
+            <div>
+              <div style={{ color: "white", fontWeight: 700, fontSize: 12 }}>{data?.author.name}</div>
+              <div style={{ color: "rgba(255,255,255,0.45)", fontSize: 10 }}>@{data?.author.screenName}</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {data?.tweetUrl && (
+              <a href={data.tweetUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ background: "white", color: "black", borderRadius: 20, padding: "4px 10px", fontSize: 10, fontWeight: 700, textDecoration: "none" }}>View on X</a>
+            )}
+            <button onClick={(e) => { e.stopPropagation(); setExpanded(false); onPlayStateChange?.(false); }} style={{ background: "rgba(255,255,255,0.1)", border: "none", borderRadius: "50%", width: 26, height: 26, color: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
+          </div>
+        </div>
+        {data && (
+          <div style={{ flex: 1, overflow: "auto", padding: 14 }}>
+            <p style={{ color: "rgba(255,255,255,0.9)", fontSize: 14, lineHeight: 1.6, margin: 0 }}>{data.text}</p>
+            {data.photos.length > 0 && (
+              <div style={{ marginTop: 10, borderRadius: 12, overflow: "hidden" }}>
+                <img src={data.photos[0]} alt="" style={{ width: "100%", objectFit: "cover" }} />
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 14, marginTop: 12 }}>
+              {[{ icon: "♥", val: formatCount(data.likeCount), label: "likes" }, { icon: "↩", val: formatCount(data.replyCount), label: "replies" }, { icon: "↻", val: formatCount(data.retweetCount), label: "retweets" }].filter(x => x.val !== null).map(({ icon, val, label }) => (
+                <span key={label} style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>{icon} {val}</span>
+              ))}
+            </div>
+            <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 10, marginTop: 8 }}>{formatDate(data.createdAt)}</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const PamphletXVideoThumb = ({ url }: { url: string }) => {
   const tweetIdMatch = url.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
@@ -2044,17 +2189,34 @@ const MiniCard = ({
                     )}
                   </div>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">
-                    {(card as any).subtype === "video" ? "Add X Video / Live URL" : "Add X Post URL"}
+                    {(card as any).subtype === "connect" ? "X Connect — Profile Handle" : (card as any).subtype === "video" ? "Add X Video / Live URL" : "Add X Post URL"}
                   </span>
                 </div>
-                <input
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-white/40"
-                  placeholder={(card as any).subtype === "video" ? "https://x.com/user/status/... or /i/broadcasts/..." : "https://x.com/user/status/..."}
-                  defaultValue={(card as any).url}
-                  onBlur={(e) => {
-                    onUpdate(JSON.stringify({ ...card, url: e.target.value }));
-                  }}
-                />
+                {(card as any).subtype === "connect" ? (
+                  <div className="space-y-2">
+                    <input
+                      className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-white/40"
+                      placeholder="e.g. KTRBRSofficial or https://x.com/KTRBRSofficial"
+                      defaultValue={(card as any).username || ""}
+                      onBlur={(e) => {
+                        const raw = e.target.value.trim();
+                        const match = raw.match(/(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]+)/);
+                        const handle = match ? match[1] : raw.replace(/^@/, "");
+                        onUpdate(JSON.stringify({ ...card, username: handle, title: `@${handle}` }));
+                      }}
+                    />
+                    <p className="text-white/30 text-[9px] leading-relaxed">Enter the X handle (e.g. <span className="text-white/50">KTRBRSofficial</span>) and the card will always show their latest post automatically.</p>
+                  </div>
+                ) : (
+                  <input
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-white/40"
+                    placeholder={(card as any).subtype === "video" ? "https://x.com/user/status/... or /i/broadcasts/..." : "https://x.com/user/status/..."}
+                    defaultValue={(card as any).url}
+                    onBlur={(e) => {
+                      onUpdate(JSON.stringify({ ...card, url: e.target.value }));
+                    }}
+                  />
+                )}
               </div>
             )}
             {(card.type === "image" || card.type === "product") && (
@@ -2382,6 +2544,13 @@ const MiniCard = ({
                   {subtype === "video" ? "Add X video URL" : "Add X post URL"}
                 </span>
               </button>
+            );
+            const connectUsr = (card as any).username || "";
+            if (subtype === "connect") return (
+              <div className="w-full h-full relative">
+                <XConnectCard username={connectUsr} />
+                <button type="button" onClick={(e) => { e.stopPropagation(); setIsEditing(true); }} className="absolute top-2 left-2 p-1.5 bg-black/60 backdrop-blur-sm rounded-full border border-white/10 text-white/70 hover:text-white transition-colors z-20"><Pencil className="w-3 h-3" /></button>
+              </div>
             );
             if (subtype === "video") return (
               <XVideoCard
@@ -6355,6 +6524,27 @@ export default function AuthPage({ slug }: { slug?: string }) {
                                   <div className="text-left">
                                     <p className="text-[10px] font-black text-gray-800 uppercase tracking-wide">Video</p>
                                     <p className="text-[8px] text-gray-400">Display a video tweet</p>
+                                  </div>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const currentCards = [...selectedCards];
+                                    currentCards[idx] = JSON.stringify({ type: "xpost", subtype: "connect", title: "X Connect", username: "" });
+                                    setSelectedCards(currentCards);
+                                    setXpostPickerIdx(null);
+                                  }}
+                                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 transition-all border border-blue-200"
+                                >
+                                  <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center flex-shrink-0 relative">
+                                    <SiX className="w-3.5 h-3.5 text-white" />
+                                    <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-blue-500 flex items-center justify-center">
+                                      <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                                    </div>
+                                  </div>
+                                  <div className="text-left">
+                                    <p className="text-[10px] font-black text-gray-800 uppercase tracking-wide">X Connect</p>
+                                    <p className="text-[8px] text-gray-400">Auto-updates with latest post</p>
                                   </div>
                                 </button>
                                 <button

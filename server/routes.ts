@@ -462,6 +462,75 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/x-latest/:username", async (req, res) => {
+    try {
+      const { username } = req.params;
+      if (!/^[a-zA-Z0-9_]{1,50}$/.test(username)) return res.status(400).json({ error: "Invalid username" });
+
+      // Fetch the Twitter/X profile timeline embed page
+      const profileUrl = `https://syndication.twitter.com/srv/timeline-profile/screen-name/${username}?count=1&with_replies=false&dnt=false&lang=en`;
+      const profileRes = await fetch(profileUrl, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Accept": "text/html,application/xhtml+xml",
+          "Referer": "https://twitter.com/",
+          "Origin": "https://twitter.com",
+        }
+      });
+
+      if (!profileRes.ok) return res.status(404).json({ error: "Profile not found" });
+
+      const html = await profileRes.text();
+
+      // Extract tweet IDs from the HTML — look for status URLs
+      const tweetIdMatches = [...html.matchAll(/\/status\/(\d{10,})/g)];
+      const tweetId = tweetIdMatches[0]?.[1];
+
+      if (!tweetId) return res.status(404).json({ error: "No tweets found for this profile" });
+
+      // Fetch tweet content using existing approach
+      const token = Math.floor(Number(tweetId) / 1e15 * Math.PI).toString();
+      const tweetUrl = `https://cdn.syndication.twimg.com/tweet-result?id=${tweetId}&lang=en&token=${token}`;
+      const tweetRes = await fetch(tweetUrl, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Accept": "application/json",
+          "Referer": "https://platform.twitter.com/",
+          "Origin": "https://platform.twitter.com"
+        }
+      });
+
+      if (!tweetRes.ok) return res.status(404).json({ error: "Tweet not found" });
+
+      const data = await tweetRes.json() as any;
+      const text = data.text || data.full_text || "";
+      const user = data.user || {};
+      const mediaDetails: any[] = data.mediaDetails || data.extended_entities?.media || [];
+      const photos = mediaDetails.filter((m: any) => m.type === "photo").map((m: any) => m.media_url_https || m.media_url);
+
+      res.json({
+        id: tweetId,
+        text,
+        createdAt: data.created_at || null,
+        author: {
+          name: user.name || username,
+          screenName: user.screen_name || username,
+          profileImageUrl: user.profile_image_url_https || user.profile_image_url || null,
+          verified: user.verified || false,
+        },
+        photos,
+        hasVideo: mediaDetails.some((m: any) => m.type === "video" || m.type === "animated_gif"),
+        likeCount: data.favorite_count ?? null,
+        replyCount: data.conversation_count ?? null,
+        retweetCount: data.retweet_count ?? null,
+        tweetUrl: `https://x.com/${user.screen_name || username}/status/${tweetId}`,
+      });
+    } catch (err) {
+      console.error("X latest error:", err);
+      res.status(500).json({ error: "Failed to fetch latest tweet" });
+    }
+  });
+
   app.get("/api/tweet-video/:tweetId", async (req, res) => {
     try {
       const { tweetId } = req.params;
