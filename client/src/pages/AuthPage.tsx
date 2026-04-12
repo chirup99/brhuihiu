@@ -2790,7 +2790,10 @@ export default function AuthPage({ slug }: { slug?: string }) {
     const profileId = user?.id;
     if (!profileId) return;
     if (hasVoted || voteLoading) return;
-    setVoteLoading(true);
+    setHasVoted(type);
+    if (type === "like") setLocalLikeCount((c) => c + 1);
+    else setLocalDislikeCount((c) => c + 1);
+    localStorage.setItem(`vote_anon_${profileId}`, type);
     const voterId = getVoterId();
     try {
       const res = await fetch(`/api/user/${profileId}/${type}`, {
@@ -2801,13 +2804,8 @@ export default function AuthPage({ slug }: { slug?: string }) {
       const data = await res.json();
       if (data.likeCount !== undefined) setLocalLikeCount(data.likeCount);
       if (data.dislikeCount !== undefined) setLocalDislikeCount(data.dislikeCount);
-      const voted = data.alreadyVoted ? (data.vote ?? type) : type;
-      setHasVoted(voted);
-      localStorage.setItem(`vote_anon_${profileId}`, voted);
     } catch (err) {
       console.error("Vote failed:", err);
-    } finally {
-      setVoteLoading(false);
     }
   };
 
@@ -5314,7 +5312,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         }`}
                       >
                         <ThumbsUp className="w-3 h-3 flex-shrink-0" />
-                        <span>{hasVoted === "like" ? "Unlike" : "Like"}</span>
+                        <span>Like</span>
                       </button>
                       <button
                         type="button"
@@ -5329,7 +5327,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
                         }`}
                       >
                         <ThumbsDown className="w-3 h-3 flex-shrink-0" />
-                        <span>{hasVoted === "dislike" ? "Voted" : "Dislike"}</span>
+                        <span>Dislike</span>
                       </button>
                     </div>
                     {(() => {
