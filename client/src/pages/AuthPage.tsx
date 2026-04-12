@@ -3335,11 +3335,34 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
   useEffect(() => {
     if (adminFeaturedSlugs.length === 0) { setFeaturedProfiles([]); return; }
+    const BATCH_FIRST = 10;
+    const first = adminFeaturedSlugs.slice(0, BATCH_FIRST);
+    const rest = adminFeaturedSlugs.slice(BATCH_FIRST);
     Promise.all(
-      adminFeaturedSlugs.map((s) =>
+      first.map((s) =>
         fetch(`/api/user/slug/${s}`).then((r) => (r.ok ? r.json() : null)).catch(() => null)
       )
-    ).then((profiles) => setFeaturedProfiles(profiles.filter(Boolean)));
+    ).then((profiles) => {
+      const valid = profiles.filter(Boolean);
+      setFeaturedProfiles(valid);
+      if (rest.length === 0) return;
+      const BATCH_SIZE = 10;
+      let i = 0;
+      const loadNext = () => {
+        if (i >= rest.length) return;
+        const batch = rest.slice(i, i + BATCH_SIZE);
+        i += BATCH_SIZE;
+        Promise.all(
+          batch.map((s) =>
+            fetch(`/api/user/slug/${s}`).then((r) => (r.ok ? r.json() : null)).catch(() => null)
+          )
+        ).then((batchProfiles) => {
+          setFeaturedProfiles((prev) => [...prev, ...batchProfiles.filter(Boolean)]);
+          setTimeout(loadNext, 100);
+        });
+      };
+      setTimeout(loadNext, 200);
+    });
   }, [adminFeaturedSlugs]);
 
   const saveFeaturedSlugsToServer = async (slugs: string[]) => {
