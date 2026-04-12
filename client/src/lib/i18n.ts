@@ -2,7 +2,7 @@ export type Language = "en" | "te" | "hi" | "ur";
 
 export const translations = {
   en: {
-    appTagline: "Voice of the people. Strength of the nation.",
+    appTagline: "Voice of the people.",
     peoplesVoice: "People's Voice",
     speedActionChange: "Speed. Action. Change.",
     myBrs: "My BRS",
@@ -66,7 +66,7 @@ export const translations = {
     connectWithBrs: "Connect with BRS",
   },
   te: {
-    appTagline: "ప్రజల స్వరం. దేశం బలం.",
+    appTagline: "ప్రజల స్వరం.",
     peoplesVoice: "ప్రజల స్వరం",
     speedActionChange: "వేగం. చర్య. మార్పు.",
     myBrs: "నా BRS",
@@ -130,7 +130,7 @@ export const translations = {
     connectWithBrs: "BRS తో అనుసంధానం",
   },
   hi: {
-    appTagline: "जनता की आवाज़। राष्ट्र की ताकत।",
+    appTagline: "जनता की आवाज़।",
     peoplesVoice: "जनता की आवाज़",
     speedActionChange: "गति. कार्य. बदलाव.",
     myBrs: "मेरा BRS",
@@ -194,7 +194,7 @@ export const translations = {
     connectWithBrs: "BRS से जुड़ें",
   },
   ur: {
-    appTagline: "عوام کی آواز۔ قوم کی طاقت۔",
+    appTagline: "عوام کی آواز۔",
     peoplesVoice: "عوام کی آواز",
     speedActionChange: "رفتار. عمل. تبدیلی.",
     myBrs: "میرا BRS",
