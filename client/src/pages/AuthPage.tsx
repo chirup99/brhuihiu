@@ -3346,7 +3346,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
       const valid = profiles.filter(Boolean);
       setFeaturedProfiles(valid);
       if (rest.length === 0) return;
-      const BATCH_SIZE = 10;
+      const BATCH_SIZE = 25;
       let i = 0;
       const loadNext = () => {
         if (i >= rest.length) return;
