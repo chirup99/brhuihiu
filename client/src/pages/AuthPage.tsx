@@ -2679,7 +2679,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
 
   const fetchingSlugRef = useRef<string | null>(null);
 
-  const DEFAULT_SLUG = "brsparty";
+  const DEFAULT_SLUG = "brs";
 
   useEffect(() => {
     // If not logged in and at root, redirect to the default brsparty profile
