@@ -4,7 +4,8 @@ const KTR_LINKS = {
   instagram: "https://www.instagram.com/ktrtrs/",
   linkedin: "https://x.com/ktrbrs",
   website: "https://brsparty.in",
-  youtube: "https://youtube.com/@ktarakaramarao",
+  youtube: "https://www.youtube.com/@ktarakaramarao",
+  whatsapp: "https://www.whatsapp.com/channel/0029Va5KG2d6GcGMHa7jRy1i",
 };
 
 const CONSTITUENCY_AVATAR = "/assets/brs-car-logo.png";
@@ -171,11 +172,10 @@ function makeProfile(c: typeof CONSTITUENCY_PROFILES[0]) {
     name: c.name,
     role: "people",
     bio: null,
-    email: `${c.slug}@brsconnect.in`,
+    email: "",
     password: "",
     pin: "12345",
     ...KTR_LINKS,
-    whatsapp: null,
     industry: c.area,
     avatarUrl: CONSTITUENCY_AVATAR,
     cards: [],
@@ -191,6 +191,7 @@ const CORRECT_FIELDS = {
   ...KTR_LINKS,
   avatarUrl: CONSTITUENCY_AVATAR,
   bio: null,
+  email: "",
 };
 
 export async function seedDefaultProfiles() {
@@ -222,8 +223,10 @@ export async function seedDefaultProfiles() {
           existing.linkedin !== CORRECT_FIELDS.linkedin ||
           existing.youtube !== CORRECT_FIELDS.youtube ||
           existing.website !== CORRECT_FIELDS.website ||
+          existing.whatsapp !== CORRECT_FIELDS.whatsapp ||
           existing.avatarUrl !== CORRECT_FIELDS.avatarUrl ||
-          existing.bio !== CORRECT_FIELDS.bio;
+          existing.bio !== CORRECT_FIELDS.bio ||
+          (existing.email || "") !== CORRECT_FIELDS.email;
         if (needsUpdate) {
           await storage.updateUser(existing.id, CORRECT_FIELDS as any);
           console.log(`[seed] Updated constituency profile: ${c.slug}`);
