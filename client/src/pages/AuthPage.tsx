@@ -2620,6 +2620,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
   const { toast } = useToast();
   const [mode, setMode] = useState<AuthMode>("login");
   const tabDirectionRef = useRef<1 | -1>(1);
+  const profileCacheRef = useRef<Map<string, any>>(new Map());
 
   type CarPhase = "ltr" | "pause" | "empty";
   const [carPhase, setCarPhase] = useState<CarPhase>("ltr");
@@ -2703,30 +2704,39 @@ export default function AuthPage({ slug }: { slug?: string }) {
     // Only fetch if the slug changed to a new slug we haven't loaded yet,
     // and no concurrent fetch is already in flight for this slug.
     if (slug && lastLoadedSlug !== slug && fetchingSlugRef.current !== slug) {
+      const applyProfileData = (data: any) => {
+        if (!data?.id) return false;
+        setPublicUser(data);
+        setMode((currentMode) => {
+          if (currentMode === "swipe") return "swipe";
+          if (!authUser && slug === DEFAULT_SLUG) return "swipe";
+          return "login";
+        });
+        setLastLoadedSlug(slug);
+        Object.entries(data).forEach(([key, value]) => {
+          if (value !== null && value !== undefined && key !== "password") {
+            form.setValue(key as any, value);
+          }
+        });
+        if (data.cards) setSelectedCards(data.cards);
+        return true;
+      };
+
+      // Use cached data immediately if available for instant display
+      const cached = profileCacheRef.current.get(slug);
+      if (cached) {
+        applyProfileData(cached);
+      }
+
+      // Always fetch fresh data in background (or as primary if no cache)
       fetchingSlugRef.current = slug;
       const isSelf = loggedInUser?.uniqueSlug === slug;
       fetch(`/api/user/slug/${slug}${isSelf ? "?self=true" : ""}`)
         .then((res) => res.json())
         .then((data) => {
-          if (data.id) {
-            setPublicUser(data);
-            // For unauthenticated visitors landing on the default profile, open in voice/swipe mode.
-            // For all other cases, keep existing mode or switch to login.
-            setMode((currentMode) => {
-              if (currentMode === "swipe") return "swipe";
-              if (!authUser && slug === DEFAULT_SLUG) return "swipe";
-              return "login";
-            });
-            setLastLoadedSlug(slug);
-            // Populate form with the fetched profile data
-            Object.entries(data).forEach(([key, value]) => {
-              if (value !== null && value !== undefined && key !== "password") {
-                form.setValue(key as any, value);
-              }
-            });
-            if (data.cards) {
-              setSelectedCards(data.cards);
-            }
+          if (data?.id) {
+            profileCacheRef.current.set(slug, data);
+            applyProfileData(data);
           }
         })
         .finally(() => {
@@ -3351,6 +3361,7 @@ export default function AuthPage({ slug }: { slug?: string }) {
       )
     ).then((profiles) => {
       const valid = profiles.filter(Boolean);
+      valid.forEach((p) => { if (p?.uniqueSlug) profileCacheRef.current.set(p.uniqueSlug, p); });
       setFeaturedProfiles(valid);
       setFeaturedProfilesLoading(false);
       if (rest.length === 0) return;
@@ -3365,7 +3376,9 @@ export default function AuthPage({ slug }: { slug?: string }) {
             fetch(`/api/user/slug/${s}`).then((r) => (r.ok ? r.json() : null)).catch(() => null)
           )
         ).then((batchProfiles) => {
-          setFeaturedProfiles((prev) => [...prev, ...batchProfiles.filter(Boolean)]);
+          const validBatch = batchProfiles.filter(Boolean);
+          validBatch.forEach((p) => { if (p?.uniqueSlug) profileCacheRef.current.set(p.uniqueSlug, p); });
+          setFeaturedProfiles((prev) => [...prev, ...validBatch]);
           setTimeout(loadNext, 100);
         });
       };
