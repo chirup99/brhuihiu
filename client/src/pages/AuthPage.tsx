@@ -2750,6 +2750,15 @@ export default function AuthPage({ slug }: { slug?: string }) {
     }
   };
 
+  const getVoterId = () => {
+    let id = localStorage.getItem("brs_voter_uuid");
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem("brs_voter_uuid", id);
+    }
+    return id;
+  };
+
   useEffect(() => {
     const profileId = user?.id;
     if (!profileId) return;
@@ -2759,12 +2768,19 @@ export default function AuthPage({ slug }: { slug?: string }) {
     if (stored) {
       setHasVoted(stored as "like" | "dislike");
     }
-    fetch(`/api/user/${profileId}/vote-status`)
+    const voterId = getVoterId();
+    fetch(`/api/user/${profileId}/vote-status`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ voterId }),
+    })
       .then((r) => r.json())
       .then((data) => {
         if (data.vote) {
           setHasVoted(data.vote as "like" | "dislike");
           localStorage.setItem(`vote_anon_${profileId}`, data.vote);
+        } else {
+          setHasVoted(null);
         }
       })
       .catch(() => {});
@@ -2775,10 +2791,12 @@ export default function AuthPage({ slug }: { slug?: string }) {
     if (!profileId) return;
     if (hasVoted || voteLoading) return;
     setVoteLoading(true);
+    const voterId = getVoterId();
     try {
       const res = await fetch(`/api/user/${profileId}/${type}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ voterId }),
       });
       const data = await res.json();
       if (data.likeCount !== undefined) setLocalLikeCount(data.likeCount);
